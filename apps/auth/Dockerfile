@@ -10,7 +10,8 @@ RUN go mod download
 
 # Copy & build the source code
 COPY . .
-RUN go build -o main .
+ENV CGO_ENABLED=0
+RUN go build -o main ./cmd/server
     
 # Final image, all cleaned up
 FROM alpine:latest
