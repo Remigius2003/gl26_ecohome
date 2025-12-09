@@ -1,3 +1,4 @@
+console.log("remi's GAY");
 export default function App() {
-  return <div style={{ "font-family": "sans-serif", padding: "1rem" }}></div>;
+    return <div style={{ "font-family": "sans-serif", padding: "1rem" }}></div>;
 }
