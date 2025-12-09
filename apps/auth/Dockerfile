@@ -1,5 +1,5 @@
 # Build the apps
-FROM golang:1.24 AS builder
+FROM golang:1.25 AS builder
 
 # Set working dir
 WORKDIR /app

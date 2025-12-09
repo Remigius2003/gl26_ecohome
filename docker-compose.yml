@@ -20,9 +20,9 @@ services:
   auth:
     build:
       context: ./apps/auth
-      dockerfile: Dockerfile.dev # Remove the .dev for prod
-    volumes:
-      - ./apps/auth:/app # Remove volume for prod
+      dockerfile: Dockerfile # Remove the .dev for prod
+    #volumes:
+    #  - ./apps/auth:/app # Remove volume for prod
     restart: always
     ports:
       - "5000:5000"
