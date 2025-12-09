@@ -1,0 +1,17 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+cmd = "go build -o tmp/main ./cmd/server"
+bin = "tmp/main"
+
+[watcher]
+directories = [
+    "cmd",
+    "config",
+    "internal",
+    "pkg"
+]
+exclude_dir = ["tmp", "vendor"]
+include_ext = ["go", "tpl", "tmpl", "html"]
+delay = "100ms"

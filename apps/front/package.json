@@ -1,0 +1,23 @@
+{
+  "author": "Rémi Giuseppi <giuseppi.remigius@gmail.com",
+  "name": "@gl26_ecohome/front",
+  "description": "Eco Home",
+  "version": "0.0.1",
+  "scripts": {
+    "preview": "vite preview",
+    "build": "vite build",
+    "dev": "vite"
+  },
+  "dependencies": {
+    "@solidjs/router": "^0.15.3",
+    "solid-icons": "^1.1.0",
+    "solid-js": "^1.9.10"
+  },
+  "devDependencies": {
+    "solid-devtools": "^0.34.4",
+    "@types/node": "^24.10.0",
+    "typescript": "^5.9.3",
+    "vite-plugin-solid": "^2.11.10",
+    "vite": "^7.1.12"
+  }
+}

@@ -1,0 +1,85 @@
+services:
+  database:
+    build: ./apps/database
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: appdb
+    volumes:
+      - ./apps/database/data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d appdb"]
+      interval: 30s
+      retries: 5
+      start_period: 15s
+      timeout: 5s
+
+  auth:
+    build:
+      context: ./apps/auth
+      dockerfile: Dockerfile.dev # Remove the .dev for prod
+    volumes:
+      - ./apps/auth:/app # Remove volume for prod
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: appdb
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://auth:5000/health || exit 1"]
+      interval: 30s
+      retries: 5
+      start_period: 15s
+      timeout: 5s
+
+  game:
+    build:
+      context: ./apps/game
+      dockerfile: Dockerfile.dev # Remove the .dev for prod
+    volumes:
+      - ./apps/game:/app # Remove volume for prod
+    restart: always
+    ports:
+      - "5001:5001"
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: appdb
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://game:5001/health || exit 1"]
+      interval: 30s
+      retries: 5
+      start_period: 15s
+      timeout: 5s
+
+  front:
+    build: ./apps/front
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apps/front:/app
+      - /app/node_modules
+    depends_on:
+      auth:
+        condition: service_healthy
+      game:
+        condition: service_healthy
+    environment:
+      AUTH_HOST: auth
+      GAME_HOST: game

@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "jsxImportSource": "solid-js",
+    "jsx": "preserve",
+    "moduleResolution": "Node",
+    "module": "ESNext",
+    "target": "ESNext",
+    "allowJs": false,
+    "strict": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "baseUrl": "./src",
+    "types": ["node", "vite/client"]
+  },
+  "include": ["src"]
+}
