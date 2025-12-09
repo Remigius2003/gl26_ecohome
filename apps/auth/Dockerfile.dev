@@ -1,5 +1,5 @@
 # Use Go image with tools for development
-FROM golang:1.24
+FROM golang:1.25
 
 # Set working dir
 WORKDIR /app
