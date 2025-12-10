@@ -1,19 +1,19 @@
-import solidDevTools from "solid-devtools/vite";
-import solidPlugin from "vite-plugin-solid";
 import { defineConfig } from "vite";
-import path from "path";
-
+import solidPlugin from "vite-plugin-solid";
+import devtools from "solid-devtools/vite";
 export default defineConfig({
-  plugins: [
-    solidDevTools({
-      autoname: true,
-    }),
-    solidPlugin(),
-  ],
-  server: {
-    port: 3000,
-  },
-  build: {
-    target: "esnext",
-  },
+    plugins: [
+        devtools({
+            autoname: true,
+            locator: true,
+        }),
+        solidPlugin(),
+    ],
+
+    server: {
+        port: 3000,
+    },
+    build: {
+        target: "esnext",
+    },
 });
