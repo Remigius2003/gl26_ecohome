@@ -18,6 +18,7 @@ FROM alpine:latest
 
 # Set working dir
 WORKDIR /root/
+RUN apk add --no-cache curl ca-certificates
 
 # Copy compiled binary from builder stage
 COPY --from=builder /app/main .

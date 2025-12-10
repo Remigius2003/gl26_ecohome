@@ -1,0 +1,22 @@
+services:
+  auth:
+    profiles: ["dev"]
+    build:
+      context: ./apps/auth
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./apps/auth:/app
+
+  game:
+    profiles: ["dev"]
+    build:
+      context: ./apps/game
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./apps/game:/app
+
+  front:
+    profiles: ["dev"]
+    volumes:
+      - ./apps/front:/app
+      - /app/node_modules

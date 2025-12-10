@@ -22,6 +22,6 @@ func main() {
 	routes.SetupRoutes(router)
 
 	port := config.GetConfig().APIPort
-	log.Printf("Server running on port :%s\n", port)
+	log.Printf("Auth Service running on port :%s\n", port)
 	router.Run(fmt.Sprintf(":%s", port))
 }
