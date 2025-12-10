@@ -28,6 +28,7 @@ services:
       database:
         condition: service_healthy
     environment:
+      GIN_MODE: release
       DB_HOST: database
       DB_PORT: 5432
       DB_USER: postgres
@@ -51,6 +52,7 @@ services:
       database:
         condition: service_healthy
     environment:
+      GIN_MODE: release
       DB_HOST: database
       DB_PORT: 5432
       DB_USER: postgres

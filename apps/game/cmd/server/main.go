@@ -19,5 +19,10 @@ func main() {
 
 	port := config.GetConfig().APIPort
 	log.Printf("Game Service running on port :%s\n", port)
+
 	router.Run(fmt.Sprintf(":%s", port))
+	//err := router.RunTLS(fmt.Sprintf(":%s", port), "server.crt", "server.key")
+    //if err != nil {
+    //    log.Fatalf("failed to start HTTPS server: %v", err)
+    //}
 }

@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile.dev
     volumes:
       - ./apps/auth:/app
+    environment:
+      - GIN_MODE=debug
 
   game:
     build:
@@ -12,6 +14,8 @@ services:
       dockerfile: Dockerfile.dev
     volumes:
       - ./apps/game:/app
+    environment:
+      - GIN_MODE=debug
 
   front:
     volumes:
