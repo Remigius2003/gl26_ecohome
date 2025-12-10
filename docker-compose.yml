@@ -1,4 +1,33 @@
 services:
+  certbot:
+    build: ./certbot
+    container_name: certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: >
+      sh -c "certbot certonly --webroot
+      --webroot-path=/var/www/certbot
+      --email your@mail.com
+      --agree-tos
+      --no-eff-email
+      -d yourdomain.com"
+
+  nginx:
+    build: ./nginx
+    restart: always
+    container_name: reverse-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - front
+      - auth
+      - game
+
   database:
     build: ./apps/database
     restart: always
