@@ -30,14 +30,28 @@ export async function register(
 
   try {
     const rep = await fetch(`${api}/register`, req);
-    console.log("running : " + `${api}/register`);
 
     if (!rep.ok) {
       const err = rep.statusText;
-      console.error("Failed to create an account", err);
+      const msg = await rep.json();
       return Promise.reject(
-        new Error(`Failed to register: ${err} (status ${rep.status})`)
+        new Error(
+          `Failed to register: ${err} (status ${rep.status}) : ${msg.error}`
+        )
       );
+    }
+
+    if (!rep.ok) {
+      const err = rep.statusText;
+      const msg = await rep.json();
+
+      console.error("Failed to create an account", err);
+      const error = new Error(
+        `Failed to register: ${err} (status ${rep.status})`
+      );
+      (error as any).json = msg;
+
+      return Promise.reject(error);
     }
 
     const data = await rep.json();
