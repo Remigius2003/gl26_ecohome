@@ -14,7 +14,6 @@ func SetupRoutes(router *gin.Engine) {
 	})
 
 	users := router.Group("/users")
-	users.Use(middleware.APIKeyMiddleware)
 	{
 		users.POST("/register", handlers.RegisterHandler)
 		users.POST("/login", handlers.LoginHandler)

@@ -9,9 +9,8 @@ export default function DevPanel() {
     const navigate = useNavigate();
 
     const beforeInstallPrompt = (e: Event) => {
-        console.log("beforeinstallprompt fired!");
         e.preventDefault();
-        setDeferredPrompt(e);
+        setDeferredPrompt(e); //This should work, TODO manage error (by using the right type (not Event)) so it's not red
         setStatus((prev) => ({ ...prev, installPromptFired: true }));
     };
 
@@ -79,7 +78,8 @@ export default function DevPanel() {
                         {status().serviceWorkerRegistered ? "✅" : "❌"}
                     </li>
                     <li>
-                        Installable (beforeinstallprompt):{" "}
+                        Installable (seems to depends on random stuff like
+                        chrome / app already existing):{" "}
                         {status().installPromptFired ? "✅" : "❌"}
                     </li>
                 </ul>

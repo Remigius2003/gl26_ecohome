@@ -1,117 +1,125 @@
 services:
-  certbot:
-    build: ./certbot
-    container_name: certbot
-    volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    entrypoint: >
-      sh -c "certbot certonly --webroot
-      --webroot-path=/var/www/certbot
-      --email your@mail.com
-      --agree-tos
-      --no-eff-email
-      -d localhost"
+    certbot:
+        build: ./certbot
+        container_name: certbot
+        volumes:
+            - ./certbot/conf:/etc/letsencrypt
+            - ./certbot/www:/var/www/certbot
+        entrypoint: >
+            sh -c "certbot certonly --webroot
+            --webroot-path=/var/www/certbot
+            --email your@mail.com
+            --agree-tos
+            --no-eff-email
+            -d localhost"
 
-  nginx:
-    build: ./nginx
-    restart: always
-    container_name: reverse-proxy
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    depends_on:
-      - front
-      - auth
-      - game
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
-      interval: 30s
-      retries: 5
-      start_period: 15s
-      timeout: 5s
+    nginx:
+        build: ./nginx
+        restart: always
+        container_name: reverse-proxy
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ./certbot/conf:/etc/letsencrypt
+            - ./certbot/www:/var/www/certbot
+        depends_on:
+            - front
+            - auth
+            - game
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost/health"]
+            interval: 30s
+            retries: 5
+            start_period: 15s
+            timeout: 5s
 
-  database:
-    build: ./apps/database
-    restart: always
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: appdb
-    volumes:
-      - ./apps/database/data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d appdb"]
-      interval: 30s
-      retries: 5
-      start_period: 15s
-      timeout: 5s
+    database:
+        build: ./apps/database
+        restart: always
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: password
+            POSTGRES_DB: appdb
+        volumes:
+            - ./apps/database/data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres -d appdb"]
+            interval: 30s
+            retries: 5
+            start_period: 15s
+            timeout: 5s
 
-  auth:
-    build:
-      context: ./apps/auth
-      dockerfile: Dockerfile
-    restart: always
-    ports:
-      - "5000:5000"
-    depends_on:
-      database:
-        condition: service_healthy
-    environment:
-      GIN_MODE: release
-      DB_HOST: database
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: password
-      DB_NAME: appdb
-    healthcheck:
-      test: ["CMD-SHELL", "curl --fail http://auth:5000/health || exit 1"]
-      interval: 30s
-      retries: 5
-      start_period: 15s
-      timeout: 5s
+        auth:
+            build:
+                context: ./apps/auth
+                dockerfile: Dockerfile
+            restart: always
+            ports:
+                - "5000:5000"
+            depends_on:
+                database:
+                    condition: service_healthy
+            environment:
+                GIN_MODE: release
+                DB_HOST: database
+                DB_PORT: 5432
+                DB_USER: postgres
+                DB_PASSWORD: password
+                DB_NAME: appdb
+            healthcheck:
+                test:
+                    [
+                        "CMD-SHELL",
+                        "curl --fail http://auth:5000/health || exit 1",
+                    ]
+                interval: 30s
+                retries: 5
+                start_period: 15s
+                timeout: 5s
 
-  game:
-    build:
-      context: ./apps/game
-      dockerfile: Dockerfile
-    restart: always
-    ports:
-      - "5001:5001"
-    depends_on:
-      database:
-        condition: service_healthy
-    environment:
-      GIN_MODE: release
-      DB_HOST: database
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: password
-      DB_NAME: appdb
-    healthcheck:
-      test: ["CMD-SHELL", "curl --fail http://game:5001/health || exit 1"]
-      interval: 30s
-      retries: 5
-      start_period: 15s
-      timeout: 5s
+        game:
+            build:
+                context: ./apps/game
+                dockerfile: Dockerfile
+            restart: always
+            ports:
+                - "5001:5001"
+            depends_on:
+                database:
+                    condition: service_healthy
+            environment:
+                GIN_MODE: release
+                DB_HOST: database
+                DB_PORT: 5432
+                DB_USER: postgres
+                DB_PASSWORD: password
+                DB_NAME: appdb
+            healthcheck:
+                test:
+                    [
+                        "CMD-SHELL",
+                        "curl --fail http://game:5001/health || exit 1",
+                    ]
+                interval: 30s
+                retries: 5
+                start_period: 15s
+                timeout: 5s
 
-  front:
-    build:
-      context: ./apps/front
-      dockerfile: Dockerfile
-    restart: always
-    ports:
-      - "3000:3000"
-    depends_on:
-      auth:
-        condition: service_healthy
-      game:
-        condition: service_healthy
-    environment:
-      AUTH_HOST: auth
-      GAME_HOST: game
+    front:
+        build:
+            context: ./apps/front
+            dockerfile: Dockerfile
+        restart: always
+        ports:
+            - "3000:3000"
+        depends_on:
+            auth:
+                condition: service_healthy
+            game:
+                condition: service_healthy
+        environment:
+            AUTH_HOST: 127.0.0.1:5000
+            GAME_HOST: 127.0.0.1:5001
