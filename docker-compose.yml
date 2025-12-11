@@ -52,61 +52,53 @@ services:
             start_period: 15s
             timeout: 5s
 
-        auth:
-            build:
-                context: ./apps/auth
-                dockerfile: Dockerfile
-            restart: always
-            ports:
-                - "5000:5000"
-            depends_on:
-                database:
-                    condition: service_healthy
-            environment:
-                GIN_MODE: release
-                DB_HOST: database
-                DB_PORT: 5432
-                DB_USER: postgres
-                DB_PASSWORD: password
-                DB_NAME: appdb
-            healthcheck:
-                test:
-                    [
-                        "CMD-SHELL",
-                        "curl --fail http://auth:5000/health || exit 1",
-                    ]
-                interval: 30s
-                retries: 5
-                start_period: 15s
-                timeout: 5s
+    auth:
+        build:
+            context: ./apps/auth
+            dockerfile: Dockerfile
+        restart: always
+        ports:
+            - "5000:5000"
+        depends_on:
+            database:
+                condition: service_healthy
+        environment:
+            GIN_MODE: release
+            DB_HOST: database
+            DB_PORT: 5432
+            DB_USER: postgres
+            DB_PASSWORD: password
+            DB_NAME: appdb
+        healthcheck:
+            test: ["CMD-SHELL", "curl --fail http://auth:5000/health || exit 1"]
+            interval: 30s
+            retries: 5
+            start_period: 15s
+            timeout: 5s
 
-        game:
-            build:
-                context: ./apps/game
-                dockerfile: Dockerfile
-            restart: always
-            ports:
-                - "5001:5001"
-            depends_on:
-                database:
-                    condition: service_healthy
-            environment:
-                GIN_MODE: release
-                DB_HOST: database
-                DB_PORT: 5432
-                DB_USER: postgres
-                DB_PASSWORD: password
-                DB_NAME: appdb
-            healthcheck:
-                test:
-                    [
-                        "CMD-SHELL",
-                        "curl --fail http://game:5001/health || exit 1",
-                    ]
-                interval: 30s
-                retries: 5
-                start_period: 15s
-                timeout: 5s
+    game:
+        build:
+            context: ./apps/game
+            dockerfile: Dockerfile
+        restart: always
+        ports:
+            - "5001:5001"
+        depends_on:
+            database:
+                condition: service_healthy
+        environment:
+            GIN_MODE: release
+            DB_HOST: database
+            DB_PORT: 5432
+            DB_USER: postgres
+            DB_PASSWORD: password
+            DB_NAME: appdb
+        healthcheck:
+            test: ["CMD-SHELL", "curl --fail http://game:5001/health || exit 1"]
+            interval: 30s
+            retries: 5
+            start_period: 15s
+            timeout: 5s
 
     front:
         build:
@@ -121,5 +113,5 @@ services:
             game:
                 condition: service_healthy
         environment:
-            AUTH_HOST: 127.0.0.1:5000
-            GAME_HOST: 127.0.0.1:5001
+            AUTH_HOST: auth
+            GAME_HOST: game

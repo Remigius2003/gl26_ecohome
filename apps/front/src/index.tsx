@@ -13,6 +13,15 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
     );
 }
 
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker
+            .register("/service-worker.js")
+            .then(() => console.log("SW registered"))
+            .catch((err) => console.error("SW registration failed", err));
+    });
+}
+
 const App = () => (
     <Route>
         <Route path="/" component={DevPanel} />
