@@ -1,26 +1,26 @@
 services:
-    auth:
-        build:
-            context: ./apps/auth
-            dockerfile: Dockerfile.dev
-        volumes:
-            - ./apps/auth:/app
-        environment:
-            - GIN_MODE=debug
+  auth:
+    build:
+      context: ./apps/auth
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./apps/auth:/app
+    environment:
+      - GIN_MODE=debug
 
-    game:
-        build:
-            context: ./apps/game
-            dockerfile: Dockerfile.dev
-        volumes:
-            - ./apps/game:/app
-        environment:
-            - GIN_MODE=debug
+  game:
+    build:
+      context: ./apps/game
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./apps/game:/app
+    environment:
+      - GIN_MODE=debug
 
-    front:
-        build:
-            context: ./apps/front
-            dockerfile: Dockerfile.dev
-        volumes:
-            - ./apps/front:/app
-            - /app/node_modules
+  front:
+    build:
+      context: ./apps/front
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./apps/front:/app
+      - /app/node_modules
