@@ -1,24 +1,24 @@
 {
-  "author": "Zephiel",
-  "name": "@gl26_ecohome/front",
-  "description": "Eco Home",
-  "version": "0.0.1",
-  "scripts": {
-    "preview": "vite preview --host 0.0.0.0 --port 3000",
-    "build": "vite build",
-    "dev": "vite --host 0.0.0.0"
-  },
-  "dependencies": {
-    "@solidjs/router": "^0.15.4",
-    "solid-icons": "^1.1.0",
-    "solid-js": "^1.9.10"
-  },
-  "devDependencies": {
-    "@types/node": "^24.10.0",
-    "solid-devtools": "^0.34.4",
-    "typescript": "^5.9.3",
-    "vite": "^7.1.12",
-    "vite-plugin-pwa": "^1.2.0",
-    "vite-plugin-solid": "^2.11.10"
-  }
+	"author": "Zephiel",
+	"name": "@gl26_ecohome/front",
+	"description": "Eco Home",
+	"version": "0.0.1",
+	"scripts": {
+		"preview": "vite preview --host 0.0.0.0 --port 3000",
+		"build": "vite build",
+		"dev": "vite"
+	},
+	"dependencies": {
+		"@solidjs/router": "^0.15.4",
+		"solid-icons": "^1.1.0",
+		"solid-js": "^1.9.10"
+	},
+	"devDependencies": {
+		"@types/node": "^24.10.0",
+		"solid-devtools": "^0.34.4",
+		"typescript": "^5.9.3",
+		"vite": "^7.1.12",
+		"vite-plugin-pwa": "^1.2.0",
+		"vite-plugin-solid": "^2.11.10"
+	}
 }
