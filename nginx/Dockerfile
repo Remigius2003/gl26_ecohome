@@ -22,7 +22,7 @@ RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # Allow nginx to read the certificate
-RUN chmod 600 /etc/nginx/ssl/localhost.key
+RUN chmod 644 /etc/nginx/ssl/localhost.key
 
 # Create directory for certbot ACME challenge
 RUN mkdir -p /var/www/certbot
