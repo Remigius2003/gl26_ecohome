@@ -3,12 +3,12 @@ export async function createAccountApi(
     mdp: string,
     email: string
 ): Promise<boolean> {
-    const dest = import.meta.env.AUTH_HOST;
+    const dest = import.meta.env.VITE_AUTH_HOST;
 
     try {
-        console.log(import.meta.env.AUTH_HOST);
-        console.log(`${dest}/users/register`);
-        const response = await fetch(`${dest}/users/register`, {
+        console.log(import.meta.env.VITE_AUTH_HOST);
+        console.log(`${dest}/register`);
+        const response = await fetch(`https://${dest}/register`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

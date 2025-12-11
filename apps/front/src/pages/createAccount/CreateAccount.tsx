@@ -1,4 +1,4 @@
-import { createAccountApi } from "../../apis/IdentificationApi";
+import { createAccountApi } from "../../apis/UserApi";
 
 export default function createAccount() {
     createAccountApi("blup", "blup", "blup");
