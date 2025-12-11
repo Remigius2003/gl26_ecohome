@@ -1,6 +1,6 @@
-import { createAccountApi } from "../../apis/UserApi";
+import { register } from "api";
 
 export default function createAccount() {
-    createAccountApi("blup", "blup", "blup");
-    return <h1>createAccount</h1>;
+  register("blup2", "blup2", "blup2@blup");
+  return <h1>createAccount</h1>;
 }

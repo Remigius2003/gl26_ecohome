@@ -1,19 +1,29 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import solidPlugin from "vite-plugin-solid";
 import devtools from "solid-devtools/vite";
-export default defineConfig({
-    plugins: [
-        devtools({
-            autoname: true,
-            locator: true,
-        }),
-        solidPlugin(),
-    ],
+import path from "path";
 
-    server: {
-        port: 3000,
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
+
+  return {
+    plugins: [
+      devtools({
+        autoname: true,
+        locator: true,
+      }),
+      solidPlugin(),
+    ],
+    define: {
+      "import.meta.env.VITE_AUTH_HOST": JSON.stringify(env.AUTH_HOST),
+      "import.meta.env.VITE_GAME_HOST": JSON.stringify(env.GAME_HOST),
     },
-    build: {
-        target: "esnext",
+    resolve: {
+      alias: {
+        api: path.resolve(__dirname, "src/api"),
+      },
     },
+    server: { port: 3000 },
+    build: { target: "esnext" },
+  };
 });

@@ -1,8 +1,9 @@
 FROM node:24-alpine
 WORKDIR /app
 
+ENV NODE_ENV=development
 COPY package*.json ./
-RUN npm install --dev
+RUN npm install --include=dev
 COPY . .
 
 EXPOSE 3000
