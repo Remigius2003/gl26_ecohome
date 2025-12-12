@@ -41,8 +41,7 @@ export default function DevPanel() {
             <h1>Dev Panel</h1>
 
             <Button variant="primary" onClick={() => navigate("/login")}>
-                {" "}
-                Page de connection (login){" "}
+                {" "} Page de connexion (login) {" "}
             </Button>
             <Button variant="primary" onClick={() => navigate("/social")}>
                 social
