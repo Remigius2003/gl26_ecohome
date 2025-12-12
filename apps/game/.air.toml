@@ -1,10 +1,11 @@
 root = "."
 tmp_dir = "tmp"
-poll = true
 
 [build]
 cmd = "go build -o tmp/main ./cmd/server"
 bin = "tmp/main"
+poll = true
+poll_interval = 500
 
 [watcher]
 directories = [
