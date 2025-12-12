@@ -7,58 +7,56 @@ import (
 	"gl26_ecohome/auths/pkg/utils"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-const (
-	SECRET_KEYS_FILE = "data/secret_keys.json"
+const SECRET_KEYS_FILE = "data/secret_keys.json"
+var (
+	secretKeyMu     sync.RWMutex
+	currentKey      models.JWTSecretKey
+	nextKey         models.JWTSecretKey
+	oldKey          models.JWTSecretKey
 )
 
-var currentSecretKey models.JWTSecretKey
-var nextSecretKey models.JWTSecretKey
-var oldSecretKey models.JWTSecretKey
-
 func saveSecretKeys() error {
+	secretKeyMu.RLock()
 	secretKeys := map[string]models.JWTSecretKey{
-		"current": currentSecretKey,
-		"next":    nextSecretKey,
-		"old":     oldSecretKey,
+		"current": currentKey,
+		"next":    nextKey,
+		"old":     oldKey,
 	}
+	secretKeyMu.RUnlock()
 
 	data, err := json.Marshal(secretKeys)
 	if err != nil {
 		return err
 	}
 
-	err = os.WriteFile(SECRET_KEYS_FILE, data, 0644)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return os.WriteFile(SECRET_KEYS_FILE, data, 0644)
 }
 
 func loadSecretKeys() error {
 	if _, err := os.Stat(SECRET_KEYS_FILE); os.IsNotExist(err) {
-		currentSecretKey.CreatedAt = time.Now().Unix()
-		currentSecretKey.Key, _ = utils.GenerateRandomKey(32)
-		currentSecretKey.Id = 1
+		var currKey, _ = utils.GenerateRandomKey(32)
+		var nKey, _ = utils.GenerateRandomKey(32)
 
-		nextSecretKey.CreatedAt = time.Now().Add(15 * time.Minute).Unix()
-		nextSecretKey.Key, _ = utils.GenerateRandomKey(32)
-		nextSecretKey.Id = currentSecretKey.Id + 1
-
-		oldSecretKey.CreatedAt = 0
-		oldSecretKey.Key = "N/A"
-		oldSecretKey.Id = 0
-
-		err := saveSecretKeys()
-		if err != nil {
-			return err
+		secretKeyMu.Lock()
+		currentKey = models.JWTSecretKey{
+			Id:        1,
+			Key:       currKey,
+			CreatedAt: time.Now().Unix(),
 		}
-		return nil
+		nextKey = models.JWTSecretKey{
+			Id:        2,
+			Key:       nKey,
+			CreatedAt: time.Now().Add(15 * time.Minute).Unix(),
+		}
+		oldKey = models.JWTSecretKey{}
+		secretKeyMu.Unlock()
+		return saveSecretKeys()
 	}
 
 	data, err := os.ReadFile(SECRET_KEYS_FILE)
@@ -66,55 +64,65 @@ func loadSecretKeys() error {
 		return err
 	}
 
-	var secretKeys map[string]models.JWTSecretKey
-	err = json.Unmarshal(data, &secretKeys)
-	if err != nil {
+	var keys map[string]models.JWTSecretKey
+	if err := json.Unmarshal(data, &keys); err != nil {
 		return err
 	}
 
-	currentSecretKey = secretKeys["current"]
-	nextSecretKey = secretKeys["next"]
-	oldSecretKey = secretKeys["old"]
+	secretKeyMu.Lock()
+	currentKey = keys["current"]
+	nextKey = keys["next"]
+	oldKey = keys["old"]
+	secretKeyMu.Unlock()
 
 	return nil
 }
 
-func rotateSecretKeys() error {
-	oldSecretKey = currentSecretKey
-	currentSecretKey = nextSecretKey
+func rotateSecretKeys() {
+	var newKey, _ = utils.GenerateRandomKey(32)
 
-	nextSecretKey.CreatedAt = time.Now().Add(15 * time.Minute).Unix()
-	nextSecretKey.Key, _ = utils.GenerateRandomKey(32)
-	nextSecretKey.Id = currentSecretKey.Id + 1
-
-	err := saveSecretKeys()
-	if err != nil {
-		fmt.Printf("Failed while rotating keys: %v\n", err)
+	secretKeyMu.Lock()
+	oldKey = currentKey
+	currentKey = nextKey
+	nextKey = models.JWTSecretKey{
+		Id:        currentKey.Id + 1,
+		Key:       newKey,
+		CreatedAt: time.Now().Add(15 * time.Minute).Unix(),
 	}
-	return nil
+	secretKeyMu.Unlock()
+
+	if err := saveSecretKeys(); err != nil {
+		fmt.Printf("Key rotation failed: %v\n", err)
+	}
 }
 
 func StartSecretKeysRotation() {
 	if err := loadSecretKeys(); err != nil {
-		fmt.Printf("Failed to load/generate the secret keys: %v\n", err)
+		fmt.Printf("Failed to load/generate secret keys: %v\n", err)
 	}
 
 	ticker := time.NewTicker(15 * time.Minute)
-	for range ticker.C {
-		rotateSecretKeys()
-	}
+	go func() {
+		for range ticker.C {
+			rotateSecretKeys()
+		}
+	}()
 }
 
 func SecretKeyHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"secretKey": currentSecretKey,
-	})
+	secretKeyMu.RLock()
+	k := currentKey
+	secretKeyMu.RUnlock()
+
+	c.JSON(http.StatusOK, gin.H{"secretKey": k})
 }
 
 func SecretKeysHandler(c *gin.Context) {
+	secretKeyMu.RLock()
 	c.JSON(http.StatusOK, gin.H{
-		"current": currentSecretKey,
-		"next":    nextSecretKey,
-		"old":     oldSecretKey,
+		"current": currentKey,
+		"next":    nextKey,
+		"old":     oldKey,
 	})
+	secretKeyMu.RUnlock()
 }

@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"database/sql"
+	"errors"
 	"gl26_ecohome/auths/internal/database"
 	"gl26_ecohome/auths/internal/models"
 	"gl26_ecohome/auths/pkg/utils"
@@ -9,68 +9,61 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
-const (
-	TOKEN_DURATION = 36 * time.Hour
-)
-
+const TOKEN_DURATION = 36 * time.Hour
 type tokenReq struct {
-	UserId       string `json:"user_id"`
+	UserId       uint `json:"user_id"`
 	RefreshToken string `json:"refresh_token"`
 }
 
-func verifyToken(c *gin.Context, db *sql.DB, req *tokenReq) *models.RefreshToken {
-	query := `select id, user_id, refresh_token, expires_at, created_at
-		from refresh_tokens
-		where refresh_token = $1
-		and user_id = $2
-		and is_active = TRUE
-		and expires_at > NOW()`
+func verifyToken(req *tokenReq) (*models.RefreshToken, error) {
+    db := database.GetDatabase()
 
-	var refreshToken models.RefreshToken
-	err := db.QueryRow(query, req.RefreshToken, req.UserId).Scan(
-		&refreshToken.Id, &refreshToken.UserId, &refreshToken.Token,
-		&refreshToken.ExpiresAt, &refreshToken.CreatedAt,
-	)
+    var token models.RefreshToken
+    err := db.
+        Where("token = ? AND user_id = ? AND is_active = TRUE AND expires_at > ?", 
+              req.RefreshToken, req.UserId, time.Now()).
+        First(&token).
+        Error
 
-	if err == sql.ErrNoRows {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired refresh token !"})
-		return nil
-	} else if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error !"})
-		return nil
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
 	}
-
-	return &refreshToken
+	if err != nil {
+		return nil, err
+	}
+	return &token, nil
 }
 
-func generateToken(c *gin.Context, db *sql.DB, userId string) *models.RefreshToken {
-	// Deactivate old token
-	if _, err := db.Exec(`update refresh_tokens set is_active = FALSE where user_id = $1`, userId); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to deactivate old token !"})
-		return nil
+func generateToken(userId uint) (*models.RefreshToken, error) {
+    db := database.GetDatabase()
+
+    db.Model(&models.RefreshToken{}).
+        Where("user_id = ?", userId).
+        Update("is_active", false)
+
+    tokenString, err := utils.GenerateRandomKey(128)
+    if err != nil {
+		return nil, err
 	}
 
-	// Generate new token
-	expiresAt := time.Now().Add(TOKEN_DURATION)
-	newToken, err := utils.GenerateRandomKey(128)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate new token !"})
-		return nil
-	}
+    token := models.RefreshToken{
+        UserId:    userId,
+        Token:     tokenString,
+        ExpiresAt: time.Now().Add(TOKEN_DURATION),
+        IsActive:  true,
+    }
 
-	// Insert new refresh token into database
-	if _, err := db.Exec(`insert into refresh_tokens (user_id, refresh_token, expires_at) values ($1, $2, $3)`, userId, newToken, expiresAt); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save new token !"})
-		return nil
+    if err := db.Create(&token).Error; err != nil {
+		return nil, err
 	}
-
-	return &models.RefreshToken{UserId: userId, Token: newToken, ExpiresAt: expiresAt}
+    
+	return &token, nil
 }
 
 func TokenHandler(c *gin.Context) {
-	db := database.GetDatabase()
 	var req tokenReq
 
 	if err := c.BindJSON(&req); err != nil {
@@ -78,32 +71,44 @@ func TokenHandler(c *gin.Context) {
 		return
 	}
 
-	// Verify token validity
-	refreshToken := verifyToken(c, db, &req)
-	if refreshToken == nil {
+	refreshToken, err := verifyToken(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
 		return
 	}
 
-	// Generate new token
-	newToken := generateToken(c, db, req.UserId)
-	if newToken == nil {
+    if refreshToken == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
 
-	// Return new refresh token
+    newToken, err := generateToken(req.UserId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
+	}
+
 	c.JSON(http.StatusOK, newToken)
 }
 
 func VerifyHandler(c *gin.Context) {
-	db := database.GetDatabase()
 	var req tokenReq
 
 	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input !"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
-	if refreshToken := verifyToken(c, db, &req); refreshToken != nil {
-		c.JSON(http.StatusOK, gin.H{"message": "Token is valid !"})
+	token, err := verifyToken(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
 	}
+
+	if token == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{})
 }

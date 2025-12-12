@@ -14,14 +14,23 @@ import (
 
 func main() {
 	go handlers.StartSecretKeysRotation()
-	db := database.GetDatabase()
-	defer db.Close()
 
-	router := gin.Default()
+	sqlDB, err := database.GetDatabase().DB()
+    if err != nil {
+        log.Fatalf("Failed to get sql.DB from gorm: %v", err)
+    }
+    defer sqlDB.Close()
+
+	router := gin.New()
+	router.Use(gin.Logger()) 
+	router.Use(gin.Recovery())
+	router.SetTrustedProxies([]string{"127.0.0.1"})
 	router.Use(cors.Default())
-	routes.SetupRoutes(router)
+	
+    routes.SetupRoutes(router)
 
 	port := config.GetConfig().APIPort
-	log.Printf("Auth Service running on port :%s\n", port)
-	router.Run(fmt.Sprintf(":%s", port))
+    log.Printf("Auth Service running on port :%s\n", port)
+
+    router.Run(fmt.Sprintf(":%s", port))
 }

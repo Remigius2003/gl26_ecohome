@@ -1,37 +1,42 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
 	"gl26_ecohome/auths/config"
+	"gl26_ecohome/auths/internal/models"
 	"log"
 
-	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-var db *sql.DB
+var db *gorm.DB
 
 func initDatabase() {
 	cfg := config.GetConfig()
-	logStr := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPwd, cfg.DBName,
-	)
+
+	dsn := fmt.Sprintf(
+        "host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+        cfg.DBHost, cfg.DBUser, cfg.DBPwd, cfg.DBName, cfg.DBPort,
+    )
 
 	var err error
-	db, err = sql.Open("postgres", logStr)
-	if err != nil {
-		log.Fatalf("Failed to connect to database: %v !", err)
-	}
+    db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+    if err != nil {
+        log.Fatalf("Failed to connect to database: %v !", err)
+    }
 
-	if err := db.Ping(); err != nil {
-		log.Fatalf("Database not reachable: %v !", err)
-	}
+	if err := db.AutoMigrate(&models.User{}, &models.RefreshToken{}); err != nil {
+        log.Fatalf("Failed to run migrations: %v", err)
+    }
+	
+    log.Println("Database connected and migrated!")
 }
 
-func GetDatabase() *sql.DB {
+func GetDatabase() *gorm.DB {
 	if db == nil {
 		initDatabase()
 	}
+
 	return db
 }

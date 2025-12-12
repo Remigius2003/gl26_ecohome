@@ -21,13 +21,6 @@ func SetupRoutes(router *gin.Engine) {
 		users.POST("/logout", handlers.LogoutHandler)
 		users.GET("/token", handlers.TokenHandler)
 		users.GET("/verify", handlers.VerifyHandler)
-
-		users.GET("/leaderboard/day/:id", handlers.LeaderboardDayHandler)
-		users.GET("/leaderboard/week/:id", handlers.LeaderboardWeekHandler)
-		users.GET("/leaderboard/month/:id", handlers.LeaderboardMonthHandler)
-		users.GET("/leaderboard/all/:id", handlers.LeaderboardAllHandler)
-		users.GET("history/:id", handlers.MatchHistoryHandler)
-		users.GET("stats/:id", handlers.StatsHandler)
 	}
 
 	jwt := router.Group("/jwt")
