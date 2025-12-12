@@ -5,6 +5,8 @@ import DevPanel from "./pages/devPanel/DevPanel";
 import Login from "./pages/login/Login";
 import CreateAccount from "./pages/createAccount/CreateAccount";
 import "./index.css";
+import Social from "./pages/social/Social";
+import Settings from "./pages/settings/Settings";
 
 const root = document.getElementById("root");
 if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
@@ -27,6 +29,8 @@ const App = () => (
         <Route path="/" component={DevPanel} />
         <Route path="/login" component={Login} />
         <Route path="/create_account" component={CreateAccount} />
+        <Route path="/social" component={Social} />
+        <Route path="/settings" component={Settings} />
     </Route>
 );
 

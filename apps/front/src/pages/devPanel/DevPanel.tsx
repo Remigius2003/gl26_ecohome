@@ -44,6 +44,12 @@ export default function DevPanel() {
                 {" "}
                 Page de connection (login){" "}
             </Button>
+            <Button variant="primary" onClick={() => navigate("/social")}>
+                social
+            </Button>
+            <Button variant="primary" onClick={() => navigate("/settings")}>
+                settings
+            </Button>
             <Button
                 variant="secondary"
                 onClick={() => navigate("/create_account")}

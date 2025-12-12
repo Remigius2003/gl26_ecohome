@@ -2,7 +2,6 @@ const CACHE_NAME = "app-cache-v1";
 const ASSETS_TO_CACHE = [
     "/", // index.html
     "/manifest.json",
-    "/favicon.ico",
     "/assets/index.css",
     "/assets/index.js",
     // Add more static assets
