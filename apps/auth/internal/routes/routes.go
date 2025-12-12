@@ -16,11 +16,14 @@ func SetupRoutes(router *gin.Engine) {
 	users := router.Group("/users")
 	{
 		users.POST("/register", handlers.RegisterHandler)
-		users.POST("/login", handlers.LoginHandler)
-		users.GET("/infos", handlers.InfosHandler)
 		users.POST("/logout", handlers.LogoutHandler)
-		users.GET("/token", handlers.TokenHandler)
+		users.POST("/login", handlers.LoginHandler)
+
+		users.POST("/token", handlers.TokenHandler)
+		users.POST("/jwt", handlers.JWTHandler)
+
 		users.GET("/verify", handlers.VerifyHandler)
+		users.GET("/info", handlers.InfosHandler)
 	}
 
 	jwt := router.Group("/jwt")

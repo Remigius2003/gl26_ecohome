@@ -13,7 +13,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const SECRET_KEYS_FILE = "data/secret_keys.json"
+const (
+	SECRET_KEYS_FILE = "data/secret_keys.json"
+	JWT_DURATION = 42 * time.Minute
+)
+
 var (
 	secretKeyMu     sync.RWMutex
 	currentKey      models.JWTSecretKey
@@ -125,4 +129,47 @@ func SecretKeysHandler(c *gin.Context) {
 		"old":     oldKey,
 	})
 	secretKeyMu.RUnlock()
+}
+
+func JWTHandler(c *gin.Context) {
+	var req struct {
+		UserId uint `json:"user_id"`
+		Token  string `json:"refresh_token"`
+	}
+
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	refreshToken, err := verifyToken(&tokenReq{
+		UserId: req.UserId,
+		Token: req.Token,
+	})
+	
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
+
+    if refreshToken == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
+
+	secretKeyMu.RLock()
+	key := currentKey.Key
+	secretKeyMu.RUnlock()
+
+	expiration := time.Now().Add(JWT_DURATION)
+	token, err := utils.GenerateJWT(req.UserId, expiration, key)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate JWT"})
+		return
+	}
+
+	c.JSON(http.StatusOK, models.JWTToken{
+		Token:     token,
+		ExpiresAt: expiration,
+	})
 }

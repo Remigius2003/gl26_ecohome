@@ -1,0 +1,404 @@
+openapi: 3.0.3
+info:
+  title: EcoHome Auth Service API
+  version: 1.0.0
+  description: |
+    Authentication and user management microservice for EcoHome.
+    Includes registration, login, token refresh, JWT issuance, and health checks.
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "OK"
+
+  /users/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /users/login:
+    post:
+      summary: Log in a user (username OR email)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful, returns refresh token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RefreshToken"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /users/info:
+    get:
+      summary: Get user info by ID
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /users/logout:
+    post:
+      summary: Log out user by deactivating refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TokenRequest"
+      responses:
+        "200":
+          description: Successfully logged out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logged out"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /users/token:
+    post:
+      summary: Refresh access via refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TokenRequest"
+      responses:
+        "200":
+          description: New refresh token issued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RefreshToken"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+/users/verify:
+  get:
+    summary: Verify token validity
+    security:
+      - BearerAuth: []
+    responses:
+      "200":
+        description: Token is valid
+        content:
+          application/json:
+            schema:
+              type: object
+              example: {}
+      "401":
+        description: Invalid, expired, or missing token
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  example: "Unauthorized"
+      "500":
+        $ref: "#/components/responses/InternalServerError"
+
+  /users/jwt:
+    post:
+      summary: Generate a short-lived JWT using a valid refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TokenRequest"
+      responses:
+        "200":
+          description: JWT token issued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JWTToken"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /jwt/secretKey:
+    get:
+      summary: Get current JWT signing key metadata (requires API key auth)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        "200":
+          description: Current secret key info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  secretKey:
+                    $ref: "#/components/schemas/JWTSecretKey"
+        "401":
+          description: Missing or invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /jwt/secretKeys:
+    get:
+      summary: Get all JWT secret keys (current, next, old) (requires API key auth)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        "200":
+          description: Secret keys retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  current:
+                    $ref: "#/components/schemas/JWTSecretKey"
+                  next:
+                    $ref: "#/components/schemas/JWTSecretKey"
+                  old:
+                    $ref: "#/components/schemas/JWTSecretKey"
+        "401":
+          description: Missing or invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [username, password, email]
+      properties:
+        username:
+          type: string
+          example: "johndoe"
+        password:
+          type: string
+          format: password
+          example: "s3cr3tPa$$"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+
+    LoginRequest:
+      type: object
+      required: [password]
+      properties:
+        username:
+          type: string
+          example: "johndoe"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        password:
+          type: string
+          format: password
+          example: "s3cr3tPa$$"
+      description: Provide **either** username **or** email, not both and not neither.
+
+    TokenRequest:
+      type: object
+      required: [user_id, refresh_token]
+      properties:
+        user_id:
+          type: integer
+          format: int64
+          example: 123
+        refresh_token:
+          type: string
+          example: "a1b2c3d4e5f6..."
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        username:
+          type: string
+          example: "johndoe"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        is_active:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-12-12T10:00:00Z"
+
+    RefreshToken:
+      type: object
+      properties:
+        token_id:
+          type: integer
+          format: int64
+          example: 42
+        user_id:
+          type: integer
+          format: int64
+          example: 1
+        token:
+          type: string
+          example: "x9y8z7w6v5u4..."
+        expires_at:
+          type: string
+          format: date-time
+          example: "2025-12-14T10:00:00Z"
+        is_active:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-12-12T10:00:00Z"
+
+    JWTToken:
+      type: object
+      properties:
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx"
+        expires_at:
+          type: string
+          format: date-time
+          example: "2025-12-12T10:42:00Z"
+
+    JWTSecretKey:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 5
+        key:
+          type: string
+          example: "k3y1s3cr3t..."
+        created_at:
+          type: integer
+          format: int64
+          example: 1702396800
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid credentials"
+
+  responses:
+    BadRequest:
+      description: Bad request (e.g., invalid JSON or missing fields)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Invalid credentials or token
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: User or token not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Conflict:
+      description: Username or email already taken
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    InternalServerError:
+      description: Server error (e.g., database or hashing failure)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer

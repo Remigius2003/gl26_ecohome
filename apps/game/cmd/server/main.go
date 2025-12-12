@@ -3,26 +3,31 @@ package main
 import (
 	"fmt"
 	"gl26_ecohome/game/config"
+	"gl26_ecohome/game/internal/database"
+	"gl26_ecohome/game/internal/routes"
 	"log"
-	"net/http"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	router := gin.Default()
+	sqlDB, err := database.GetDatabase().DB()
+    if err != nil {
+        log.Fatalf("Failed to get sql.DB from gorm: %v", err)
+    }
+    defer sqlDB.Close()
+
+	router := gin.New()
+	router.Use(gin.Logger()) 
+	router.Use(gin.Recovery())
+	router.SetTrustedProxies([]string{"127.0.0.1"})
 	router.Use(cors.Default())
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "OK"})
-	})
+	
+    routes.SetupRoutes(router)
 
 	port := config.GetConfig().APIPort
-	log.Printf("Game Service running on port :%s\n", port)
+    log.Printf("Game Service running on port :%s\n", port)
 
-	router.Run(fmt.Sprintf(":%s", port))
-	//err := router.RunTLS(fmt.Sprintf(":%s", port), "server.crt", "server.key")
-    //if err != nil {
-    //    log.Fatalf("failed to start HTTPS server: %v", err)
-    //}
+    router.Run(fmt.Sprintf(":%s", port))
 }
