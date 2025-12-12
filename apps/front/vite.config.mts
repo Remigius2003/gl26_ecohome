@@ -20,7 +20,8 @@ export default defineConfig(({ mode }) => {
     },
     resolve: {
       alias: {
-        api: path.resolve(__dirname, "src/api"),
+        "@pages": path.resolve(__dirname, "src/pages"),
+        "@api": path.resolve(__dirname, "src/api"),
       },
     },
     server: {

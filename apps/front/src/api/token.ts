@@ -1,4 +1,4 @@
-import { authApiFetch as apiFetch } from "api";
+import { authApiFetch as apiFetch } from "@api";
 
 // -------------------
 //  MODELS DEFINITION

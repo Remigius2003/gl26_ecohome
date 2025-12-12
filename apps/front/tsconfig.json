@@ -13,7 +13,13 @@
     "resolveJsonModule": true,
     "noEmit": true,
     "baseUrl": "./src",
-    "types": ["node", "vite/client"]
+    "types": ["node", "vite/client"],
+    "paths": {
+      "@pages/*": ["pages/*"],
+      "@pages": ["pages"],
+      "@api/*": ["api/*"],
+      "@api": ["api"]
+    }
   },
   "include": ["src"]
 }

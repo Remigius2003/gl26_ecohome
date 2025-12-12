@@ -1,3 +1,3 @@
 export default function Social() {
-    return <h1>Social</h1>;
+  return <h1>social</h1>;
 }

@@ -1,4 +1,4 @@
-import { RefreshToken, ApiErrorImpl, authApiFetch as apiFetch } from "api";
+import { RefreshToken, ApiErrorImpl, authApiFetch as apiFetch } from "@api";
 
 // -------------------
 //  MODELS DEFINITION
