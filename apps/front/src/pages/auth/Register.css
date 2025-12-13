@@ -1,0 +1,44 @@
+body {
+    display: flex;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+}
+.create-account-container {
+    background-color: #F7EDDA;
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+    margin: auto;
+    text-align: center;
+
+    margin-top: 15vh;
+}
+
+.create-account-container img {
+    width: 150px;
+    margin-bottom: 20px;
+}
+
+.create-account-container input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    background-color: #1e7e34;
+    border-radius: 5px;
+}
+
+.create-account-container button {
+    width: 100%;
+    padding: 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.create-account-container button:hover {
+    background-color: #1e7e34;
+}
