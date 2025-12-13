@@ -1,8 +1,35 @@
-import { User, register } from "@api";
+import { RefreshToken, User, login, register } from "api";
+import "./Register.css";
 
+/*export default async function Register() {
+    const u: User = await register("blup", "blup", "blup@blup");
+    console.log(u);
+
+    const t: RefreshToken = await login({ username: "blup", password: "blup" });
+    console.log(t);
+*/
 export default function Register() {
-  //const u: User = await register("blup", "blup", "blup@blup");
-  //console.log(u);
+    return (
+        <div class="root-container">
+            <img src="login/maison-accueil.png.png" alt="Illustration" />
+            <input
+                type="text"
+                placeholder="Nom d'utilisateur"
+            />
+            <input
+                type="email"
+                placeholder="Email"
+            />
+            <input
+                type="password"
+                placeholder="Mot de passe"
+            />
+            <input
+                type="password"
+                placeholder="Confirmer le mot de passe"
+            />
 
-  return <h1>register</h1>;
+            <button>Créer un compte</button>
+        </div>
+    );
 }
