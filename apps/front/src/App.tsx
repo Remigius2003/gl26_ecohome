@@ -32,6 +32,7 @@ export default function App() {
                 <Route path="/login" component={Login} />
                 <Route path="/social" component={Social} />
                 <Route path="/register" component={Register} />
+                <Route path="/welcome" component={Welcome} />
                 <Route path="/settings" component={Settings} />
                 <Route path="*404" component={NotFound} />
             </Router>
