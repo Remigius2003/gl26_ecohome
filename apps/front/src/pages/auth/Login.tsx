@@ -2,16 +2,11 @@ import "./Login.css";
 
 export default function Login() {
     return (
-        <div class="login-container">
-            <img src="login/uneMAISON.png" alt="Illustration" />
+        <div class="root-container">
+            <img src="login/maison-accueil.png" alt="Illustration" />
             <input
                 type="text"
                 placeholder="Email"
-                style={{
-                    width: "100%",
-                    padding: "10px",
-                    border: "1px solid #ccc",
-                }}
             />
             <input type="password" placeholder="Mot de passe" />
 
