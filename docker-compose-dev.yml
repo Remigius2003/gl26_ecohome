@@ -5,7 +5,6 @@ services:
       dockerfile: Dockerfile.dev
     volumes:
       - ./apps/auth:/app
-
     environment:
       - GIN_MODE=debug
 
