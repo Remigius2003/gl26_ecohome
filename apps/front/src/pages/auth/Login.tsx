@@ -28,8 +28,8 @@ export default function Login() {
 
       navigate("/");
     } catch (err) {
-      alert("Nom d'utilisateur et/ou email déjà prise");
-      console.error("Erreur lors de l'inscription", err);
+      alert("Email et/ou mot de passe incorrect");
+      console.error("Erreur lors de la connexion", err);
     }
   };
 
