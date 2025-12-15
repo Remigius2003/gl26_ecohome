@@ -12,6 +12,11 @@ export interface User {
   created_at?: Date;
 }
 
+export type LoginResponse = {
+  user_id: number;
+  token: RefreshToken;
+};
+
 // -------------------
 //   API DEFINITION
 // -------------------
@@ -34,7 +39,7 @@ export const login = (credentials: {
     );
   }
 
-  return apiFetch<RefreshToken>("/login", {
+  return apiFetch<LoginResponse>("/login", {
     method: "POST",
     body: JSON.stringify({ username, email, password }),
   });

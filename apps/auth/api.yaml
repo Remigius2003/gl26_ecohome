@@ -45,28 +45,36 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
 
-  /users/login:
-    post:
-      summary: Log in a user (username OR email)
-      requestBody:
-        required: true
+/users/login:
+  post:
+    summary: Log in a user (username OR email)
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/LoginRequest"
+    responses:
+      "200":
+        description: Login successful, returns user_id and token
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LoginRequest"
-      responses:
-        "200":
-          description: Login successful, returns refresh token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RefreshToken"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                  format: int64
+                  example: 1
+                token:
+                  type: string
+                  example: "x9y8z7w6v5u4..."
+      "400":
+        $ref: "#/components/responses/BadRequest"
+      "401":
+        $ref: "#/components/responses/Unauthorized"
+      "500":
+        $ref: "#/components/responses/InternalServerError"
 
   /users/info:
     get:

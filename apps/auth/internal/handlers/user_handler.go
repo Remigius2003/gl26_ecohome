@@ -86,7 +86,7 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 
-    c.JSON(http.StatusOK, token)
+    c.JSON(http.StatusOK, gin.H{"user_id": user.Id, "token": token})
 }
 
 func InfosHandler(c *gin.Context) {
