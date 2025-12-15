@@ -26,7 +26,7 @@ export default function Register() {
       console.log("Utilisateur créé :", user);
       navigate("/login");
     } catch (err) {
-      alert("Nom d'utilisateur et/ou email déjà prise");
+      alert("Nom d'utilisateur et/ou email déjà pris");
       console.error("Erreur lors de l'inscription", err);
     }
   };
