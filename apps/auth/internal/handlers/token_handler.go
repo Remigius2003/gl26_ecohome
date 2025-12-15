@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const TOKEN_DURATION = 36 * time.Hour
+const TOKEN_DURATION = 7 * 24 * time.Hour
 type tokenReq struct {
 	UserId       uint `json:"user_id"`
 	Token        string `json:"refresh_token"`
