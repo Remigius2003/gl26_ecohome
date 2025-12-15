@@ -1,16 +1,59 @@
-import "./Login.css";
+import { login, generateJWT, LoginResponse, JWTToken } from "@api";
+import { useNavigate } from "@solidjs/router";
+import "./auth.css";
 
 export default function Login() {
-    return (
-        <div class="root-container">
-            <img src="login/maison-accueil.png" alt="Illustration" />
-            <input
-                type="text"
-                placeholder="Email"
-            />
-            <input type="password" placeholder="Mot de passe" />
+  const navigate = useNavigate();
 
-            <button>Se connecter</button>
-        </div>
-    );
+  const handleSubmit = async (e: SubmitEvent) => {
+    e.preventDefault();
+
+    const form = e.currentTarget as HTMLFormElement;
+    const data = new FormData(form);
+
+    const email = data.get("email") as string;
+    const password = data.get("password") as string;
+
+    console.log({ email, password });
+    try {
+      const rep: LoginResponse = await login({
+        email: email,
+        password: password,
+      });
+
+      const jwt: JWTToken = await generateJWT(rep.user_id, rep.token.token);
+
+      console.log("Token créé :", rep.token);
+      console.log("JWT created :", jwt.token);
+
+      navigate("/");
+    } catch (err) {
+      alert("Nom d'utilisateur et/ou email déjà prise");
+      console.error("Erreur lors de l'inscription", err);
+    }
+  };
+
+  return (
+    <form class="root-container" onSubmit={handleSubmit}>
+      <img src="login/maison-accueil.png" alt="Illustration" />
+
+      <input
+        type="email"
+        placeholder="Email"
+        name="email"
+        autocomplete="email"
+        required
+      />
+
+      <input
+        type="password"
+        placeholder="Mot de passe"
+        name="password"
+        autocomplete="current-password"
+        required
+      />
+
+      <button type="submit">Se connecter</button>
+    </form>
+  );
 }
