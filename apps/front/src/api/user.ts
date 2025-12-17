@@ -59,12 +59,4 @@ export const getUserInfo = (user_id: number) =>
 //   WRAPPER DEFINITION
 // -------------------
 
-export const userInfoWrapper = createWrapper<User, number>({
-  apiCall: getUserInfo,
-  cacheKey: (id) => `user-info:${id}`,
-  policy: {
-    policy: FetchPolicy.cache_first,
-    cacheTtlMs: 10 * 60 * 1000, // 10 mins
-  },
-  cacheTtlMs: 24 * 60 * 60 * 1000, // 1 day
-});
+// TODO : Def User block Wrapper here
