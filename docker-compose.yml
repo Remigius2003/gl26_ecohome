@@ -3,7 +3,7 @@ services:
         build: ./certbot
         container_name: certbot
         volumes:
-            - ./certbot/conf:/etc/letsencrypt
+            - ./certificats:/etc/letsencrypt
             - ./certbot/www:/var/www/certbot
         entrypoint: >
             sh -c "certbot certonly --webroot
@@ -21,8 +21,7 @@ services:
             - "80:80"
             - "443:443"
         volumes:
-            - ./certbot/conf:/etc/letsencrypt
-            - ./certbot/www:/var/www/certbot
+            - ./certificats:/etc/certificats
         depends_on:
             - front
             - auth
