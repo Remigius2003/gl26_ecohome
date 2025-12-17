@@ -1,5 +1,5 @@
 import { RefreshToken, ApiErrorImpl, authApiFetch as apiFetch } from "@api";
-import { createWrapper, WrapperConfig, FetchPolicy } from "@api";
+import { createWrapper, FetchPolicy } from "@api";
 
 // -------------------
 //  MODELS DEFINITION
