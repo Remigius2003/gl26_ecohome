@@ -1,4 +1,4 @@
-import * as Cache from "./cache";
+import * as Cache from "@api";
 
 // -------------------
 //  MODELS DEFINITION
@@ -32,15 +32,17 @@ export type ApiCall<T, P = void> = (params: P) => Promise<T>;
 
 export interface WrapperConfig<T, P> {
   apiCall: ApiCall<T, P>;
-  cacheKey: (params: P) => string;
   policy: FetchPolicyOptions;
+  blockKey?: (params: P) => string;
+  cacheKey: (params: P) => string;
+  updateTtlOnSet?: boolean;
   cacheTtlMs?: number;
 }
 
 export interface Wrapper<T, P> {
   get(params: P): Promise<T>;
   getCache(params: P): T | null;
-  setCache(params: P, value: T, ttl?: number): void;
+  setCache(params: P, value: T, ttl?: number, updateTtl?: boolean): void;
   invalidate(params: P): void;
 }
 
@@ -51,25 +53,39 @@ export interface Wrapper<T, P> {
 export function createWrapper<T, P>(
   config: WrapperConfig<T, P>
 ): Wrapper<T, P> {
-  const { apiCall, cacheKey, policy, cacheTtlMs } = config;
+  const { apiCall, cacheKey, blockKey, policy, cacheTtlMs, updateTtlOnSet } =
+    config;
+
+  const resolveBlock = (params: P) => (blockKey ? blockKey(params) : undefined);
 
   function getCache(params: P): T | null {
-    return Cache.getItem<T>(cacheKey(params));
+    return Cache.getItem<T>(cacheKey(params), resolveBlock(params));
   }
 
-  function setCache(params: P, value: T, ttl = cacheTtlMs) {
-    Cache.setItem(cacheKey(params), value, ttl);
+  function setCache(
+    params: P,
+    value: T,
+    ttl = cacheTtlMs,
+    updateTtl = updateTtlOnSet
+  ): void {
+    Cache.setItem(
+      cacheKey(params),
+      value,
+      ttl,
+      updateTtl,
+      resolveBlock(params)
+    );
   }
 
-  function invalidate(params: P) {
-    Cache.removeItem(cacheKey(params));
+  function invalidate(params: P): void {
+    Cache.removeItem(cacheKey(params), resolveBlock(params));
   }
 
   async function apiCallWithTimeout(params: P, timeoutMs: number): Promise<T> {
     return Promise.race([
       apiCall(params),
       new Promise<T>((_, reject) =>
-        setTimeout(() => reject(new Error("API timeout")), timeoutMs)
+        setTimeout(() => reject(new Error("API Call Timeout")), timeoutMs)
       ),
     ]);
   }
@@ -81,21 +97,21 @@ export function createWrapper<T, P>(
       case FetchPolicy.stale_while_revalidate:
         if (cached) {
           apiCall(params)
-            .then((data) => setCache(params, data, policy.staleTtlMs))
+            .then((data) => setCache(params, data, policy.staleTtlMs, false))
             .catch(() => {});
           return cached;
         }
 
-        const data = await apiCall(params);
-        setCache(params, data, policy.staleTtlMs);
-        return data;
+        const freshData = await apiCall(params);
+        setCache(params, freshData, policy.staleTtlMs, true);
+        return freshData;
 
       case FetchPolicy.cache_first:
         if (cached) return cached;
 
-        const fresh = await apiCall(params);
-        setCache(params, fresh, policy.cacheTtlMs);
-        return fresh;
+        const freshCache = await apiCall(params);
+        setCache(params, freshCache, policy.cacheTtlMs, true);
+        return freshCache;
 
       case FetchPolicy.cache_only:
         if (!cached) throw new Error("Cache miss");
@@ -103,9 +119,13 @@ export function createWrapper<T, P>(
 
       case FetchPolicy.api_first:
         try {
-          const data = await apiCallWithTimeout(params, policy.apiTimeoutMs);
-          setCache(params, data);
-          return data;
+          const freshAPI = await apiCallWithTimeout(
+            params,
+            policy.apiTimeoutMs
+          );
+
+          setCache(params, freshAPI, cacheTtlMs, true);
+          return freshAPI;
         } catch {
           if (cached) return cached;
           throw new Error("API failed and no cache fallback");
