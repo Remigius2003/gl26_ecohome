@@ -1,0 +1,81 @@
+.social-container {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  background: #f5f5f5;
+}
+
+/* Boutons du haut */
+.btn-back {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+
+.friends-title {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Contenu centré */
+.center-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Carte */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  width: 280px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-image img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+}
+
+.card-name {
+  font-weight: bold;
+  margin-top: 12px;
+}
+
+.card-description {
+  font-size: 14px;
+  color: #666;
+}
+
+.friends-list {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* Bouton du bas */
+.btn-add-friend {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Style général des boutons */
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+button img {
+  width: 40px;
+  height: 40px;
+}
