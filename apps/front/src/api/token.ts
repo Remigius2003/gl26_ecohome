@@ -8,14 +8,14 @@ export interface RefreshToken {
   token_id: number;
   user_id: number;
   token: string;
-  expires_at: Date;
+  expires_at: string | Date;
   is_active: boolean;
-  created_at: Date;
+  created_at: string | Date;
 }
 
 export interface JWTToken {
   token: string;
-  expires_at: Date;
+  expires_at: string | Date;
 }
 
 // -------------------
