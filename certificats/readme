@@ -1,0 +1,5 @@
+To set up certificate:
+
+1. Install mkcert: https://github.com/FiloSottile/mkcert#installation
+2. Run: `mkcert -install`
+3. Run: `mkcert localhost 127.0.0.1 ::1`
