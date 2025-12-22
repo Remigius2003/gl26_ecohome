@@ -1,0 +1,44 @@
+version: 1
+
+rules:
+  # Health & infra
+  - path: ^/health$
+    action: allow
+  - path: ^/metrics$
+    action: allow
+
+  # Dev / Vite
+  - path: ^/@vite/
+    action: allow
+  - path: ^/src/
+    action: allow
+  - path: ^/sockjs-node/
+    action: allow
+
+  # WebSocket – NEVER challenge
+  - path: ^/ws/
+    action: allow
+
+  # Public API
+  - path: ^/users/
+    action: allow
+
+  # Static assets
+  - path: ^/static/
+    action: allow
+  - path: ^/icon_192.png$
+    action: allow
+  - path: ^/manifest.webmanifest$
+    action: allow
+
+  # Default: protect everything else
+  - path: ^/
+    action: challenge
+
+bots:
+    - name: generic-browser
+      user_agent_regex: >-
+          Mozilla|Opera
+      action: WEIGH
+      weight:
+          adjust: 10
