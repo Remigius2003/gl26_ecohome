@@ -114,3 +114,23 @@ services:
         environment:
             AUTH_HOST: localhost/users
             GAME_HOST: localhost/ws
+
+    anubis:
+        build:
+            context: ./anubis
+            dockerfile: Dockerfile
+        container_name: anubis
+        restart: unless-stopped
+
+        environment:
+            TARGET: "http://front:3000"
+
+        ports:
+            - "127.0.0.1:8080:8080"
+            - "127.0.0.1:9090:9090"
+
+        healthcheck:
+            test: ["CMD", "anubis", "--healthcheck"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
