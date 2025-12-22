@@ -1,26 +1,6 @@
 version: 1
 
 rules:
-  - path: ^/health$
-    action: allow
-  - path: ^/metrics$
-    action: allow
-  - path: ^/@vite/
-    action: allow
-  - path: ^/src/
-    action: allow
-  - path: ^/sockjs-node/
-    action: allow
-  - path: ^/ws/
-    action: allow
-  - path: ^/users/
-    action: allow
-  - path: ^/static/
-    action: allow
-  - path: ^/icon_192\.png$
-    action: allow
-  - path: ^/manifest\.webmanifest$
-    action: allow
   - path: ^/
     action: challenge
 bots:
