@@ -1,2 +1,4 @@
 _deprecated
 .env
+certificats/localhost.pem 
+certificats/localhost-key.pem
