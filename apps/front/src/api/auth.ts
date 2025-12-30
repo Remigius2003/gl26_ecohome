@@ -1,20 +1,18 @@
 import { login, register, logout, refreshToken, generateJWT } from "@api";
-import type { JWTToken, RefreshToken } from "@api";
-
-type MaybeDate = string | Date;
+import type { JWTToken, RefreshToken, JwtDate } from "@api";
 
 export type AuthState = {
     userId: number;
     refreshToken: string;
-    refreshExpiresAt: string;
+    refreshExpiresAt: JwtDate;
     jwt: string;
-    jwtExpiresAt: string;
+    jwtExpiresAt: JwtDate;
 };
 
 const STORAGE_KEY = "ecohome.auth";
 
-const toIso = (value: MaybeDate): string => {
-    const d = value instanceof Date ? value : new Date(value);
+const toIso = (value: JwtDate): JwtDate => {
+    const d = new Date(value);
     return d.toISOString();
 };
 

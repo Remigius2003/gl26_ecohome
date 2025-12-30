@@ -4,18 +4,20 @@ import { authApiFetch as apiFetch } from "@api";
 //  MODELS DEFINITION
 // -------------------
 
+export type JwtDate = string;
+
 export interface RefreshToken {
   token_id: number;
   user_id: number;
   token: string;
-  expires_at: string | Date;
+  expires_at: JwtDate;
   is_active: boolean;
-  created_at: string | Date;
+  created_at: JwtDate;
 }
 
 export interface JWTToken {
   token: string;
-  expires_at: string | Date;
+  expires_at: JwtDate;
 }
 
 // -------------------
