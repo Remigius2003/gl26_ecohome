@@ -1,4 +1,5 @@
 import { RefreshToken, ApiErrorImpl, authApiFetch as apiFetch } from "@api";
+import { createWrapper, FetchPolicy } from "@api";
 
 // -------------------
 //  MODELS DEFINITION
@@ -53,3 +54,9 @@ export const logout = (user_id: number, refresh_token: string) =>
 
 export const getUserInfo = (user_id: number) =>
   apiFetch<User>(`/info?id=${user_id}`);
+
+// -------------------
+//   WRAPPER DEFINITION
+// -------------------
+
+// TODO : Def User block Wrapper here
