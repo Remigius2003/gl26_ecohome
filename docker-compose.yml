@@ -58,7 +58,7 @@ services:
             dockerfile: Dockerfile
         restart: always
         ports:
-            - "5000:5000"
+            - "15000:5000"
         depends_on:
             database:
                 condition: service_healthy
@@ -82,7 +82,7 @@ services:
             dockerfile: Dockerfile
         restart: always
         ports:
-            - "5001:5001"
+            - "15001:5001"
         depends_on:
             database:
                 condition: service_healthy

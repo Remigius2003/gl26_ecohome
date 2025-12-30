@@ -1,12 +1,17 @@
-import { login, generateJWT, LoginResponse, JWTToken } from "@api";
+import { createSignal } from "solid-js";
+import { loginWithCredentials } from "@api";
 import { useNavigate } from "@solidjs/router";
 import "./auth.css";
 
 export default function Login() {
   const navigate = useNavigate();
+  const [loading, setLoading] = createSignal(false);
+  const [error, setError] = createSignal<string | null>(null);
 
   const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
+    setError(null);
+    setLoading(true);
 
     const form = e.currentTarget as HTMLFormElement;
     const data = new FormData(form);
@@ -14,22 +19,14 @@ export default function Login() {
     const email = data.get("email") as string;
     const password = data.get("password") as string;
 
-    console.log({ email, password });
     try {
-      const rep: LoginResponse = await login({
-        email: email,
-        password: password,
-      });
-
-      const jwt: JWTToken = await generateJWT(rep.user_id, rep.token.token);
-
-      console.log("Token créé :", rep.token);
-      console.log("JWT created :", jwt.token);
-
+      await loginWithCredentials({ email, password });
       navigate("/");
     } catch (err) {
-      alert("Email et/ou mot de passe incorrect");
       console.error("Erreur lors de la connexion", err);
+      setError("Email et/ou mot de passe incorrect");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,7 +50,11 @@ export default function Login() {
         required
       />
 
-      <button type="submit">Se connecter</button>
+      <button type="submit" disabled={loading()}>
+        {loading() ? "Connexion..." : "Se connecter"}
+      </button>
+
+      {error() && <p style={{ color: "red" }}>{error()}</p>}
     </form>
   );
 }
