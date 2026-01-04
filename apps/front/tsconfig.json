@@ -1,25 +1,27 @@
 {
-  "compilerOptions": {
-    "jsxImportSource": "solid-js",
-    "jsx": "preserve",
-    "moduleResolution": "Node",
-    "module": "ESNext",
-    "target": "ESNext",
-    "allowJs": false,
-    "strict": true,
-    "esModuleInterop": true,
-    "isolatedModules": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "noEmit": true,
-    "baseUrl": "./src",
-    "types": ["node", "vite/client"],
-    "paths": {
-      "@pages/*": ["pages/*"],
-      "@pages": ["pages"],
-      "@api/*": ["api/*"],
-      "@api": ["api"]
-    }
-  },
-  "include": ["src"]
+	"compilerOptions": {
+		"jsxImportSource": "solid-js",
+		"jsx": "preserve",
+		"moduleResolution": "Node",
+		"module": "ESNext",
+		"target": "ESNext",
+		"allowJs": false,
+		"strict": true,
+		"esModuleInterop": true,
+		"isolatedModules": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"noEmit": true,
+		"baseUrl": "./src",
+		"types": ["node", "vite/client"],
+		"paths": {
+			"@scene/*": ["scene/*"],
+			"@scene": ["scene"],
+			"@pages/*": ["pages/*"],
+			"@pages": ["pages"],
+			"@api/*": ["api/*"],
+			"@api": ["api"]
+		}
+	},
+	"include": ["src"]
 }
