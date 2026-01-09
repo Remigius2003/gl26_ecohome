@@ -1,34 +1,31 @@
-import { SceneType } from './core/types';
-import { Engine } from './core/engine';
+import { SceneType } from "./core/types";
+import { Engine } from "./core/engine";
 
-import LightShadow from './scenes/lightshadow';
-import TriLogique from './scenes/trilogique';
-import EcoGrid from './scenes/ecogrid';
-import Home from './scenes/home';
+// Scenes Imports
+import HomeScene from "./scenes/home";
+import EcoGrid from "./scenes/ecogrid";
+import TriLogique from "./scenes/trilogique";
+import LightShadow from "./scenes/lightshadow";
 
 let engine: Engine | null = null;
 export type { SceneType };
 
-export const initializeGame = (canvas: HTMLCanvasElement) => {
-	if (engine) return engine;
+export const initializeScene = (canvas: HTMLCanvasElement) => {
+  if (engine) {
+    engine.updateCanvas(canvas);
+    return engine;
+  }
 
-	engine = new Engine(canvas);
-	engine.registerScene('lightshadow', LightShadow);
-	engine.registerScene('trilogique', TriLogique);
-	engine.registerScene('ecogrid', EcoGrid);
-	engine.registerScene('home', Home);
+  engine = new Engine(canvas);
+  engine.registerScene("home", new HomeScene());
+  engine.registerScene("ecogrid", new EcoGrid());
+  engine.registerScene("trilogique", new TriLogique());
+  engine.registerScene("lightshadow", new LightShadow());
 
-	return engine;
+  return engine;
 };
 
-export const startGame = () => {
-	engine?.start();
-};
-
-export const cleanGame = () => {
-	engine?.clean();
-};
-
-export const switchScene = (sceneType: SceneType) => {
-	engine?.setScene(sceneType);
-};
+export const startScene = () => engine?.start();
+export const cleanScene = () => engine?.clean();
+export const switchScene = (sceneType: SceneType) =>
+  engine?.setScene(sceneType);

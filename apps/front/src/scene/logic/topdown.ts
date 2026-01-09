@@ -1,15 +1,33 @@
-export class TopDown {
-	constructor(
-		private position: { x: number; y: number },
-		private speed: number = 200
-	) {}
+import { InputState } from "../core/types";
 
-	update(deltaTime: number, input: Record<string, boolean>) {
-		const moveSpeed = this.speed * (deltaTime / 1000);
+export class TopDownMovement {
+  speed: number = 200;
+  x: number;
+  y: number;
 
-		if (input['ArrowUp'] || input['w']) this.position.y -= moveSpeed;
-		if (input['ArrowDown'] || input['s']) this.position.y += moveSpeed;
-		if (input['ArrowLeft'] || input['a']) this.position.x -= moveSpeed;
-		if (input['ArrowRight'] || input['d']) this.position.x += moveSpeed;
-	}
+  constructor(initialX: number, initialY: number) {
+    this.x = initialX;
+    this.y = initialY;
+  }
+
+  update(dt: number, input: InputState) {
+    const seconds = dt / 1000;
+
+    let dx = 0;
+    let dy = 0;
+
+    if (input["arrowup"] || input["w"]) dy -= 1;
+    if (input["arrowdown"] || input["s"]) dy += 1;
+    if (input["arrowleft"] || input["a"]) dx -= 1;
+    if (input["arrowright"] || input["d"]) dx += 1;
+
+    if (dx !== 0 || dy !== 0) {
+      const length = Math.sqrt(dx * dx + dy * dy);
+      dx /= length;
+      dy /= length;
+    }
+
+    this.x += dx * this.speed * seconds;
+    this.y += dy * this.speed * seconds;
+  }
 }
