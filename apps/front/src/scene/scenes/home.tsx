@@ -83,14 +83,25 @@ export default class HomeScene implements Scene {
 
     const wall = {
       id: "wall-1",
-      x: 0,
+      x: 300,
       y: 300,
       width: 400,
-      height: 20,
+      height: 200,
       text: new ColorTexture("#555"),
       [SolidTag]: true,
     } as Entity & any;
     this.world.addEntity(wall);
+
+    const wallE = {
+      id: "wall-E",
+      x: 300,
+      y: 300,
+      width: 40,
+      height: 40,
+      text: new ColorTexture("#EEE"),
+      [SolidTag]: true,
+    } as Entity & any;
+    this.world.addEntity(wallE);
   }
 
   handleInput(input: Record<string, boolean>) {
