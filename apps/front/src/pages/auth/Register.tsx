@@ -1,12 +1,17 @@
+import { createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
-import { register, User } from "@api";
+import { registerAndLogin } from "@api";
 import "./auth.css";
 
 export default function Register() {
   const navigate = useNavigate();
+  const [loading, setLoading] = createSignal(false);
+  const [error, setError] = createSignal<string | null>(null);
 
   const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
+    setError(null);
+    setLoading(true);
 
     const form = e.currentTarget as HTMLFormElement;
     const data = new FormData(form);
@@ -18,16 +23,18 @@ export default function Register() {
 
     if (password !== confirmPassword) {
       alert("Les mots de passe ne correspondent pas");
+      setLoading(false);
       return;
     }
 
     try {
-      const user: User = await register(username, password, email);
-      console.log("Utilisateur créé :", user);
-      navigate("/login");
+      await registerAndLogin({ username, email, password });
+      navigate("/");
     } catch (err) {
-      alert("Nom d'utilisateur et/ou email déjà pris");
       console.error("Erreur lors de l'inscription", err);
+      setError("Nom d'utilisateur et/ou email déjà pris");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,7 +74,11 @@ export default function Register() {
         required
       />
 
-      <button type="submit">Créer un compte</button>
+      <button type="submit" disabled={loading()}>
+        {loading() ? "Création..." : "Créer un compte"}
+      </button>
+
+      {error() && <p style={{ color: "red" }}>{error()}</p>}
     </form>
   );
 }
