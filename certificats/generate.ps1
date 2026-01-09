@@ -4,8 +4,8 @@
 
 param (
     [string]$DomainList = "localhost 127.0.0.1 ::1",
-    [string]$CertFile = "localhost.pem",
-    [string]$KeyFile = "localhost-key.pem"
+    [string]$CertFile = "certif.pem",
+    [string]$KeyFile = "certif-key.pem"
 )
 
 # Check if running as Administrator (needed for mkcert -install on Windows)

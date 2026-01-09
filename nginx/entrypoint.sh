@@ -2,8 +2,8 @@
 set -e
 
 CERT_DIR="/etc/certificats"
-CERT_FILE="$CERT_DIR/localhost.pem"
-KEY_FILE="$CERT_DIR/localhost-key.pem"
+CERT_FILE="$CERT_DIR/cerif.pem"
+KEY_FILE="$CERT_DIR/certif-key.pem"
 
 if [ -f "$CERT_FILE" ] && [ -f "$KEY_FILE" ]; then
   echo "Using mounted certificates"
