@@ -1,20 +1,34 @@
 export class InputHandler {
-	private keys: Record<string, boolean> = {};
+  private keys: Record<string, boolean> = {};
 
-	constructor() {
-		window.addEventListener('keydown', (e) => {
-			this.keys[e.key] = true;
-		});
-		window.addEventListener('keyup', (e) => {
-			this.keys[e.key] = false;
-		});
-	}
+  private keyDownHandler = (e: KeyboardEvent) => {
+    this.keys[e.key.toLowerCase()] = true;
+  };
 
-	isKeyPressed(key: string): boolean {
-		return this.keys[key] || false;
-	}
+  private keyUpHandler = (e: KeyboardEvent) => {
+    this.keys[e.key.toLowerCase()] = false;
+  };
 
-	reset() {
-		this.keys = {};
-	}
+  constructor() {
+    window.addEventListener("keydown", this.keyDownHandler);
+    window.addEventListener("keyup", this.keyUpHandler);
+  }
+
+  getState(): Record<string, boolean> {
+    return this.keys;
+  }
+
+  isDown(key: string): boolean {
+    return !!this.keys[key.toLowerCase()];
+  }
+
+  clear() {
+    this.keys = {};
+  }
+
+  clean() {
+    window.removeEventListener("keydown", this.keyDownHandler);
+    window.removeEventListener("keyup", this.keyUpHandler);
+    this.clear();
+  }
 }

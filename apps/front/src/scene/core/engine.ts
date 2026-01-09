@@ -1,54 +1,79 @@
-import { Scene, SceneType } from './types';
+import { Scene, SceneType } from "./types";
+import { InputHandler } from "./input";
 
 export class Engine {
-	private scenes: Record<SceneType, Scene> = {} as any;
-	private inputState: Record<string, boolean> = {};
-	private currentScene: SceneType = 'home';
-	private lastTime = 0;
+  private scenes: Partial<Record<SceneType, Scene>> = {};
+  private currentSceneType: SceneType = "home";
+  private inputHandler: InputHandler;
+  private canvas: HTMLCanvasElement;
+  private isRunning = false;
+  private lastTime = 0;
 
-	constructor(private canvas: HTMLCanvasElement) {
-		this.setupInputListeners();
-	}
+  constructor(canvas: HTMLCanvasElement) {
+    this.canvas = canvas;
+    this.inputHandler = new InputHandler();
+  }
 
-	registerScene(type: SceneType, scene: Scene) {
-		this.scenes[type] = scene;
-		if (Object.keys(this.scenes).length === 1) {
-			this.setScene(type);
-		}
-	}
+  updateCanvas(newCanvas: HTMLCanvasElement) {
+    this.canvas = newCanvas;
+    if (this.scenes[this.currentSceneType]) {
+      this.scenes[this.currentSceneType]!.init(this.canvas, (t) =>
+        this.setScene(t)
+      );
+    }
+  }
 
-	setScene(type: SceneType) {
-		this.currentScene = type;
-		this.scenes[type].init(this.canvas);
-	}
+  registerScene(type: SceneType, scene: Scene) {
+    this.scenes[type] = scene;
+  }
 
-	private setupInputListeners() {
-		window.addEventListener('keydown', (e) => {
-			this.inputState[e.key] = true;
-		});
-		window.addEventListener('keyup', (e) => {
-			this.inputState[e.key] = false;
-		});
-	}
+  setScene(type: SceneType) {
+    if (!this.scenes[type]) return;
 
-	start() {
-		this.gameLoop(0);
-	}
+    if (this.scenes[this.currentSceneType])
+      this.scenes[this.currentSceneType]!.clean();
 
-	clean() {
-		this.scenes[this.currentScene]?.clean(this.canvas);
-	}
+    this.currentSceneType = type;
+    this.scenes[type]!.init(this.canvas, (newType) => this.setScene(newType));
+  }
 
-	private gameLoop(timestamp: number) {
-		const ctx = this.canvas.getContext('2d')!;
-		const deltaTime = timestamp - this.lastTime;
-		this.lastTime = timestamp;
+  start() {
+    if (this.isRunning) return;
+    this.isRunning = true;
+    this.lastTime = performance.now();
 
-		ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-		this.scenes[this.currentScene].handleInput(this.inputState);
-		this.scenes[this.currentScene].update(deltaTime);
-		this.scenes[this.currentScene].render(ctx);
+    if (this.scenes[this.currentSceneType])
+      this.scenes[this.currentSceneType]!.init(this.canvas, (t) =>
+        this.setScene(t)
+      );
 
-		requestAnimationFrame(this.gameLoop.bind(this));
-	}
+    requestAnimationFrame(this.gameLoop.bind(this));
+  }
+
+  clean() {
+    this.isRunning = false;
+    this.scenes[this.currentSceneType]?.clean();
+    this.inputHandler.clean();
+  }
+
+  private gameLoop(timestamp: number) {
+    if (!this.isRunning) return;
+
+    const deltaTime = timestamp - this.lastTime;
+    this.lastTime = timestamp;
+
+    const ctx = this.canvas.getContext("2d")!;
+    const inputState = this.inputHandler.getState();
+
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    const activeScene = this.scenes[this.currentSceneType];
+    if (activeScene) {
+      activeScene.handleInput(inputState);
+      activeScene.update(deltaTime);
+      activeScene.render(ctx);
+    }
+
+    requestAnimationFrame(this.gameLoop.bind(this));
+  }
 }

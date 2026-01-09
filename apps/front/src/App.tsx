@@ -1,18 +1,19 @@
-import { Router, Route, A } from "@solidjs/router";
-import { lazy } from "solid-js";
+import { Router, Route, A } from '@solidjs/router';
+import { lazy } from 'solid-js';
 
-const DevPage = lazy(() => import("@pages/debug/DevPanel"));
-const NotFound = lazy(() => import("@pages/NotFound"));
-const Settings = lazy(() => import("@pages/Settings"));
+const DevPage = lazy(() => import('@pages/debug/DevPanel'));
+const NotFound = lazy(() => import('@pages/NotFound'));
+const Settings = lazy(() => import('@pages/Settings'));
+const HomePage = lazy(() => import('@pages/Home'));
 
-const Social = lazy(() => import("@pages/social/Social"));
-const Welcome = lazy(() => import("@pages/auth/Welcome"));
-const Register = lazy(() => import("@pages/auth/Register"));
-const Login = lazy(() => import("@pages/auth/Login"));
-const AddFriend = lazy(() => import("@pages/social/AddFriend"));
-const ChooseFriend = lazy(() => import("@pages/social/ChooseFriend"));
-const GameMenu = lazy(() => import("@pages/games/GameMenu"));
-const Quizz = lazy(() => import("@pages/games/Quizz"));
+const Social = lazy(() => import('@pages/social/Social'));
+const Welcome = lazy(() => import('@pages/auth/Welcome'));
+const Register = lazy(() => import('@pages/auth/Register'));
+const Login = lazy(() => import('@pages/auth/Login'));
+const AddFriend = lazy(() => import('@pages/social/AddFriend'));
+const ChooseFriend = lazy(() => import('@pages/social/ChooseFriend'));
+const GameMenu = lazy(() => import('@pages/games/GameMenu'));
+const Quizz = lazy(() => import('@pages/games/Quizz'));
 
 const Layout = (props: any) => (
 	<>
@@ -29,9 +30,10 @@ const Layout = (props: any) => (
 
 export default function App() {
 	return (
-		<div style={{ "font-family": "sans-serif", padding: "1rem" }}>
+		<div style={{ 'font-family': 'sans-serif', padding: '1rem' }}>
 			<Router root={Layout}>
 				<Route path="/" component={DevPage} />
+				<Route path="/home" component={HomePage} />
 				<Route path="/dev" component={DevPage} />
 				<Route path="/login" component={Login} />
 				<Route path="/social" component={Social} />
