@@ -19,39 +19,39 @@ const Defi2 = lazy(() => import("@pages/games/Defi2"));
 const CGU = lazy(() => import("@pages/CGU"));
 
 const Layout = (props: any) => (
-	<>
-		{/*<header>
+    <>
+        {/*<header>
       <h1>Eco Home</h1>
       <nav style={{ "margin-bottom": "1rem" }}>
         <A href="/">Home</A> |<A href="/dev">Dev Page</A> |{" "}
         <A href="/settings">Settings</A>
       </nav>
     </header>*/}
-		{props.children}
-	</>
+        {props.children}
+    </>
 );
 
 export default function App() {
-	return (
-		<div style={{ "font-family": "sans-serif", padding: "1rem" }}>
-			<Router root={Layout}>
-				<Route path="/" component={DevPage} />
-				<Route path="/home" component={HomePage} />
-				<Route path="/dev" component={DevPage} />
-				<Route path="/login" component={Login} />
-				<Route path="/social" component={Social} />
-				<Route path="/register" component={Register} />
-				<Route path="/welcome" component={Welcome} />
-				<Route path="/settings" component={Settings} />
-				<Route path="/AddFriend" component={AddFriend} />
-				<Route path="/ChooseFriend" component={ChooseFriend} />
-				<Route path="/GameMenu" component={GameMenu} />
-				<Route path="/Quizz" component={Quizz} />
-				<Route path="/Defi" component={Defi} />
-				<Route path="/Defi2" component={Defi2} />
-				<Route path="/CGU" component={CGU} />
-				<Route path="*404" component={NotFound} />
-			</Router>
-		</div>
-	);
+    return (
+        <div style={{ "font-family": "sans-serif", padding: "1rem" }}>
+            <Router root={Layout}>
+                <Route path="/" component={DevPage} />
+                <Route path="/home" component={HomePage} />
+                <Route path="/dev" component={DevPage} />
+                <Route path="/login" component={Login} />
+                <Route path="/social" component={Social} />
+                <Route path="/register" component={Register} />
+                <Route path="/welcome" component={Welcome} />
+                <Route path="/settings" component={Settings} />
+                <Route path="/AddFriend" component={AddFriend} />
+                <Route path="/ChooseFriend" component={ChooseFriend} />
+                <Route path="/GameMenu" component={GameMenu} />
+                <Route path="/Quizz" component={Quizz} />
+                <Route path="/Defi" component={Defi} />
+                <Route path="/Defi2" component={Defi2} />
+                <Route path="/CGU" component={CGU} />
+                <Route path="*404" component={NotFound} />
+            </Router>
+        </div>
+    );
 }

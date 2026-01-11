@@ -1,12 +1,45 @@
-// types.ts
-type AnswerOption = {
-  id: string;
-  text: string;
-  next?: string; // id de la prochaine question
+export type CarbonRange = [number, number] | number;
+
+export type IdA = string;
+export type IdQ = string;
+
+export type Modifier = {
+    type: "sum" | "mult";
+    value: number;
 };
 
-type Question = {
-  id: string;
-  text: string;
-  options: AnswerOption[];
+export enum Evolution {
+    Daily = "Daily",
+    Monthly = "Monthly",
+    Yearly = "Yearly",
+    Unknown = "Unknown",
+    Never = "Never",
+}
+
+export type Answer = {
+    id: IdA;
+    text: string;
+    children?: IdQ[];
+    modif?: Modifier;
+    carbonImpact?: CarbonRange;
+};
+
+export type Question = {
+    id: IdQ;
+    evolution: Evolution;
+    parents?: IdA[];
+    text: string;
+    responses: Answer[];
+};
+
+export type Theme = {
+    name: string;
+    info: string;
+    baseQuestions: Answer[];
+};
+
+export type CarbonFrag = {
+    question: Question;
+    answer: Answer;
+    date: Date;
 };
