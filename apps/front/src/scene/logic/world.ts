@@ -1,4 +1,4 @@
-import { checkAABB, computeMovementFractionAABB } from '../core/collision';
+import { checkAABB, computeMovementAABB } from '../core/collision';
 import {
 	Entity,
 	Solid,
@@ -12,7 +12,7 @@ import {
 
 export class World {
 	private entities = new Map<EntityId, Entity>();
-	private renderables: Entity[] = [];
+	private renderables: Entity[][] = [];
 	private height: number = 0;
 	private width: number = 0;
 
@@ -30,8 +30,9 @@ export class World {
 	}
 
 	addEntity(e: Entity) {
+		if (!this.renderables[e.priority]) this.renderables[e.priority] = [];
+		this.renderables[e.priority].push(e);
 		this.entities.set(e.id, e);
-		this.renderables.push(e);
 
 		if (isSolid(e)) this.solids.push(e);
 		if (isInteractable(e)) this.interactibles.push(e);
@@ -43,8 +44,9 @@ export class World {
 		if (!e) return;
 
 		this.entities.delete(id);
+		const layer = this.renderables[e.priority];
+		if (layer) this.removeFromArray(layer, e);
 
-		this.removeFromArray(this.renderables, e);
 		if (isSolid(e)) this.removeFromArray(this.solids, e);
 		if (isInteractable(e)) this.removeFromArray(this.interactibles, e);
 		if (IsDynamic(e)) this.removeFromArray(this.dynamics, e);
@@ -67,19 +69,20 @@ export class World {
 		if (ent.y + dy < 0 || ent.y + ent.height + dy > this.height) dy = 0;
 		if (ent.x + dx < 0 || ent.x + ent.width + dx > this.width) dx = 0;
 		if (dx === 0 && dy === 0) return { dx: 0, dy: 0 };
+		if (!isSolid(ent)) return { dx, dy };
 
-		let ffx = 1,
-			ffy = 1;
+		let aax = dx,
+			aay = dy;
 
 		for (const solid of this.solids) {
+			if (aax === 0 && aay === 0) break;
 			if (solid === ent) continue;
-			if (ffx === 0 && ffy === 0) break;
-			const { fx, fy } = computeMovementFractionAABB(ent, solid, dx, dy);
-			ffx = Math.min(ffx, fx);
-			ffy = Math.min(ffy, fy);
+			const { ax, ay } = computeMovementAABB(ent, solid, dx, dy);
+			aax = dx < 0 ? Math.max(aax, ax) : Math.min(aax, ax);
+			aay = dy < 0 ? Math.max(aay, ay) : Math.min(aay, ay);
 		}
 
-		return { dx: dx * ffx, dy: dy * ffy };
+		return { dx: aax, dy: aay };
 	}
 
 	getInteraction(target: Entity): (Entity & Interactable) | null {
@@ -88,7 +91,9 @@ export class World {
 	}
 
 	render(ctx: CanvasRenderingContext2D) {
-		for (const e of this.renderables)
-			e.text.draw(ctx, e.x, e.y, e.width, e.height);
+		for (const layer of this.renderables) {
+			if (!layer) continue;
+			for (const e of layer) e.text.draw(ctx, e.x, e.y, e.width, e.height);
+		}
 	}
 }

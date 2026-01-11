@@ -29,6 +29,7 @@ export default class HomeScene implements Scene {
 
 		this.player = {
 			id: 'player',
+			priority: 4,
 			x: 100,
 			y: 100,
 			width: 40,
@@ -44,22 +45,23 @@ export default class HomeScene implements Scene {
 		this.playerController = new PlayerController(this.player);
 		this.world.addEntity(this.player);
 
-		// const npc = {
-		//   id: "guide-npc",
-		//   x: 300,
-		//   y: 200,
-		//   width: 40,
-		//   height: 40,
-		//   vx: 0,
-		//   vy: 0,
-		//   speed: 100,
-		//   text: new ImageTexture("/assets/npc_sprite.png"),
-		//   [DynamicTag]: true,
-		//   [SolidTag]: true,
-		// } as Entity & any;
-		//
-		// this.world.addEntity(npc);
-		// this.npcControllers.push(new NPCController(npc));
+		const npc = {
+			id: 'guide-npc',
+			priority: 4,
+			x: 300,
+			y: 200,
+			width: 60,
+			height: 60,
+			vx: 0,
+			vy: 0,
+			speed: 150,
+			text: new ImageTexture('/public/scene/npc.png'),
+			[DynamicTag]: true,
+			[SolidTag]: true,
+		} as Entity & any;
+
+		this.world.addEntity(npc);
+		this.npcControllers.push(new NPCController(npc));
 
 		const games: { type: SceneType; x: number; color: string }[] = [
 			{ type: 'trilogique', x: 200, color: '#f44336' },
@@ -70,6 +72,7 @@ export default class HomeScene implements Scene {
 		games.forEach((game) => {
 			const portal = {
 				id: `portal-${game.type}`,
+				priority: 2,
 				x: game.x,
 				y: 50,
 				width: 60,
@@ -83,6 +86,7 @@ export default class HomeScene implements Scene {
 
 		const wall = {
 			id: 'wall-1',
+			priority: 1,
 			x: 300,
 			y: 300,
 			width: 400,
