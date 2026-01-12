@@ -1,19 +1,21 @@
-import { Router, Route, A } from '@solidjs/router';
-import { lazy } from 'solid-js';
+import { Router, Route, A } from "@solidjs/router";
+import { lazy } from "solid-js";
 
-const DevPage = lazy(() => import('@pages/debug/DevPanel'));
-const NotFound = lazy(() => import('@pages/NotFound'));
-const Settings = lazy(() => import('@pages/Settings'));
-const HomePage = lazy(() => import('@pages/Home'));
+const DevPage = lazy(() => import("@pages/debug/DevPanel"));
+const NotFound = lazy(() => import("@pages/NotFound"));
+const Settings = lazy(() => import("@pages/Settings"));
+const HomePage = lazy(() => import("@pages/Home"));
 
-const Social = lazy(() => import('@pages/social/Social'));
-const Welcome = lazy(() => import('@pages/auth/Welcome'));
-const Register = lazy(() => import('@pages/auth/Register'));
-const Login = lazy(() => import('@pages/auth/Login'));
-const AddFriend = lazy(() => import('@pages/social/AddFriend'));
-const ChooseFriend = lazy(() => import('@pages/social/ChooseFriend'));
-const GameMenu = lazy(() => import('@pages/games/GameMenu'));
-const Quizz = lazy(() => import('@pages/games/Quizz'));
+const Social = lazy(() => import("@pages/social/Social"));
+const Welcome = lazy(() => import("@pages/auth/Welcome"));
+const Register = lazy(() => import("@pages/auth/Register"));
+const Login = lazy(() => import("@pages/auth/Login"));
+const AddFriend = lazy(() => import("@pages/social/AddFriend"));
+const ChooseFriend = lazy(() => import("@pages/social/ChooseFriend"));
+const GameMenu = lazy(() => import("@pages/games/GameMenu"));
+const Quizz = lazy(() => import("@pages/games/Quizz"));
+const Defi = lazy(() => import("@pages/games/Defi"));
+const Defi2 = lazy(() => import("@pages/games/Defi2"));
 
 const Layout = (props: any) => (
 	<>
@@ -30,7 +32,7 @@ const Layout = (props: any) => (
 
 export default function App() {
 	return (
-		<div style={{ 'font-family': 'sans-serif', padding: '1rem' }}>
+		<div style={{ "font-family": "sans-serif", padding: "1rem" }}>
 			<Router root={Layout}>
 				<Route path="/" component={DevPage} />
 				<Route path="/home" component={HomePage} />
@@ -44,6 +46,8 @@ export default function App() {
 				<Route path="/ChooseFriend" component={ChooseFriend} />
 				<Route path="/GameMenu" component={GameMenu} />
 				<Route path="/Quizz" component={Quizz} />
+				<Route path="/Defi" component={Defi} />
+				<Route path="/Defi2" component={Defi2} />
 				<Route path="*404" component={NotFound} />
 			</Router>
 		</div>
