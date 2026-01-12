@@ -1,70 +1,69 @@
-import { createSignal } from "solid-js";
+// src/components/Quizz.tsx
+import { createSignal, createEffect } from "solid-js";
 import { useNavigate } from "@solidjs/router";
+import { handleAnswer, getQuestion } from "../../quizz/Quizz";
+import type { Question } from "../../quizz/Types";
 import "./Quizz.css";
 
 export default function Quizz() {
-	const [selectedAnswer, setSelectedAnswer] = createSignal<number | null>(null);
-	const navigate = useNavigate();
+    const [selectedAnswer, setSelectedAnswer] = createSignal<number | null>(
+        null
+    );
+    const [questionId, setQuestionId] = createSignal("Q1");
+    const [question, setQuestion] = createSignal<Question | null>(null);
 
-	const handleValidate = () => {
-		if (selectedAnswer() !== null) {
-			navigate("/Reponse");
-		}
-	};
+    const navigate = useNavigate();
 
-	return (
-		<div class="quizz-container">
-			<img src="public/Quizz_game.png" alt="Quizz" />
-			<h1>Question ?</h1>
+    // Load question whenever questionId changes
+    createEffect(async () => {
+        const q = await getQuestion(questionId());
+        setQuestion(q);
+    });
 
-			<div class="answers-list">
-				<button
-					class={selectedAnswer() === 1 ? "answer selected" : "answer"}
-					onClick={() => setSelectedAnswer(1)}
-				>
-					Réponse 1
-				</button>
-				<button
-					class={selectedAnswer() === 2 ? "answer selected" : "answer"}
-					onClick={() => setSelectedAnswer(2)}
-				>
-					Réponse 2
-				</button>
-				<button
-					class={selectedAnswer() === 3 ? "answer selected" : "answer"}
-					onClick={() => setSelectedAnswer(3)}
-				>
-					Réponse 3
-				</button>
-				<button
-					class={selectedAnswer() === 4 ? "answer selected" : "answer"}
-					onClick={() => setSelectedAnswer(4)}
-				>
-					Réponse 4
-				</button>
+    const handleValidate = async () => {
+        const answer = selectedAnswer();
+        if (answer === null) return;
 
-				<button
-					class={selectedAnswer() === 5 ? "answer selected" : "answer"}
-					onClick={() => setSelectedAnswer(5)}
-				>
-					Réponse 5
-				</button>
+        const nextId = await handleAnswer(questionId(), answer);
+        console.log(nextId);
+        if (nextId != undefined) {
+            setQuestionId(nextId);
+            setSelectedAnswer(null);
+        } else {
+            navigate("/PreQuizz");
+        }
+    };
 
-				<button
-					class={selectedAnswer() === 6 ? "answer selected" : "answer"}
-					onClick={() => setSelectedAnswer(6)}
-				>
-					Réponse 6
-				</button>
-			</div>
+    return (
+        <div class="quizz-container">
+            <img src="public/Quizz_game.png" alt="Quizz" />
 
-			<button
-				class="validate-button"
-				onClick={handleValidate}
-				disabled={selectedAnswer() === null}
-			>
-				Valider
-			</button>
-		</div>
-	);
+            {/* QUESTION LABEL */}
+            <h1>{question()?.text ?? "Loading..."}</h1>
+
+            <div class="answers-list">
+                {question()?.responses.map((response, index) => (
+                    <button
+                        class={
+                            selectedAnswer() === index + 1
+                                ? "answer selected"
+                                : "answer"
+                        }
+                        onClick={() => setSelectedAnswer(index + 1)}
+                    >
+                        {/* ANSWER LABEL */}
+                        {response.text}
+                    </button>
+                ))}
+            </div>
+
+            <button
+                class="validate-button"
+                onClick={handleValidate}
+                disabled={selectedAnswer() === null}
+            >
+                Valider
+            </button>
+        </div>
+    );
 }

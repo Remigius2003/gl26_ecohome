@@ -27,7 +27,7 @@ export type Answer = {
 export type Question = {
     id: IdQ;
     evolution: Evolution;
-    parents?: IdA[];
+    parent?: IdA;
     text: string;
     responses: Answer[];
 };
@@ -41,5 +41,10 @@ export type Theme = {
 export type CarbonFrag = {
     question: Question;
     answer: Answer;
+    date: Date;
+};
+
+export type CompleteInfo = {
+    emission: CarbonRange;
     date: Date;
 };

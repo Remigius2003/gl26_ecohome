@@ -12,7 +12,7 @@ const Register = lazy(() => import("@pages/auth/Register"));
 const Login = lazy(() => import("@pages/auth/Login"));
 const AddFriend = lazy(() => import("@pages/social/AddFriend"));
 const ChooseFriend = lazy(() => import("@pages/social/ChooseFriend"));
-const GameMenu = lazy(() => import("@pages/games/GameMenu"));
+const PreQuizz = lazy(() => import("@pages/games/PreQuizz"));
 const Quizz = lazy(() => import("@pages/games/Quizz"));
 const Defi = lazy(() => import("@pages/games/Defi"));
 const Defi2 = lazy(() => import("@pages/games/Defi2"));
@@ -45,7 +45,7 @@ export default function App() {
                 <Route path="/settings" component={Settings} />
                 <Route path="/AddFriend" component={AddFriend} />
                 <Route path="/ChooseFriend" component={ChooseFriend} />
-                <Route path="/GameMenu" component={GameMenu} />
+                <Route path="/PreQuizz" component={PreQuizz} />
                 <Route path="/Quizz" component={Quizz} />
                 <Route path="/Defi" component={Defi} />
                 <Route path="/Defi2" component={Defi2} />

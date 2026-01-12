@@ -2,7 +2,7 @@
 set -e
 
 CERT_DIR="/etc/certificats"
-CERT_FILE="$CERT_DIR/cerif.pem"
+CERT_FILE="$CERT_DIR/certif.pem"
 KEY_FILE="$CERT_DIR/certif-key.pem"
 
 if [ -f "$CERT_FILE" ] && [ -f "$KEY_FILE" ]; then

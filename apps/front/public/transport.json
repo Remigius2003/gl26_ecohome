@@ -1,0 +1,208 @@
+{
+    "T1": {
+        "id": "T1",
+        "evolution": "Never",
+        "text": "Quel est votre principal moyen de transport pour vos déplacements quotidiens (travail, courses, loisirs) ?",
+        "responses": [
+            {
+                "id": "A",
+                "text": "À pied ou vélo",
+                "children": ["T2A"],
+                "carbonImpact": [0, 1]
+            },
+            {
+                "id": "B",
+                "text": "Transports en commun (bus, tram, métro, train local)",
+                "children": ["T2B"],
+                "carbonImpact": [2, 6]
+            },
+            {
+                "id": "C",
+                "text": "Voiture thermique (essence/diesel), seul·e",
+                "children": ["T2C"],
+                "carbonImpact": [15, 35]
+            },
+            {
+                "id": "D",
+                "text": "Voiture électrique (ou hybride rechargeable)",
+                "children": ["T2D"],
+                "carbonImpact": [4, 10]
+            },
+            {
+                "id": "E",
+                "text": "Deux-roues motorisé (moto, scooter thermique)",
+                "children": ["T2E"],
+                "carbonImpact": [8, 18]
+            }
+        ]
+    },
+
+    "T2A": {
+        "id": "T2A",
+        "evolution": "Never",
+        "text": "Utilisez-vous occasionnellement d’autres moyens motorisés ?",
+        "responses": [
+            {
+                "id": "A1",
+                "text": "Presque jamais",
+                "carbonImpact": [0, 1]
+            },
+            {
+                "id": "A2",
+                "text": "Parfois (ex. voiture empruntée, taxi)",
+                "carbonImpact": [2, 5]
+            }
+        ]
+    },
+
+    "T2B": {
+        "id": "T2B",
+        "evolution": "Never",
+        "text": "Combien de km parcourez-vous en moyenne par semaine en transports en commun ?",
+        "responses": [
+            {
+                "id": "B1",
+                "text": "< 15 km",
+                "carbonImpact": [0, 2]
+            },
+            {
+                "id": "B2",
+                "text": "15–40 km",
+                "carbonImpact": [2, 5]
+            },
+            {
+                "id": "B3",
+                "text": "> 40 km",
+                "carbonImpact": [5, 10]
+            }
+        ]
+    },
+
+    "T2C": {
+        "id": "T2C",
+        "evolution": "Never",
+        "text": "Combien de km parcourez-vous en voiture par semaine ?",
+        "responses": [
+            {
+                "id": "C1",
+                "text": "< 50 km",
+                "children": ["T3C"],
+                "carbonImpact": [5, 12]
+            },
+            {
+                "id": "C2",
+                "text": "50–150 km",
+                "children": ["T3C"],
+                "carbonImpact": [12, 25]
+            },
+            {
+                "id": "C3",
+                "text": "> 150 km",
+                "children": ["T3C"],
+                "carbonImpact": [25, 50]
+            }
+        ]
+    },
+
+    "T3C": {
+        "id": "T3C",
+        "evolution": "Never",
+        "text": "Pratiquez-vous régulièrement le covoiturage ?",
+        "responses": [
+            {
+                "id": "C1",
+                "text": "Oui, souvent (≥ 50 % de mes trajets)",
+                "carbonImpact": [-8, -3]
+            },
+            {
+                "id": "C2",
+                "text": "Occasionnellement",
+                "carbonImpact": [-3, 0]
+            },
+            {
+                "id": "C3",
+                "text": "Non, je conduis seul·e",
+                "carbonImpact": [0, 2]
+            }
+        ]
+    },
+
+    "T2D": {
+        "id": "T2D",
+        "evolution": "Never",
+        "text": "Combien de km parcourez-vous en voiture électrique par semaine ?",
+        "responses": [
+            {
+                "id": "D1",
+                "text": "< 50 km",
+                "carbonImpact": [1, 3]
+            },
+            {
+                "id": "D2",
+                "text": "50–150 km",
+                "carbonImpact": [3, 7]
+            },
+            {
+                "id": "D3",
+                "text": "> 150 km",
+                "carbonImpact": [7, 12]
+            }
+        ]
+    },
+
+    "T2E": {
+        "id": "T2E",
+        "evolution": "Never",
+        "text": "Combien de km parcourez-vous sur deux-roues motorisé par semaine ?",
+        "responses": [
+            {
+                "id": "E1",
+                "text": "< 30 km",
+                "carbonImpact": [2, 5]
+            },
+            {
+                "id": "E2",
+                "text": "30–80 km",
+                "carbonImpact": [5, 12]
+            },
+            {
+                "id": "E3",
+                "text": "> 80 km",
+                "carbonImpact": [12, 20]
+            }
+        ]
+    },
+
+    "T4": {
+        "id": "T4",
+        "evolution": "Never",
+        "text": "Prenez-vous l’avion ?",
+        "responses": [
+            {
+                "id": "F1",
+                "text": "Jamais ou presque",
+                "carbonImpact": [0, 2]
+            },
+            {
+                "id": "F2",
+                "text": "1 vol court-courrier (< 1 000 km) par an",
+                "carbonImpact": [3, 8]
+            },
+            {
+                "id": "F3",
+                "text": "1 vol moyen-courrier (1 000–3 000 km) par an",
+                "carbonImpact": [10, 20]
+            },
+            {
+                "id": "F4",
+                "text": "1 vol long-courrier (> 3 000 km) par an",
+                "carbonImpact": [30, 60]
+            },
+            {
+                "id": "F5",
+                "text": "Plusieurs vols par an (dont ≥ 1 long-courrier)",
+                "carbonImpact": [60, 150]
+            }
+        ]
+    }
+}

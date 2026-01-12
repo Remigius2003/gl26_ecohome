@@ -8,31 +8,31 @@
                 "id": "A",
                 "text": "Végétalienne",
                 "children": ["Q2A"],
-                "carbonImpact": [5, 8]
+                "carbonImpact": [10, 16]
             },
             {
                 "id": "B",
                 "text": "Végétarienne",
                 "children": ["Q2B"],
-                "carbonImpact": [7, 11]
+                "carbonImpact": [14, 22]
             },
             {
                 "id": "C",
-                "text": "Peu de viande",
+                "text": "Peu de viande (≤ 2 repas/semaine)",
                 "children": ["Q2C"],
-                "carbonImpact": [10, 15]
+                "carbonImpact": [20, 30]
             },
             {
                 "id": "D",
-                "text": "Viande régulière",
+                "text": "Viande régulière (3–5 repas/semaine)",
                 "children": ["Q2D"],
-                "carbonImpact": [15, 22]
+                "carbonImpact": [30, 45]
             },
             {
                 "id": "E",
-                "text": "Viande à presque tous les repas",
+                "text": "Viande à presque tous les repas (≥ 6 repas/semaine)",
                 "children": ["Q2E"],
-                "carbonImpact": [22, 32]
+                "carbonImpact": [45, 70]
             }
         ]
     },
@@ -154,13 +154,13 @@
                 "id": "C1",
                 "text": "1–2",
                 "children": ["Q3C"],
-                "carbonImpact": [1, 2]
+                "carbonImpact": [0, 2]
             },
             {
                 "id": "C2",
                 "text": "3–4",
                 "children": ["Q3C"],
-                "carbonImpact": [3, 5]
+                "carbonImpact": [2, 5]
             }
         ]
     },
@@ -180,19 +180,19 @@
                 "id": "C2",
                 "text": "Porc",
                 "children": ["Q4C"],
-                "carbonImpact": [3, 5]
+                "carbonImpact": [3, 6]
             },
             {
                 "id": "C3",
                 "text": "Bœuf",
                 "children": ["Q4C"],
-                "carbonImpact": [6, 10]
+                "carbonImpact": [7, 12]
             },
             {
                 "id": "C4",
                 "text": "Mélange",
                 "children": ["Q4C"],
-                "carbonImpact": [4, 7]
+                "carbonImpact": [4, 8]
             }
         ]
     },
@@ -237,10 +237,10 @@
             {
                 "id": "C1",
                 "text": "Locaux / de saison",
-                "carbonImpact": [-1, 1]
+                "carbonImpact": [0, 1]
             },
             { "id": "C2", "text": "Mixtes", "carbonImpact": [1, 2] },
-            { "id": "C3", "text": "Importés", "carbonImpact": [3, 6] }
+            { "id": "C3", "text": "Importés", "carbonImpact": [2, 5] }
         ]
     },
 
@@ -253,25 +253,25 @@
                 "id": "D1",
                 "text": "Volaille",
                 "children": ["Q3D"],
-                "carbonImpact": [4, 7]
+                "carbonImpact": [4, 8]
             },
             {
                 "id": "D2",
                 "text": "Porc",
                 "children": ["Q3D"],
-                "carbonImpact": [6, 9]
+                "carbonImpact": [6, 10]
             },
             {
                 "id": "D3",
                 "text": "Bœuf",
                 "children": ["Q3D"],
-                "carbonImpact": [10, 16]
+                "carbonImpact": [12, 20]
             },
             {
                 "id": "D4",
                 "text": "Mélange",
                 "children": ["Q3D"],
-                "carbonImpact": [8, 13]
+                "carbonImpact": [8, 15]
             }
         ]
     },
@@ -284,10 +284,10 @@
             {
                 "id": "D1",
                 "text": "Oui, majoritairement",
-                "carbonImpact": [-2, 1]
+                "carbonImpact": [0, 2]
             },
-            { "id": "D2", "text": "Parfois", "carbonImpact": [1, 3] },
-            { "id": "D3", "text": "Rarement", "carbonImpact": [3, 6] }
+            { "id": "D2", "text": "Parfois", "carbonImpact": [2, 4] },
+            { "id": "D3", "text": "Rarement", "carbonImpact": [4, 7] }
         ]
     },
 
@@ -300,13 +300,13 @@
                 "id": "E1",
                 "text": "Oui, souvent",
                 "children": ["Q3E"],
-                "carbonImpact": [8, 14]
+                "carbonImpact": [10, 18]
             },
             {
                 "id": "E2",
                 "text": "Non, plutôt volaille/poisson",
                 "children": ["Q3E"],
-                "carbonImpact": [4, 8]
+                "carbonImpact": [5, 10]
             }
         ]
     },
@@ -316,8 +316,8 @@
         "evolution": "Never",
         "text": "Achetez-vous des produits transformés (charcuterie, plats préparés) ?",
         "responses": [
-            { "id": "E1", "text": "Rarement", "carbonImpact": [1, 2] },
-            { "id": "E2", "text": "Souvent", "carbonImpact": [4, 8] }
+            { "id": "E1", "text": "Rarement", "carbonImpact": [1, 3] },
+            { "id": "E2", "text": "Souvent", "carbonImpact": [4, 9] }
         ]
     }
 }

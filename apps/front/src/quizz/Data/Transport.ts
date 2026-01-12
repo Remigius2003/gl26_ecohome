@@ -1,8 +1,8 @@
 import { QuestionsMapSchema } from "../TypesSafe";
 import { Evolution, IdA, IdQ, type Question } from "../Types";
 
-export async function loadQuestionsAlim(): Promise<Record<string, Question>> {
-    const res = await fetch("/alimentation.json");
+export async function loadQuestionsTrans(): Promise<Record<string, Question>> {
+    const res = await fetch("/transport.json");
     if (!res.ok) throw new Error("Failed to load questions");
     const json = await res.json();
 
