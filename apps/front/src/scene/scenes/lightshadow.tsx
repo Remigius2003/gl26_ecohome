@@ -6,4 +6,5 @@ export default class LightShadowScene implements Scene {
   update(deltaTime: number): void {}
   render(ctx: CanvasRenderingContext2D): void {}
   handleInput(input: Record<string, boolean>): void {}
+  resizeScene(w: number, h: number) {}
 }

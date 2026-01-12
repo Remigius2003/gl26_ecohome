@@ -1,4 +1,4 @@
-import { Dynamic, Entity, InputState } from "../core/types";
+import { Controller, Dynamic, Entity, InputState } from "../core/types";
 import { World } from "./world";
 
 export class PhysicsSystem {
@@ -27,12 +27,15 @@ export class PhysicsSystem {
   }
 }
 
-export class PlayerController {
-  constructor(private entity: Entity & Dynamic) {}
+export class PlayerController implements Controller<Entity & Dynamic> {
+  constructor(public readonly entity: Entity & Dynamic) {}
 
-  update(input: InputState) {
+  update(_: number, input?: InputState) {
+    if (!input) return;
+
     this.entity.vx = 0;
     this.entity.vy = 0;
+
     if (input["arrowup"] || input["w"]) this.entity.vy = -1;
     if (input["arrowdown"] || input["s"]) this.entity.vy = 1;
     if (input["arrowleft"] || input["a"]) this.entity.vx = -1;
@@ -40,14 +43,15 @@ export class PlayerController {
   }
 }
 
-export class NPCController {
+export class NPCController implements Controller<Entity & Dynamic> {
   private moveDir = { x: 0, y: 0 };
   private timer = 0;
 
-  constructor(private entity: Entity & Dynamic) {}
+  constructor(public readonly entity: Entity & Dynamic) {}
 
   update(dt: number) {
     this.timer -= dt;
+
     if (this.timer <= 0) {
       this.timer = 1000 + Math.random() * 2000;
       const r = Math.random();

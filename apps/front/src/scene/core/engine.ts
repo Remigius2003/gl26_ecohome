@@ -37,6 +37,12 @@ export class Engine {
     this.scenes[type]!.init(this.canvas, (newType) => this.setScene(newType));
   }
 
+  resize(w: number, h: number) {
+    const activeScene = this.scenes[this.currentSceneType];
+    if (!activeScene) return;
+    activeScene.resizeScene(w, h);
+  }
+
   start() {
     if (this.isRunning) return;
     this.isRunning = true;

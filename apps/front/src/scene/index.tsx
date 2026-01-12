@@ -29,3 +29,4 @@ export const startScene = () => engine?.start();
 export const cleanScene = () => engine?.clean();
 export const switchScene = (sceneType: SceneType) =>
   engine?.setScene(sceneType);
+export const resizeWindow = (w: number, h: number) => engine?.resize(w, h);

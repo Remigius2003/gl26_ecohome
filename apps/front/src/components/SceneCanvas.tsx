@@ -4,6 +4,7 @@ import {
   cleanScene,
   switchScene,
   SceneType,
+  resizeWindow,
 } from "@scene";
 import { onMount, onCleanup } from "solid-js";
 
@@ -22,6 +23,8 @@ export default function SceneCanvas(props: { scene: SceneType }) {
 
     canvasRef.style.width = `${width}px`;
     canvasRef.style.height = `${height}px`;
+
+    resizeWindow(width, height);
   };
 
   onMount(() => {

@@ -1,137 +1,131 @@
+import { Scene, SceneType, Character } from "../core/types";
+import { ColorTexture, ImageTexture } from "../core/texture";
+import { Camera } from "../logic/camera";
+import { World } from "../logic/world";
 import {
-	Scene,
-	SceneType,
-	Entity,
-	Player,
-	SolidTag,
-	DynamicTag,
-	InteractableTag,
-} from '../core/types';
-import { World } from '../logic/world';
+  createCharacter,
+  createEntity,
+  createSolid,
+  withInteractable,
+} from "../logic/factory";
 import {
-	PhysicsSystem,
-	PlayerController,
-	NPCController,
-} from '../logic/movement';
-import { ColorTexture, ImageTexture } from '../core/texture';
-import { Camera } from '../logic/camera';
+  PhysicsSystem,
+  PlayerController,
+  NPCController,
+} from "../logic/movement";
 
 export default class HomeScene implements Scene {
-	private playerController!: PlayerController;
-	private npcControllers: NPCController[] = [];
-	private camera!: Camera;
-	private player!: Player;
-	private world!: World;
+  private playerController!: PlayerController;
+  private npcControllers: NPCController[] = [];
+  private camera!: Camera;
+  private player!: Character;
+  private world!: World;
 
-	init(canvas: HTMLCanvasElement, onSwitchScene: (type: SceneType) => void) {
-		this.world = new World(canvas.width, canvas.height);
-		this.camera = new Camera(canvas.width, canvas.height);
+  init(canvas: HTMLCanvasElement, onSwitchScene: (type: SceneType) => void) {
+    this.world = new World(3 * canvas.width, 3 * canvas.height);
+    this.camera = new Camera(canvas.width, canvas.height);
 
-		this.player = {
-			id: 'player',
-			priority: 4,
-			x: 100,
-			y: 100,
-			width: 40,
-			height: 40,
-			vx: 0,
-			vy: 0,
-			speed: 400,
-			text: new ColorTexture('#4fc3f7', 'white'),
-			[DynamicTag]: true,
-			[SolidTag]: true,
-		} as Player;
+    this.player = createCharacter({
+      id: "player",
+      x: 100,
+      y: 100,
+      width: 40,
+      height: 40,
+      speed: 400,
+      text: new ColorTexture("#4fc3f7", "white"),
+    });
 
-		this.playerController = new PlayerController(this.player);
-		this.world.addEntity(this.player);
+    this.playerController = new PlayerController(this.player);
+    this.world.addEntity(this.player);
 
-		const npc = {
-			id: 'guide-npc',
-			priority: 4,
-			x: 300,
-			y: 200,
-			width: 60,
-			height: 60,
-			vx: 0,
-			vy: 0,
-			speed: 150,
-			text: new ImageTexture('/public/scene/npc.png'),
-			[DynamicTag]: true,
-			[SolidTag]: true,
-		} as Entity & any;
+    const npc = createCharacter({
+      id: "guide-npc",
+      x: 300,
+      y: 200,
+      width: 60,
+      height: 60,
+      speed: 150,
+      text: new ImageTexture("/public/scene/npc.png"),
+    });
 
-		this.world.addEntity(npc);
-		this.npcControllers.push(new NPCController(npc));
+    this.world.addEntity(npc);
+    this.npcControllers.push(new NPCController(npc));
+    const games: { type: SceneType; x: number; color: string }[] = [
+      { type: "trilogique", x: 200, color: "#f44336" },
+      { type: "ecogrid", x: 400, color: "#4caf50" },
+      { type: "lightshadow", x: 600, color: "#9c27b0" },
+    ];
 
-		const games: { type: SceneType; x: number; color: string }[] = [
-			{ type: 'trilogique', x: 200, color: '#f44336' },
-			{ type: 'ecogrid', x: 400, color: '#4caf50' },
-			{ type: 'lightshadow', x: 600, color: '#9c27b0' },
-		];
+    games.forEach((game) => {
+      const portal = withInteractable(
+        createEntity({
+          id: `portal-${game.type}`,
+          x: game.x,
+          y: 50,
+          width: 60,
+          height: 60,
+          priority: 1, // backgroundground
+          text: new ColorTexture(game.color, "white"),
+        }),
+        {
+          onInteract: () => onSwitchScene(game.type),
+        }
+      );
 
-		games.forEach((game) => {
-			const portal = {
-				id: `portal-${game.type}`,
-				priority: 2,
-				x: game.x,
-				y: 50,
-				width: 60,
-				height: 60,
-				text: new ColorTexture(game.color, 'white'),
-				[InteractableTag]: true,
-				onInteract: () => onSwitchScene(game.type),
-			} as Entity & any;
-			this.world.addEntity(portal);
-		});
+      this.world.addEntity(portal);
+    });
 
-		const wall = {
-			id: 'wall-1',
-			priority: 1,
-			x: 300,
-			y: 300,
-			width: 400,
-			height: 200,
-			text: new ColorTexture('#555'),
-			[SolidTag]: true,
-		} as Entity & any;
-		this.world.addEntity(wall);
-	}
+    const wall = createSolid({
+      id: "wall-1",
+      x: 300,
+      y: 300,
+      width: 400,
+      height: 200,
+      text: new ColorTexture("#555"),
+    });
 
-	handleInput(input: Record<string, boolean>) {
-		this.playerController.update(input);
+    this.world.addEntity(wall);
+  }
 
-		if (input[' '] || input['enter']) {
-			const target = this.world.getInteraction(this.player);
-			if (target) target.onInteract();
-		}
-	}
+  resizeScene(w: number, h: number) {
+    this.camera.resize(w, h);
+  }
 
-	update(dt: number) {
-		PhysicsSystem.move(this.player, dt, this.world);
-		this.npcControllers.forEach((ctrl, i) => ctrl.update(dt));
-		this.world.dynamics.forEach((e) => PhysicsSystem.move(e, dt, this.world));
-		this.camera.follow(this.player, this.world);
-	}
+  handleInput(input: Record<string, boolean>) {
+    this.playerController.update(0, input);
 
-	render(ctx: CanvasRenderingContext2D) {
-		ctx.fillStyle = '#1a1a1a';
-		ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    if (input[" "] || input["enter"]) {
+      const target = this.world.getInteraction(this.player);
+      if (target) target.onInteract();
+    }
+  }
 
-		this.camera.apply(ctx);
-		this.world.render(ctx);
-		this.camera.release(ctx);
+  update(dt: number) {
+    PhysicsSystem.move(this.player, dt, this.world);
+    this.npcControllers.forEach((ctrl) => ctrl.update(dt));
+    this.world.dynamics.forEach((e) => PhysicsSystem.move(e, dt, this.world));
+    this.camera.follow(this.player, this.world);
+  }
 
-		const interaction = this.world.getInteraction(this.player);
-		if (interaction) {
-			ctx.fillStyle = 'white';
-			ctx.textAlign = 'center';
-			ctx.fillText(
-				'Press SPACE to enter',
-				this.player.x + this.player.width / 2,
-				this.player.y - 10
-			);
-		}
-	}
+  render(ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = "#1a1a1a";
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-	clean() {}
+    this.camera.apply(ctx);
+    this.world.render(ctx);
+    this.camera.release(ctx);
+
+    const interaction = this.world.getInteraction(this.player);
+    if (interaction) {
+      ctx.fillStyle = "white";
+      ctx.textAlign = "center";
+      ctx.fillText(
+        "Press SPACE to enter",
+        this.player.x + this.player.width / 2,
+        this.player.y - 10
+      );
+    }
+  }
+
+  clean() {}
 }

@@ -12,9 +12,25 @@ export class Camera {
     this.height = height;
   }
 
+  resize(w: number, h: number) {
+    this.width = w;
+    this.height = h;
+  }
+
   follow(target: Square, world: World) {
-    this.x = target.x + target.width / 2 - this.width / 2;
-    this.y = target.y + target.height / 2 - this.height / 2;
+    const tarX = target.x + target.width / 2;
+    const tarY = target.y + target.height / 2;
+
+    const deadZonePerc = 0.2; // 60% deadZone
+    const deadZoneTop = this.y + (this.height - this.height * deadZonePerc) / 2;
+    const deadZoneLeft = this.x + (this.width - this.width * deadZonePerc) / 2;
+    const deadZoneRight = deadZoneLeft + this.width * deadZonePerc;
+    const deadZoneBottom = deadZoneTop + this.height * deadZonePerc;
+
+    if (tarX < deadZoneLeft) this.x -= deadZoneLeft - tarX;
+    if (tarX > deadZoneRight) this.x += tarX - deadZoneRight;
+    if (tarY < deadZoneTop) this.y -= deadZoneTop - tarY;
+    if (tarY > deadZoneBottom) this.y += tarY - deadZoneBottom;
 
     const { width, height } = world.getSize();
     this.x = Math.max(0, Math.min(this.x, width - this.width));
