@@ -1,3 +1,5 @@
+//Ce fichier n'est pas vraiment utilisé au final
+
 import { z } from "zod";
 
 // CarbonRange : nombre ou [min, max]
@@ -6,7 +8,7 @@ const CarbonRangeSchema = z.union([
     z.tuple([z.number(), z.number()]),
 ]);
 
-// Modifier (même si absent dans ton JSON actuel, garde-le au cas où)
+// Modifier
 const ModifierSchema = z.object({
     type: z.enum(["sum", "mult"]),
     value: z.number(),
@@ -21,7 +23,6 @@ const AnswerSchema = z.object({
     carbonImpact: CarbonRangeSchema.optional(),
 });
 
-// Evolution : attention, ton JSON utilise des chaînes ("Never"), pas des nombres
 const EvolutionSchema = z.enum([
     "Daily",
     "Monthly",
