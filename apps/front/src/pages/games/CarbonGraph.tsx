@@ -11,12 +11,10 @@ function normalizeCarbon(value?: CarbonRange): number | null {
 export default function CarbonGraph(props: { frags: CarbonFrag[] }) {
     let canvas!: HTMLCanvasElement;
 
-    // Redraw whenever props.frags changes
     createEffect(() => {
         const ctx = canvas?.getContext("2d");
         if (!ctx) return;
 
-        // ✅ Use the frags passed in props — already filtered by category!
         const completeInfo = lisseCarbonFrag(props.frags);
 
         const values = completeInfo
