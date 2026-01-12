@@ -1,45 +1,86 @@
-// src/components/Quizz.tsx
-import { createSignal, createEffect } from "solid-js";
-import { useNavigate } from "@solidjs/router";
-import { handleAnswer, getQuestion } from "../../quizz/Quizz";
+import { createSignal, createEffect, onCleanup } from "solid-js";
+import { useNavigate, useLocation } from "@solidjs/router";
+import { handleAnswer, getQuestionByType } from "../../quizz/Quizz";
 import type { Question } from "../../quizz/Types";
 import "./Quizz.css";
 
+type QuizzType = "alimentation" | "transport" | "logement" | "consommation";
+const DEFAULT_TYPE: QuizzType = "alimentation";
+
+const ROOT_QUESTION_ID: Record<QuizzType, string> = {
+    alimentation: "Q1",
+    transport: "T1",
+    logement: "L1",
+    consommation: "C1",
+};
+
 export default function Quizz() {
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const urlType = new URLSearchParams(location.search).get(
+        "type"
+    ) as QuizzType | null;
+    const validType = Object.keys(ROOT_QUESTION_ID).includes(urlType || "")
+        ? urlType!
+        : DEFAULT_TYPE;
+
     const [selectedAnswer, setSelectedAnswer] = createSignal<number | null>(
         null
     );
-    const [questionId, setQuestionId] = createSignal("Q1");
+    const [questionId, setQuestionId] = createSignal(
+        ROOT_QUESTION_ID[validType]
+    );
     const [question, setQuestion] = createSignal<Question | null>(null);
+    const [loading, setLoading] = createSignal(true);
 
-    const navigate = useNavigate();
-
-    // Load question whenever questionId changes
     createEffect(async () => {
-        const q = await getQuestion(questionId());
-        setQuestion(q);
+        setLoading(true);
+        try {
+            const q = await getQuestionByType(questionId(), validType);
+            setQuestion(q);
+        } catch (err) {
+            console.error("Failed to load question", err);
+        } finally {
+            setLoading(false);
+        }
     });
 
     const handleValidate = async () => {
         const answer = selectedAnswer();
         if (answer === null) return;
 
-        const nextId = await handleAnswer(questionId(), answer);
-        console.log(nextId);
-        if (nextId != undefined) {
-            setQuestionId(nextId);
-            setSelectedAnswer(null);
-        } else {
-            navigate("/PreQuizz");
+        try {
+            // Pass type so handleAnswer saves to correct storage key
+            const nextId = await handleAnswer(questionId(), answer, validType);
+            if (nextId != undefined) {
+                setQuestionId(nextId);
+                setSelectedAnswer(null);
+            } else {
+                // Navigate back to PreQuizz with same type
+                navigate(`/PreQuizz?type=${validType}`);
+            }
+        } catch (err) {
+            console.error("Error handling answer", err);
         }
     };
 
+    const beforeUnload = (e: BeforeUnloadEvent) => {
+        e.preventDefault();
+        e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", beforeUnload);
+    onCleanup(() => window.removeEventListener("beforeunload", beforeUnload));
+
     return (
         <div class="quizz-container">
-            <img src="public/Quizz_game.png" alt="Quizz" />
+            <img src="/public/Quizz_game.png" alt="Quizz" />
 
-            {/* QUESTION LABEL */}
-            <h1>{question()?.text ?? "Loading..."}</h1>
+            <h1>
+                {loading()
+                    ? "Chargement..."
+                    : (question()?.text ?? "Question introuvable")}
+            </h1>
 
             <div class="answers-list">
                 {question()?.responses.map((response, index) => (
@@ -50,8 +91,8 @@ export default function Quizz() {
                                 : "answer"
                         }
                         onClick={() => setSelectedAnswer(index + 1)}
+                        disabled={loading()}
                     >
-                        {/* ANSWER LABEL */}
                         {response.text}
                     </button>
                 ))}
@@ -60,7 +101,7 @@ export default function Quizz() {
             <button
                 class="validate-button"
                 onClick={handleValidate}
-                disabled={selectedAnswer() === null}
+                disabled={selectedAnswer() === null || loading()}
             >
                 Valider
             </button>

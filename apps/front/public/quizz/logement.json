@@ -1,0 +1,228 @@
+{
+    "H1": {
+        "id": "H1",
+        "evolution": "Never",
+        "text": "Quel type de logement occupez-vous ?",
+        "responses": [
+            {
+                "id": "A",
+                "text": "Appartement en immeuble collectif",
+                "children": ["H2A"],
+                "carbonImpact": [8, 14]
+            },
+            {
+                "id": "B",
+                "text": "Maison individuelle",
+                "children": ["H2B"],
+                "carbonImpact": [16, 30]
+            }
+        ]
+    },
+
+    "H2A": {
+        "id": "H2A",
+        "evolution": "Never",
+        "text": "Quelle est la surface habitable (en m²) ?",
+        "responses": [
+            {
+                "id": "A1",
+                "text": "< 40 m²",
+                "children": ["H3A"],
+                "carbonImpact": [0, 2]
+            },
+            {
+                "id": "A2",
+                "text": "40–70 m²",
+                "children": ["H3A"],
+                "carbonImpact": [2, 5]
+            },
+            {
+                "id": "A3",
+                "text": "> 70 m²",
+                "children": ["H3A"],
+                "carbonImpact": [5, 10]
+            }
+        ]
+    },
+
+    "H2B": {
+        "id": "H2B",
+        "evolution": "Never",
+        "text": "Quelle est la surface habitable (en m²) ?",
+        "responses": [
+            {
+                "id": "B1",
+                "text": "< 80 m²",
+                "children": ["H3B"],
+                "carbonImpact": [2, 6]
+            },
+            {
+                "id": "B2",
+                "text": "80–120 m²",
+                "children": ["H3B"],
+                "carbonImpact": [6, 12]
+            },
+            {
+                "id": "B3",
+                "text": "> 120 m²",
+                "children": ["H3B"],
+                "carbonImpact": [12, 22]
+            }
+        ]
+    },
+
+    "H3A": {
+        "id": "H3A",
+        "evolution": "Never",
+        "text": "Quelle est votre principale source d’énergie pour le chauffage et l’eau chaude ?",
+        "responses": [
+            {
+                "id": "A1",
+                "text": "Électricité (pompe à chaleur ou radiateurs)",
+                "children": ["H4A"],
+                "carbonImpact": [6, 12]
+            },
+            {
+                "id": "A2",
+                "text": "Gaz naturel",
+                "children": ["H4A"],
+                "carbonImpact": [8, 16]
+            },
+            {
+                "id": "A3",
+                "text": "Fioul / charbon",
+                "children": ["H4A"],
+                "carbonImpact": [18, 30]
+            },
+            {
+                "id": "A4",
+                "text": "Bois (poêle ou chaudière moderne)",
+                "children": ["H4A"],
+                "carbonImpact": [3, 8]
+            },
+            {
+                "id": "A5",
+                "text": "Chauffage urbain ou géothermie",
+                "children": ["H4A"],
+                "carbonImpact": [4, 9]
+            }
+        ]
+    },
+
+    "H3B": {
+        "id": "H3B",
+        "evolution": "Never",
+        "text": "Quelle est votre principale source d’énergie pour le chauffage et l’eau chaude ?",
+        "responses": [
+            {
+                "id": "B1",
+                "text": "Électricité (pompe à chaleur ou radiateurs)",
+                "children": ["H4B"],
+                "carbonImpact": [10, 20]
+            },
+            {
+                "id": "B2",
+                "text": "Gaz naturel",
+                "children": ["H4B"],
+                "carbonImpact": [12, 24]
+            },
+            {
+                "id": "B3",
+                "text": "Fioul / charbon",
+                "children": ["H4B"],
+                "carbonImpact": [25, 45]
+            },
+            {
+                "id": "B4",
+                "text": "Bois (poêle ou chaudière moderne)",
+                "children": ["H4B"],
+                "carbonImpact": [5, 12]
+            },
+            {
+                "id": "B5",
+                "text": "Chauffage urbain ou géothermie",
+                "children": ["H4B"],
+                "carbonImpact": [6, 14]
+            }
+        ]
+    },
+
+    "H4A": {
+        "id": "H4A",
+        "evolution": "Never",
+        "text": "Combien de personnes vivent dans le logement ?",
+        "responses": [
+            {
+                "id": "A1",
+                "text": "Seul·e",
+                "carbonImpact": [0, 2]
+            },
+            {
+                "id": "A2",
+                "text": "2 personnes",
+                "carbonImpact": [-3, -1]
+            },
+            {
+                "id": "A3",
+                "text": "3–4 personnes",
+                "carbonImpact": [-6, -3]
+            },
+            {
+                "id": "A4",
+                "text": "5+ personnes",
+                "carbonImpact": [-8, -5]
+            }
+        ]
+    },
+
+    "H4B": {
+        "id": "H4B",
+        "evolution": "Never",
+        "text": "Combien de personnes vivent dans le logement ?",
+        "responses": [
+            {
+                "id": "B1",
+                "text": "Seul·e",
+                "carbonImpact": [0, 3]
+            },
+            {
+                "id": "B2",
+                "text": "2 personnes",
+                "carbonImpact": [-4, -2]
+            },
+            {
+                "id": "B3",
+                "text": "3–4 personnes",
+                "carbonImpact": [-8, -4]
+            },
+            {
+                "id": "B4",
+                "text": "5+ personnes",
+                "carbonImpact": [-12, -7]
+            }
+        ]
+    },
+
+    "H5": {
+        "id": "H5",
+        "evolution": "Never",
+        "text": "Utilisez-vous des équipements très énergivores (climatisation forte, piscine chauffée, data center perso, etc.) ?",
+        "responses": [
+            {
+                "id": "C1",
+                "text": "Non",
+                "carbonImpact": [0, 2]
+            },
+            {
+                "id": "C2",
+                "text": "Oui, occasionnellement",
+                "carbonImpact": [3, 7]
+            },
+            {
+                "id": "C3",
+                "text": "Oui, régulièrement",
+                "carbonImpact": [8, 18]
+            }
+        ]
+    }
+}

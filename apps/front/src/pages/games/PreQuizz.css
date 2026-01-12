@@ -1,12 +1,28 @@
-/* src/pages/Alimentation.css */
+/* Base page styling */
 .alim-page {
     min-height: 100vh;
-    background-image: url("burger.png");
     background-repeat: repeat;
     background-size: 200px 100px;
     background-position: top left;
     padding: 2rem;
     text-align: center;
+}
+
+/* Textures */
+.bg-alimentation {
+    background-image: url("./textureMoche/burger.png");
+}
+
+.bg-transport {
+    background-image: url("./textureMoche/train.png");
+}
+
+.bg-logement {
+    background-image: url("./textureMoche/maison.png");
+}
+
+.bg-consommation {
+    background-image: url("./textureMoche/vetements.png");
 }
 
 .back-button {

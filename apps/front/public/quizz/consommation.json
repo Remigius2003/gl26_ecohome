@@ -1,0 +1,180 @@
+{
+    "C1": {
+        "id": "C1",
+        "evolution": "Never",
+        "text": "Combien achetez-vous de vêtements neufs par an ?",
+        "responses": [
+            {
+                "id": "A1",
+                "text": "Presque jamais (≤ 2 pièces)",
+                "children": ["C2"],
+                "carbonImpact": [1, 3]
+            },
+            {
+                "id": "A2",
+                "text": "Peu (3–6 pièces)",
+                "children": ["C2"],
+                "carbonImpact": [3, 6]
+            },
+            {
+                "id": "A3",
+                "text": "Modérément (7–12 pièces)",
+                "children": ["C2"],
+                "carbonImpact": [6, 12]
+            },
+            {
+                "id": "A4",
+                "text": "Souvent (> 12 pièces, fast fashion)",
+                "children": ["C2"],
+                "carbonImpact": [12, 25]
+            }
+        ]
+    },
+
+    "C2": {
+        "id": "C2",
+        "evolution": "Never",
+        "text": "Achetez-vous régulièrement de nouveaux appareils électroniques (téléphone, ordi, tablette, etc.) ?",
+        "responses": [
+            {
+                "id": "B1",
+                "text": "Rarement (ex. téléphone tous les 5 ans)",
+                "children": ["C3"],
+                "carbonImpact": [2, 5]
+            },
+            {
+                "id": "B2",
+                "text": "Tous les 2–3 ans",
+                "children": ["C3"],
+                "carbonImpact": [6, 12]
+            },
+            {
+                "id": "B3",
+                "text": "Souvent (< 2 ans) ou plusieurs appareils",
+                "children": ["C3"],
+                "carbonImpact": [12, 22]
+            }
+        ]
+    },
+
+    "C3": {
+        "id": "C3",
+        "evolution": "Never",
+        "text": "Utilisez-vous beaucoup de services numériques intensifs (streaming 4K, cloud gaming, IA générative, stockage massif) ?",
+        "responses": [
+            {
+                "id": "C1",
+                "text": "Usage modéré (mail, navigation, vidéo HD occasionnelle)",
+                "children": ["C4"],
+                "carbonImpact": [1, 3]
+            },
+            {
+                "id": "C2",
+                "text": "Usage élevé (streaming quotidien, jeux en ligne, IA)",
+                "children": ["C4"],
+                "carbonImpact": [4, 9]
+            }
+        ]
+    },
+
+    "C4": {
+        "id": "C4",
+        "evolution": "Never",
+        "text": "Achetez-vous souvent de nouveaux meubles, décoration ou objets du quotidien (vaisselle, ustensiles, etc.) ?",
+        "responses": [
+            {
+                "id": "D1",
+                "text": "Rarement (occasion, réparation, durable)",
+                "children": ["C5"],
+                "carbonImpact": [1, 3]
+            },
+            {
+                "id": "D2",
+                "text": "Parfois (quelques achats/an)",
+                "children": ["C5"],
+                "carbonImpact": [3, 7]
+            },
+            {
+                "id": "D3",
+                "text": "Souvent (décoration renouvelée, jetable)",
+                "children": ["C5"],
+                "carbonImpact": [7, 15]
+            }
+        ]
+    },
+
+    "C5": {
+        "id": "C5",
+        "evolution": "Never",
+        "text": "Consommez-vous beaucoup de produits d’hygiène, cosmétiques ou produits ménagers (emballés, jetables, premium) ?",
+        "responses": [
+            {
+                "id": "E1",
+                "text": "Basique, rechargeable ou solide (savon, shampoing solide)",
+                "children": ["C6"],
+                "carbonImpact": [1, 2]
+            },
+            {
+                "id": "E2",
+                "text": "Consommation standard",
+                "children": ["C6"],
+                "carbonImpact": [2, 5]
+            },
+            {
+                "id": "E3",
+                "text": "Produits nombreux, emballés, jetables (ex. lingettes, capsules)",
+                "children": ["C6"],
+                "carbonImpact": [5, 10]
+            }
+        ]
+    },
+
+    "C6": {
+        "id": "C6",
+        "evolution": "Never",
+        "text": "Fréquentez-vous régulièrement des loisirs payants à fort impact (événements sportifs, concerts, escape games, salles de sport privées, etc.) ?",
+        "responses": [
+            {
+                "id": "F1",
+                "text": "Rarement (nature, bibliothèque, gratuit)",
+                "children": ["C7"],
+                "carbonImpact": [1, 3]
+            },
+            {
+                "id": "F2",
+                "text": "Occasionnellement (1–2 fois/mois)",
+                "children": ["C7"],
+                "carbonImpact": [3, 7]
+            },
+            {
+                "id": "F3",
+                "text": "Souvent (plusieurs fois/semaine)",
+                "children": ["C7"],
+                "carbonImpact": [7, 14]
+            }
+        ]
+    },
+
+    "C7": {
+        "id": "C7",
+        "evolution": "Never",
+        "text": "Comment gérez-vous vos déchets ?",
+        "responses": [
+            {
+                "id": "G1",
+                "text": "Tri sélectif + compost + réduction forte des emballages",
+                "carbonImpact": [-3, 0]
+            },
+            {
+                "id": "G2",
+                "text": "Tri partiel, peu de compost, emballages moyens",
+                "carbonImpact": [0, 3]
+            },
+            {
+                "id": "G3",
+                "text": "Peu de tri, beaucoup d’emballages jetables",
+                "carbonImpact": [4, 10]
+            }
+        ]
+    }
+}

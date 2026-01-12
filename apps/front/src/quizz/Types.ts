@@ -1,5 +1,14 @@
 export type CarbonRange = [number, number] | number;
-
+export type QuizzType =
+    | "alimentation"
+    | "transport"
+    | "logement"
+    | "consommation";
+export type FragCategory =
+    | "alimentation"
+    | "transport"
+    | "logement"
+    | "consommation";
 export type IdA = string;
 export type IdQ = string;
 
@@ -24,13 +33,14 @@ export type Answer = {
     carbonImpact?: CarbonRange;
 };
 
-export type Question = {
-    id: IdQ;
-    evolution: Evolution;
-    parent?: IdA;
+export interface Question {
+    id: string;
     text: string;
+    evolution: Evolution;
+    category: FragCategory;
+    parent?: string;
     responses: Answer[];
-};
+}
 
 export type Theme = {
     name: string;

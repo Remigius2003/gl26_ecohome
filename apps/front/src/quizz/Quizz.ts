@@ -1,79 +1,113 @@
-import { loadQuestionsAlim } from "./Data/Alimentation";
-import type { Question, CarbonFrag, CarbonRange, CompleteInfo } from "./Types";
+import type {
+    Question,
+    CarbonFrag,
+    CarbonRange,
+    CompleteInfo,
+    FragCategory,
+    QuizzType,
+} from "./Types";
 
 let questions: Record<string, Question> | null = null;
 
-const FRAG_STORAGE_KEY = "carbonFrags";
+const FRAG_STORAGE_KEYS: Record<FragCategory, string> = {
+    alimentation: "carbonFrags_alimentation",
+    transport: "carbonFrags_transport",
+    logement: "carbonFrags_logement",
+    consommation: "carbonFrags_consommation",
+};
 
 /* ---------------- QUESTIONS ---------------- */
 
-async function getQuestions() {
-    if (!questions) {
-        questions = await loadQuestionsAlim();
+import { loadQuestionsByCategory } from "./Data/loadQuestions";
+
+const cachedQuestions: Partial<Record<QuizzType, Record<string, Question>>> =
+    {};
+
+export async function getQuestionsByType(
+    type: QuizzType
+): Promise<Record<string, Question>> {
+    if (!cachedQuestions[type]) {
+        cachedQuestions[type] = await loadQuestionsByCategory(type);
     }
-    return questions;
+    return cachedQuestions[type]!;
 }
 
-function getNextQuestionId(
-    answerId: string,
-    allQuestions: Record<string, Question>
-): string | undefined {
-    for (const question of Object.values(allQuestions)) {
-        for (const response of question.responses) {
-            if (response.id === answerId) {
-                return response.children?.[0];
-            }
-        }
-    }
-    return undefined;
-}
-
-export async function getQuestion(questionId: string): Promise<Question> {
-    const allQuestions = await getQuestions();
-
+export async function getQuestionByType(
+    questionId: string,
+    type: QuizzType
+): Promise<Question> {
+    const allQuestions = await getQuestionsByType(type);
     const question = allQuestions[questionId];
     if (!question) {
-        throw new Error(`Question ${questionId} not found`);
+        throw new Error(
+            `Question ${questionId} not found in category "${type}"`
+        );
     }
-
     return question;
+}
+
+export function getStoredFragsByCategory(category: FragCategory): CarbonFrag[] {
+    const key = FRAG_STORAGE_KEYS[category];
+    const stored = localStorage.getItem(key);
+    if (!stored) return [];
+
+    try {
+        const frags = JSON.parse(stored);
+        return frags.map((frag: any) => ({
+            ...frag,
+            date: new Date(frag.date), //todo have good date
+        }));
+    } catch (e) {
+        console.error(`Failed to parse frags for ${category}`, e);
+        return [];
+    }
 }
 
 /* ---------------- FRAG STORAGE ---------------- */
 
-function saveFrag(frag: CarbonFrag) {
-    const stored = localStorage.getItem(FRAG_STORAGE_KEY);
+function saveFrag(frag: CarbonFrag, category: FragCategory) {
+    const key = FRAG_STORAGE_KEYS[category];
+    const stored = localStorage.getItem(key);
     const frags: CarbonFrag[] = stored ? JSON.parse(stored) : [];
-
     frags.push(frag);
-
-    localStorage.setItem(FRAG_STORAGE_KEY, JSON.stringify(frags));
+    localStorage.setItem(key, JSON.stringify(frags));
 }
 
-export function getStoredFrags(): CarbonFrag[] {
-    const stored = localStorage.getItem(FRAG_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+export function getAllStoredFrags(): Record<FragCategory, CarbonFrag[]> {
+    return Object.fromEntries(
+        Object.entries(FRAG_STORAGE_KEYS).map(([cat, key]) => [
+            cat,
+            getStoredFragsByCategory(cat as FragCategory),
+        ])
+    ) as Record<FragCategory, CarbonFrag[]>;
 }
 
-export function clearStoredFrags() {
-    localStorage.removeItem(FRAG_STORAGE_KEY);
+export function clearStoredFrags(category?: FragCategory) {
+    if (category) {
+        localStorage.removeItem(FRAG_STORAGE_KEYS[category]);
+    } else {
+        // Clear all
+        Object.values(FRAG_STORAGE_KEYS).forEach((key) => {
+            localStorage.removeItem(key);
+        });
+    }
 }
 
 /* ---------------- MAIN HANDLER ---------------- */
 
 export async function handleAnswer(
     currentQuestionId: string,
-    selectedAnswerNumber: number
+    selectedAnswerNumber: number,
+    type: QuizzType
 ): Promise<string | undefined> {
-    const allQuestions = await getQuestions();
+    const allQuestions = await getQuestionsByType(type);
     const currentQuestion = allQuestions[currentQuestionId];
 
     if (!currentQuestion) {
-        throw new Error(`Question ${currentQuestionId} not found`);
+        throw new Error(`Question ${currentQuestionId} not found in ${type}`);
     }
 
     const selectedAnswer = currentQuestion.responses[selectedAnswerNumber - 1];
-
     if (!selectedAnswer) {
         throw new Error(`Answer ${selectedAnswerNumber} not found`);
     }
@@ -84,7 +118,7 @@ export async function handleAnswer(
         date: new Date(),
     };
 
-    saveFrag(frag);
+    saveFrag(frag, type);
 
     return selectedAnswer.children?.[0];
 }
