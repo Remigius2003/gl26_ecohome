@@ -2,7 +2,7 @@
     "H1": {
         "id": "H1",
         "evolution": "Never",
-        "text": "Quel type de logement occupez-vous ?",
+        "text": "Quel type de logement occupez-vous principalement ?",
         "responses": [
             {
                 "id": "A",
@@ -155,21 +155,25 @@
             {
                 "id": "A1",
                 "text": "Seul·e",
+                "children": ["H5"],
                 "carbonImpact": [0, 2]
             },
             {
                 "id": "A2",
                 "text": "2 personnes",
+                "children": ["H5"],
                 "carbonImpact": [-3, -1]
             },
             {
                 "id": "A3",
                 "text": "3–4 personnes",
+                "children": ["H5"],
                 "carbonImpact": [-6, -3]
             },
             {
                 "id": "A4",
                 "text": "5+ personnes",
+                "children": ["H5"],
                 "carbonImpact": [-8, -5]
             }
         ]
@@ -183,21 +187,25 @@
             {
                 "id": "B1",
                 "text": "Seul·e",
+                "children": ["H5"],
                 "carbonImpact": [0, 3]
             },
             {
                 "id": "B2",
                 "text": "2 personnes",
+                "children": ["H5"],
                 "carbonImpact": [-4, -2]
             },
             {
                 "id": "B3",
                 "text": "3–4 personnes",
+                "children": ["H5"],
                 "carbonImpact": [-8, -4]
             },
             {
                 "id": "B4",
                 "text": "5+ personnes",
+                "children": ["H5"],
                 "carbonImpact": [-12, -7]
             }
         ]
@@ -211,17 +219,105 @@
             {
                 "id": "C1",
                 "text": "Non",
+                "children": ["H6"],
                 "carbonImpact": [0, 2]
             },
             {
                 "id": "C2",
                 "text": "Oui, occasionnellement",
+                "children": ["H6"],
                 "carbonImpact": [3, 7]
             },
             {
                 "id": "C3",
                 "text": "Oui, régulièrement",
+                "children": ["H6"],
                 "carbonImpact": [8, 18]
+            }
+        ]
+    },
+
+    "H6": {
+        "id": "H6",
+        "evolution": "Never",
+        "text": "Possédez-vous ou utilisez-vous régulièrement une résidence secondaire (vacances, week-end, etc.) ?",
+        "responses": [
+            {
+                "id": "D1",
+                "text": "Non",
+                "carbonImpact": [0, 1]
+            },
+            {
+                "id": "D2",
+                "text": "Oui, occasionnellement (< 4 semaines/an)",
+                "children": ["H7"],
+                "carbonImpact": [2, 6]
+            },
+            {
+                "id": "D3",
+                "text": "Oui, plusieurs fois par an (4–12 semaines/an)",
+                "children": ["H7"],
+                "carbonImpact": [6, 15]
+            },
+            {
+                "id": "D4",
+                "text": "Oui, souvent (> 12 semaines/an ou quasi permanente)",
+                "children": ["H7"],
+                "carbonImpact": [15, 30]
+            }
+        ]
+    },
+
+    "H7": {
+        "id": "H7",
+        "evolution": "Never",
+        "text": "Quel est le type de résidence secondaire ?",
+        "responses": [
+            {
+                "id": "E1",
+                "text": "Appartement ou petit logement",
+                "children": ["H8"],
+                "carbonImpact": [0, 3]
+            },
+            {
+                "id": "E2",
+                "text": "Maison individuelle",
+                "children": ["H8"],
+                "carbonImpact": [4, 10]
+            },
+            {
+                "id": "E3",
+                "text": "Chalet, mobile home ou cabane non isolée",
+                "children": ["H8"],
+                "carbonImpact": [2, 8]
+            }
+        ]
+    },
+
+    "H8": {
+        "id": "H8",
+        "evolution": "Never",
+        "text": "Comment est-elle chauffée (s’il y a du chauffage) ?",
+        "responses": [
+            {
+                "id": "F1",
+                "text": "Électricité ou pompe à chaleur",
+                "carbonImpact": [2, 6]
+            },
+            {
+                "id": "F2",
+                "text": "Gaz ou fioul",
+                "carbonImpact": [5, 12]
+            },
+            {
+                "id": "F3",
+                "text": "Bois (poêle)",
+                "carbonImpact": [1, 4]
+            },
+            {
+                "id": "F4",
+                "text": "Pas de chauffage / usage uniquement été",
+                "carbonImpact": [0, 2]
             }
         ]
     }

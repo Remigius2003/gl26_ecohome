@@ -10,7 +10,7 @@ const DEFAULT_TYPE: QuizzType = "alimentation";
 const ROOT_QUESTION_ID: Record<QuizzType, string> = {
     alimentation: "Q1",
     transport: "T1",
-    logement: "L1",
+    logement: "H1",
     consommation: "C1",
 };
 
