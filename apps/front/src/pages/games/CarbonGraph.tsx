@@ -14,7 +14,6 @@ export default function CarbonGraph(props: { emissions: CompleteInfo[] }) {
         const ctx = canvas?.getContext("2d");
         if (!ctx) return;
 
-        // ✅ Sort emissions by date (oldest → newest)
         const sortedEmissions = [...props.emissions].sort(
             (a, b) => a.date.getTime() - b.date.getTime()
         );

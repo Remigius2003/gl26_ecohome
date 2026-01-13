@@ -51,7 +51,6 @@ export default function Quizz() {
         }
     });
 
-    // Inside Quizz()
     createEffect(() => {
         // Start a new bloc when quiz begins
         startNewBloc(validType);
@@ -67,7 +66,6 @@ export default function Quizz() {
                 setQuestionId(nextId);
                 setSelectedAnswer(null);
             } else {
-                // Quiz completed → save bloc
                 closeAndSaveCurrentBloc(validType);
                 navigate(`/PreQuizz?type=${validType}`);
             }
