@@ -16,6 +16,7 @@ const GameMenu = lazy(() => import("@pages/games/GameMenu"));
 const Quizz = lazy(() => import("@pages/games/Quizz"));
 const Defi = lazy(() => import("@pages/games/Defi"));
 const Defi2 = lazy(() => import("@pages/games/Defi2"));
+const CGU = lazy(() => import("@pages/CGU"));
 
 const Layout = (props: any) => (
 	<>
@@ -48,6 +49,7 @@ export default function App() {
 				<Route path="/Quizz" component={Quizz} />
 				<Route path="/Defi" component={Defi} />
 				<Route path="/Defi2" component={Defi2} />
+				<Route path="/CGU" component={CGU} />
 				<Route path="*404" component={NotFound} />
 			</Router>
 		</div>
