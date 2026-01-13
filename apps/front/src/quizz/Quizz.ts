@@ -8,7 +8,7 @@ import type {
     QuizzBloc,
 } from "./Types";
 
-import { loadQuestionsByCategory } from "./Data/loadQuestions";
+import { loadQuestionsByCategory } from "./loadQuestions";
 
 // ---------------- STORAGE KEYS ----------------
 

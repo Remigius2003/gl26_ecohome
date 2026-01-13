@@ -1,10 +1,4 @@
-import {
-    Evolution,
-    IdA,
-    IdQ,
-    type Question,
-    type FragCategory,
-} from "../Types";
+import { Evolution, IdA, IdQ, type Question, type FragCategory } from "./Types";
 
 const CATEGORY_TO_FILE: Record<FragCategory, string> = {
     alimentation: "/quizz/alimentation.json",

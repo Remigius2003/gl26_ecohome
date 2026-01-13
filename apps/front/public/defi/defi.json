@@ -1,0 +1,144 @@
+[
+    {
+        "id": "alim_1",
+        "defi": "Manger végétalien aujourd’hui",
+        "category": "alimentation",
+        "leafReward": 15,
+        "percentReward": 8,
+        "overQuestions": {
+            "id": "q_alim_1",
+            "text": "Avez-vous mangé 100 % végétalien aujourd’hui ?",
+            "responses": [
+                {
+                    "id": "yes",
+                    "text": "Oui",
+                    "leafReward": 15,
+                    "percentReward": 8
+                },
+                {
+                    "id": "no",
+                    "text": "Non",
+                    "leafReward": 0,
+                    "percentReward": 0
+                }
+            ]
+        }
+    },
+    {
+        "id": "alim_2",
+        "defi": "Éviter le plastique à usage unique au repas",
+        "category": "alimentation",
+        "leafReward": 6,
+        "percentReward": 3
+    },
+    {
+        "id": "trans_1",
+        "defi": "Remplacer un trajet en voiture par la marche, le vélo ou les transports en commun",
+        "category": "transport",
+        "leafReward": 10,
+        "percentReward": 7,
+        "overQuestions": {
+            "id": "q_trans_1",
+            "text": "Avez-vous évité au moins un trajet en voiture solo ?",
+            "responses": [
+                {
+                    "id": "yes",
+                    "text": "Oui",
+                    "leafReward": 10,
+                    "percentReward": 7
+                },
+                {
+                    "id": "no",
+                    "text": "Non",
+                    "leafReward": 0,
+                    "percentReward": 0
+                }
+            ]
+        }
+    },
+    {
+        "id": "trans_2",
+        "defi": "Pratiquer le covoiturage ou partager un trajet",
+        "category": "transport",
+        "leafReward": 9,
+        "percentReward": 6
+    },
+    {
+        "id": "log_1",
+        "defi": "Éteindre les lumières et débrancher les appareils inutilisés",
+        "category": "logement",
+        "leafReward": 5,
+        "percentReward": 4
+    },
+    {
+        "id": "log_2",
+        "defi": "Prendre une douche de moins de 5 minutes",
+        "category": "logement",
+        "leafReward": 7,
+        "percentReward": 5,
+        "overQuestions": {
+            "id": "q_log_2",
+            "text": "Votre douche a-t-elle duré moins de 5 minutes ?",
+            "responses": [
+                {
+                    "id": "yes",
+                    "text": "Oui",
+                    "leafReward": 7,
+                    "percentReward": 5
+                },
+                {
+                    "id": "no",
+                    "text": "Non",
+                    "leafReward": 1,
+                    "percentReward": 1
+                }
+            ]
+        }
+    },
+    {
+        "id": "cons_1",
+        "defi": "N’acheter aucun produit neuf aujourd’hui",
+        "category": "consommation",
+        "leafReward": 12,
+        "percentReward": 9,
+        "overQuestions": {
+            "id": "q_cons_1",
+            "text": "Avez-vous acheté un produit neuf ?",
+            "responses": [
+                {
+                    "id": "no",
+                    "text": "Non",
+                    "leafReward": 12,
+                    "percentReward": 9
+                },
+                {
+                    "id": "yes",
+                    "text": "Oui",
+                    "leafReward": 0,
+                    "percentReward": 0
+                }
+            ]
+        }
+    },
+    {
+        "id": "cons_2",
+        "defi": "Réparer, réutiliser ou donner un objet au lieu de le jeter",
+        "category": "consommation",
+        "leafReward": 10,
+        "percentReward": 7
+    },
+    {
+        "id": "alim_3",
+        "defi": "Cuisiner avec des restes pour éviter le gaspillage",
+        "category": "alimentation",
+        "leafReward": 8,
+        "percentReward": 5
+    },
+    {
+        "id": "log_3",
+        "defi": "Baisser le chauffage de 1°C (ou monter la clim de 1°C)",
+        "category": "logement",
+        "leafReward": 6,
+        "percentReward": 4
+    }
+]
