@@ -58,3 +58,9 @@ export type CompleteInfo = {
     emission: CarbonRange;
     date: Date;
 };
+
+export type QuizzBloc = {
+    id: string;
+    info: CarbonFrag[];
+    date: Date;
+};

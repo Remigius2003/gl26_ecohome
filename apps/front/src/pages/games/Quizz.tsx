@@ -1,6 +1,11 @@
 import { createSignal, createEffect, onCleanup } from "solid-js";
 import { useNavigate, useLocation } from "@solidjs/router";
-import { handleAnswer, getQuestionByType } from "../../quizz/Quizz";
+import {
+    handleAnswer,
+    getQuestionByType,
+    closeAndSaveCurrentBloc,
+    startNewBloc,
+} from "../../quizz/Quizz";
 import type { Question } from "../../quizz/Types";
 import "./Quizz.css";
 
@@ -46,18 +51,24 @@ export default function Quizz() {
         }
     });
 
+    // Inside Quizz()
+    createEffect(() => {
+        // Start a new bloc when quiz begins
+        startNewBloc(validType);
+    });
+
     const handleValidate = async () => {
         const answer = selectedAnswer();
         if (answer === null) return;
 
         try {
-            // Pass type so handleAnswer saves to correct storage key
             const nextId = await handleAnswer(questionId(), answer, validType);
             if (nextId != undefined) {
                 setQuestionId(nextId);
                 setSelectedAnswer(null);
             } else {
-                // Navigate back to PreQuizz with same type
+                // Quiz completed → save bloc
+                closeAndSaveCurrentBloc(validType);
                 navigate(`/PreQuizz?type=${validType}`);
             }
         } catch (err) {

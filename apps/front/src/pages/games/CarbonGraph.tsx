@@ -1,6 +1,5 @@
-import { onMount, createEffect } from "solid-js";
-import type { CarbonFrag, CarbonRange } from "../../quizz/Types";
-import { lisseCarbonFrag } from "../../quizz/Quizz";
+import { createEffect } from "solid-js";
+import type { CompleteInfo, CarbonRange } from "../../quizz/Types";
 
 function normalizeCarbon(value?: CarbonRange): number | null {
     if (value == null) return null;
@@ -8,16 +7,19 @@ function normalizeCarbon(value?: CarbonRange): number | null {
     return (value[0] + value[1]) / 2;
 }
 
-export default function CarbonGraph(props: { frags: CarbonFrag[] }) {
+export default function CarbonGraph(props: { emissions: CompleteInfo[] }) {
     let canvas!: HTMLCanvasElement;
 
     createEffect(() => {
         const ctx = canvas?.getContext("2d");
         if (!ctx) return;
 
-        const completeInfo = lisseCarbonFrag(props.frags);
+        // ✅ Sort emissions by date (oldest → newest)
+        const sortedEmissions = [...props.emissions].sort(
+            (a, b) => a.date.getTime() - b.date.getTime()
+        );
 
-        const values = completeInfo
+        const values = sortedEmissions
             .map((i) => normalizeCarbon(i.emission))
             .filter((v): v is number => v !== null);
 
@@ -34,12 +36,13 @@ export default function CarbonGraph(props: { frags: CarbonFrag[] }) {
             ctx.fillText("Aucune donnée à afficher", w / 2, h / 2);
             return;
         }
+
         const graphWidth = w - padding * 2;
         const graphHeight = h - padding * 2;
 
         const min = 0;
         const max = Math.max(...values);
-        const range = max - min || 1; // avoid division by zero
+        const range = max - min || 1;
 
         ctx.clearRect(0, 0, w, h);
 
