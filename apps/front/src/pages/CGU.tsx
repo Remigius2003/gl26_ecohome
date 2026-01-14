@@ -28,7 +28,7 @@ export default function CGU() {
 
                 <p><strong>Droit applicable et juridiction compétente :</strong> Les présentes CGU sont régies par le droit français. En cas de litige, les tribunaux français seront seuls compétents.</p>
 
-                <p><strong>Contact et mentions légales :</strong> Pour toute question concernant les CGU ou le service, l’utilisateur peut contacter l’éditeur à l’adresse suivante : 12 avenue Auguste Rodin, Meudon 92190, France. L’éditeur de l’application EcoHome est la société EcoTech, immatriculée au RCS de Nanterre sous le numéro 123 456 789. Ou par email à : contact.legal@ecohome.fr</p>
+                <p><strong>Contact et mentions légales :</strong> Pour toute question concernant les CGU ou le service, l’utilisateur peut contacter l’éditeur à l’adresse suivante : bâtiment 620, avenue Louis de Broglie, Orsay , France. L’éditeur de l’application EcoHome est la société EcoTech, immatriculée au RCS d'Evry sous le numéro 123 456 789. Ou par email à : contact.legal@ecohome.fr</p>
             </div>
 
             <div class="checkbox-container" onClick={() => navigate("/Home")}>
