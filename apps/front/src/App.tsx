@@ -12,19 +12,12 @@ const Register = lazy(() => import("@pages/auth/Register"));
 const Login = lazy(() => import("@pages/auth/Login"));
 const AddFriend = lazy(() => import("@pages/social/AddFriend"));
 const ChooseFriend = lazy(() => import("@pages/social/ChooseFriend"));
-<<<<<<< HEAD
-const PreQuizz = lazy(() => import("@pages/games/PreQuizz"));
-const Quizz = lazy(() => import("@pages/games/Quizz"));
-const Defi = lazy(() => import("@pages/games/Defi"));
-const Defi2 = lazy(() => import("@pages/games/Defi2"));
-const CGU = lazy(() => import("@pages/CGU"));
-=======
 const PreQuizz = lazy(() => import("@pages/carbonEvaluation/PreQuizz"));
 const Quizz = lazy(() => import("@pages/carbonEvaluation/Quizz"));
 const Defi = lazy(() => import("@pages/carbonEvaluation/Defi"));
-const LightMaze = lazy(() => import("@pages/games/LightMaze"));
+//const LightMaze = lazy(() => import("@pages/games/LightMaze"));
 const Defi2 = lazy(() => import("@pages/carbonEvaluation/Defi2"));
->>>>>>> 48ca496 (big evolve)
+const CGU = lazy(() => import("@pages/CGU"));
 
 const Layout = (props: any) => (
     <>
@@ -56,7 +49,7 @@ export default function App() {
                 <Route path="/PreQuizz" component={PreQuizz} />
                 <Route path="/Quizz" component={Quizz} />
                 <Route path="/Defi" component={Defi} />
-                <Route path="/LightMaze" component={LightMaze} />
+
                 <Route path="/Defi2" component={Defi2} />
                 <Route path="/CGU" component={CGU} />
                 <Route path="/Defi2/:defiId" component={Defi2} />
@@ -65,3 +58,4 @@ export default function App() {
         </div>
     );
 }
+//<Route path="/LightMaze" component={LightMaze} />
