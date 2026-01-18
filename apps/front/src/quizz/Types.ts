@@ -64,3 +64,34 @@ export type QuizzBloc = {
     info: CarbonFrag[];
     date: Date;
 };
+
+//DEFI
+
+export type Defi = {
+    id: string;
+    defi: string;
+    category: FragCategory;
+    leafReward: number;
+    percentReward: number; //This is a modifier applided to carbon range of the evaluation
+    overQuestions?: defiQuestion; //If the difi is like walk 1km question can exist and be like How much did you do: I did not do it, I did around 1km, I did more than 1 km
+};
+
+export type defiAnswer = {
+    id: string;
+    text: string;
+    leafReward: number;
+    percentReward: number;
+};
+
+export type defiQuestion = {
+    id: string;
+    text: string;
+    responses: defiAnswer[];
+};
+
+//When a defi is validate it alter this value that alter global evaluation like CarbonRangeMin + (carbonRangeMax - CarbonRangeMin)*percent modifier
+export type valuePercent = {
+    category: FragCategory;
+    date: Date;
+    percentModifier: number;
+};

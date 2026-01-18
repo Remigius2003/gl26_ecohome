@@ -1,12 +1,12 @@
-import { FragCategory } from "./Types";
-import { Defi, quizzQuestion, quizzAnswer } from "./Defi";
+import { FragCategory, Defi, defiQuestion, defiAnswer } from "./Types";
 
+//Todo: move and redo this stuff in the back using loadQuestionExemple
 // Helper to avoid repetition and ensure type safety
 const makeQuestion = (
     id: string,
     text: string,
-    responses: quizzAnswer[]
-): quizzQuestion => ({
+    responses: defiAnswer[]
+): defiQuestion => ({
     id,
     text,
     responses,
@@ -17,7 +17,7 @@ const makeAnswer = (
     text: string,
     leafReward: number,
     percentReward: number
-): quizzAnswer => ({
+): defiAnswer => ({
     id,
     text,
     leafReward,

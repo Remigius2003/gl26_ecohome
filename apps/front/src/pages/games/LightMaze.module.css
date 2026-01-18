@@ -1,0 +1,373 @@
+.page {
+    --light: #f7f4ef;
+    --dark: #111522;
+    --accent: #11c9b3;
+    --accent-strong: #0ee0c8;
+    --hot: #ff6b5a;
+    --sun: #ffc857;
+    --ink: #121826;
+    min-height: 100vh;
+    padding: 24px clamp(16px, 4vw, 48px) 48px;
+    font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+    color: var(--ink);
+    background:
+        radial-gradient(
+            circle at 8% 10%,
+            rgba(255, 200, 87, 0.35),
+            transparent 45%
+        ),
+        radial-gradient(
+            circle at 85% 15%,
+            rgba(17, 201, 179, 0.2),
+            transparent 40%
+        ),
+        radial-gradient(
+            circle at 80% 85%,
+            rgba(255, 107, 90, 0.2),
+            transparent 50%
+        ),
+        linear-gradient(180deg, #fefcf8 0%, #eef2f4 100%);
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.backButton {
+    background: rgba(17, 21, 34, 0.08);
+    color: var(--ink);
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.backButton:hover {
+    background: rgba(17, 21, 34, 0.15);
+}
+
+.brand {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.brandAccent {
+    color: var(--accent);
+}
+
+.levelPill {
+    background: var(--dark);
+    color: #f6f6f6;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1.1fr);
+    gap: 28px;
+    align-items: start;
+}
+
+.infoCard,
+.gameCard {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 28px;
+    padding: 24px;
+    box-shadow: 0 30px 80px rgba(16, 21, 38, 0.12);
+    backdrop-filter: blur(14px);
+}
+
+.gameCard {
+    background: #101421;
+    color: #f8f8f8;
+    position: relative;
+    overflow: hidden;
+}
+
+.cardHeader {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.title {
+    font-size: clamp(24px, 3vw, 34px);
+    margin: 0;
+}
+
+.subtitle {
+    margin: 0;
+    color: rgba(18, 24, 38, 0.7);
+}
+
+.previewFrame {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.previewGlow {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(17, 201, 179, 0.3),
+        transparent 60%
+    );
+}
+
+.previewBody {
+    position: relative;
+    background: rgba(245, 245, 245, 0.9);
+    padding: 20px;
+    border-radius: 20px;
+    display: grid;
+    gap: 12px;
+}
+
+.previewIcon {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: #fff;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 12px 30px rgba(16, 21, 38, 0.1);
+}
+
+.lightDot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--hot);
+    box-shadow: 0 0 16px rgba(255, 107, 90, 0.7);
+}
+
+.flavor {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.4;
+    color: rgba(18, 24, 38, 0.7);
+}
+
+.statsRow {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+}
+
+.statLabel {
+    margin: 0;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(18, 24, 38, 0.5);
+}
+
+.statValue {
+    margin: 4px 0 0;
+    font-size: 18px;
+}
+
+.actionRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.primaryButton,
+.secondaryButton,
+.toggleButton,
+.controlPad button {
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.primaryButton {
+    background: var(--accent);
+    color: #042420;
+    box-shadow: 0 12px 24px rgba(17, 201, 179, 0.35);
+}
+
+.primaryButton:hover {
+    background: var(--accent-strong);
+}
+
+.secondaryButton {
+    background: #f0f2f6;
+    color: var(--ink);
+}
+
+.secondaryButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.helpBox {
+    padding: 12px 16px;
+    border-radius: 16px;
+    background: rgba(17, 21, 34, 0.06);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.hud {
+    display: grid;
+    grid-template-columns: repeat(3, auto) 1fr;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.hudGroup {
+    display: grid;
+    gap: 4px;
+}
+
+.hudLabel {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(248, 248, 248, 0.6);
+}
+
+.hudValue {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.toggleButton {
+    justify-self: end;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.homeState {
+    border-radius: 20px;
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.06);
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.boardWrap {
+    background: rgba(255, 255, 255, 0.04);
+    padding: 20px;
+    border-radius: 24px;
+}
+
+.board {
+    display: grid;
+    gap: 6px;
+}
+
+.cell {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.cellLight {
+    background: #f5f1e8;
+    border: 1px solid rgba(18, 24, 38, 0.08);
+}
+
+.cellShadow {
+    background: #1a2030;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.cellDim {
+    opacity: 0.35;
+}
+
+.player {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent-strong);
+    box-shadow: 0 0 12px rgba(17, 201, 179, 0.8);
+    position: absolute;
+    inset: 50% auto auto 50%;
+    transform: translate(-50%, -50%);
+}
+
+.goal {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--sun);
+    box-shadow: 0 0 10px rgba(255, 200, 87, 0.8);
+    position: absolute;
+    inset: 50% auto auto 50%;
+    transform: translate(-50%, -50%);
+}
+
+.winBanner {
+    position: absolute;
+    inset: 24px;
+    background: rgba(16, 20, 33, 0.94);
+    border-radius: 24px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    gap: 10px;
+    padding: 24px;
+}
+
+.controlPad {
+    margin-top: 18px;
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+}
+
+.padRow {
+    display: flex;
+    gap: 12px;
+}
+
+.controlPad button {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 18px;
+}
+
+@media (max-width: 900px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+
+    .hud {
+        grid-template-columns: repeat(2, auto);
+        justify-content: space-between;
+    }
+
+    .toggleButton {
+        grid-column: 1 / -1;
+        width: 100%;
+    }
+}
