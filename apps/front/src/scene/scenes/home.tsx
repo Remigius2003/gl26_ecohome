@@ -22,20 +22,72 @@ export default class HomeScene implements Scene {
     private world!: World;
 
     init(canvas: HTMLCanvasElement, onSwitchScene: (type: SceneType) => void) {
-        const addWall = (
+        function generateWallsFromAscii(
+            map: string[],
+            addWall: (
+                id: string,
+                x: number,
+                y: number,
+                w: number,
+                h: number,
+            ) => void,
+        ) {
+            const rows = map.length;
+            const cols = map[0].length;
+            let wallId = 0;
+
+            for (let y = 0; y < rows; y++) {
+                let x = 0;
+
+                while (x < cols) {
+                    if (map[y][x] === "#") {
+                        const startX = x;
+
+                        while (x < cols && map[y][x] === "#") {
+                            x++;
+                        }
+
+                        const width = x - startX;
+
+                        addWall(
+                            `wall-${wallId++}`,
+                            startX * CELL_SIZE,
+                            y * CELL_SIZE,
+                            width * CELL_SIZE,
+                            CELL_SIZE,
+                        );
+                    } else {
+                        x++;
+                    }
+                }
+            }
+        }
+
+        function findPlayerSpawn(map: string[]) {
+            for (let y = 0; y < map.length; y++) {
+                for (let x = 0; x < map[y].length; x++) {
+                    if (map[y][x] === "P") {
+                        return { x, y };
+                    }
+                }
+            }
+            return { x: 1, y: 1 };
+        }
+
+        const addWallG = (
             id: string,
-            x: number,
-            y: number,
-            w: number,
-            h: number,
+            gx: number,
+            gy: number,
+            gw: number,
+            gh: number,
         ) =>
             this.world.addEntity(
                 createSolid({
                     id,
-                    x,
-                    y,
-                    width: w,
-                    height: h,
+                    x: gx * CELL_SIZE,
+                    y: gy * CELL_SIZE,
+                    width: gw * CELL_SIZE,
+                    height: gh * CELL_SIZE,
                     priority: 2,
                     text: new ImageTexture("house/wall/wood.png"),
                 }),
@@ -61,107 +113,77 @@ export default class HomeScene implements Scene {
                 }),
             );
 
-        this.world = new World(3 * canvas.width, 3 * canvas.height); // need to be fix to something like that on computer
+        const GRID_COLS = 32;
+        const GRID_ROWS = 32;
+
+        const CELL_SIZE = 96;
+
+        // world size now comes from the grid
+        const WORLD_WIDTH = GRID_COLS * CELL_SIZE;
+        const WORLD_HEIGHT = GRID_ROWS * CELL_SIZE;
+
+        this.world = new World(WORLD_WIDTH, WORLD_HEIGHT);
         this.camera = new Camera(canvas.width, canvas.height);
 
-        //parametres
-        const DOOR_WIDTH = 140;
-        const WALL_THICKNESS = 20;
-
-        const HOUSE_X = 0;
-        const HOUSE_Y = 0;
-        const HOUSE_WIDTH = 3000;
-        const HOUSE_HEIGHT = 3000;
-
         // Outer walls
-        addWall("house-top", HOUSE_X, HOUSE_Y, HOUSE_WIDTH, WALL_THICKNESS);
-        addWall(
-            "house-bottom",
-            HOUSE_X,
-            HOUSE_Y + HOUSE_HEIGHT - WALL_THICKNESS,
-            HOUSE_WIDTH,
-            WALL_THICKNESS,
-        );
-        addWall("house-left", HOUSE_X, HOUSE_Y, WALL_THICKNESS, HOUSE_HEIGHT);
-        addWall(
-            "house-right",
-            HOUSE_X + HOUSE_WIDTH - WALL_THICKNESS,
-            HOUSE_Y,
-            WALL_THICKNESS,
-            HOUSE_HEIGHT,
-        );
+        const WALL = 1;
+        const ASCII_MAP = [
+            "################################",
+            "#......................EEEEEEEE#",
+            "#......................EEEEEEEE#",
+            "#..........#..........##########",
+            "#..........#..........#........#",
+            "#....TTT...#..........#........#",
+            "#....TTT...#..........#........#",
+            "#....TTT...#...................#",
+            "#....TTT...#...................#",
+            "#....TTT...#..........#........#",
+            "#..........#..........#........#",
+            "#..........#..........#........#",
+            "#..........#..........##########",
+            "############...................#",
+            "#..............................#",
+            "#..............................#",
+            "#..............................#",
+            "#..............................#",
+            "#........######...#............#",
+            "#........#........#............#",
+            "#........#........#............#",
+            "#........#........#............#",
+            "#........#........#............#",
+            "#........#........#............#",
+            "#........#........#............#",
+            "#........#........#............#",
+            "#........#........#............#",
+            "#........#........#............#",
+            "#........#........#............#",
+            "#........#....P...#............#",
+            "#........#........#............#",
+            "################################",
+        ];
 
-        //Inner wall
-        const X_1_3 = 1000;
-        const X_1_2 = 1500;
-        const X_2_3 = 2000;
+        generateWallsFromAscii(ASCII_MAP, (id, x, y, w, h) => {
+            this.world.addEntity(
+                createSolid({
+                    id,
+                    x,
+                    y,
+                    width: w,
+                    height: h,
+                    priority: 2,
+                    text: new ImageTexture("house/wall/wood.png"),
+                }),
+            );
+        });
 
-        const Y_2_5 = 1200;
-        const Y_2_3 = 2000;
-        const Y_1_2 = 1500;
-        const Y_1_4 = 750;
-
-        // Upper horizontal wall (at 2/5 height)
-        addWall("inner-h-upper", 0, Y_2_5, X_1_3, WALL_THICKNESS);
-
-        // Upper vertical walls (left and right), with bottom doors
-        addWall(
-            "inner-v-upper-left",
-            X_1_3,
-            DOOR_WIDTH,
-            WALL_THICKNESS,
-            Y_2_5 - DOOR_WIDTH,
-        );
-        addWall(
-            "inner-v-upper-right",
-            X_2_3,
-            DOOR_WIDTH,
-            WALL_THICKNESS,
-            Y_2_5 - DOOR_WIDTH,
-        );
-
-        // Lower horizontal wall
-        addWall(
-            "inner-h-lower-left",
-            DOOR_WIDTH,
-            Y_2_3,
-            X_1_3 - DOOR_WIDTH,
-            WALL_THICKNESS,
-        );
-
-        // Mid-right horizontal wall
-        addWall(
-            "inner-h-mid-right",
-            X_2_3,
-            Y_1_2,
-            HOUSE_WIDTH - X_2_3,
-            WALL_THICKNESS,
-        );
-
-        // Mid-right up horizontal wall
-        addWall(
-            "inner-h-mid-right",
-            X_2_3,
-            Y_1_4,
-            HOUSE_WIDTH - X_2_3,
-            WALL_THICKNESS,
-        );
-
-        // Left lower vertical wall
-        addWall(
-            "inner-v-lower-left",
-            X_1_3,
-            Y_2_3,
-            WALL_THICKNESS,
-            HOUSE_HEIGHT - Y_2_3,
-        );
+        const spawn = findPlayerSpawn(ASCII_MAP);
 
         this.player = createCharacter({
             id: "player",
-            x: 100,
-            y: 100,
-            width: 40,
-            height: 40,
+            x: spawn.x * CELL_SIZE,
+            y: spawn.y * CELL_SIZE,
+            width: CELL_SIZE * 0.5,
+            height: CELL_SIZE * 0.5,
             speed: 400,
             text: new ColorTexture("#4fc3f7", "white"),
         });
@@ -184,26 +206,25 @@ export default class HomeScene implements Scene {
         this.npcControllers.push(new NPCController(npc));
 
         // Stairs
-        const stairs = withInteractable(
-            createEntity({
-                id: "stairs-up",
-                x: HOUSE_X + HOUSE_WIDTH / 2 + 60,
-                y: HOUSE_Y + HOUSE_HEIGHT / 2 + 100,
-                width: 80,
-                height: 120,
-                priority: 1,
-                text: new ImageTexture("house/stairs/stairs_up.png"),
-            }),
-            {
-                onInteract: () => {
-                    console.log("Go upstairs");
-                    this.player.x = 300;
-                    this.player.y = 150;
-                },
-            },
-        );
-
-        this.world.addEntity(stairs);
+        //const stairs = withInteractable(
+        //    createEntity({
+        //        id: "stairs-up",
+        //        x: HOUSE_X + HOUSE_WIDTH / 2 + 60,
+        //        y: HOUSE_Y + HOUSE_HEIGHT / 2 + 100,
+        //        width: 80,
+        //        height: 120,
+        //        priority: 1,
+        //        text: new ImageTexture("house/stairs/stairs_up.png"),
+        //    }),
+        //    {
+        //        onInteract: () => {
+        //            console.log("Go upstairs");
+        //            this.player.x = 300;
+        //            this.player.y = 150;
+        //        },
+        //    },
+        //);
+        //this.world.addEntity(stairs);
 
         //const games: { type: SceneType; x: number; color: string }[] = [
         //    { type: "trilogique", x: 200, color: "#f44336" },
