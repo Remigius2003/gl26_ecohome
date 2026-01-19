@@ -14,6 +14,46 @@ import {
     NPCController,
 } from "../logic/movement";
 
+type AsciiObjectDef = {
+    width: number;
+    height: number;
+    texture: string;
+    solid?: boolean;
+};
+
+type AsciiInteractionDef = {
+    width: number;
+    height: number;
+    onInteract: () => void;
+    texture?: string; // optional visual
+};
+
+const OBJECT_DEFS: Record<string, AsciiObjectDef> = {
+    T: {
+        width: 3,
+        height: 3,
+        texture: "house/furniture/table.png",
+        solid: true,
+    },
+    E: {
+        width: 1,
+        height: 1,
+        texture: "house/furniture/esc.png",
+        solid: false,
+    },
+};
+const INTERACTION_DEFS: Record<string, AsciiInteractionDef> = {
+    S: {
+        width: 1,
+        height: 2,
+        texture: "none",
+        onInteract: () => {
+            console.log("Go upstairs");
+            //navigate("../home2");
+        },
+    },
+};
+
 export default class HomeScene implements Scene {
     private playerController!: PlayerController;
     private npcControllers: NPCController[] = [];
@@ -63,6 +103,105 @@ export default class HomeScene implements Scene {
             }
         }
 
+        function generateObjectsFromAscii(
+            map: string[],
+            addObject: (
+                id: string,
+                x: number,
+                y: number,
+                w: number,
+                h: number,
+                texture: string,
+                solid: boolean,
+            ) => void,
+        ) {
+            const rows = map.length;
+            const cols = map[0].length;
+            let objectId = 0;
+
+            const visited = Array.from({ length: rows }, () =>
+                Array(cols).fill(false),
+            );
+
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    const char = map[y][x];
+
+                    if (!OBJECT_DEFS[char] || visited[y][x]) continue;
+
+                    const def = OBJECT_DEFS[char];
+
+                    // mark occupied cells
+                    for (let dy = 0; dy < def.height; dy++) {
+                        for (let dx = 0; dx < def.width; dx++) {
+                            if (map[y + dy]?.[x + dx] === char) {
+                                visited[y + dy][x + dx] = true;
+                            }
+                        }
+                    }
+
+                    addObject(
+                        `object-${char}-${objectId++}`,
+                        x * CELL_SIZE,
+                        y * CELL_SIZE,
+                        def.width * CELL_SIZE,
+                        def.height * CELL_SIZE,
+                        def.texture,
+                        def.solid ?? false,
+                    );
+                }
+            }
+        }
+        function generateInteractionsFromAscii(
+            map: string[],
+            addInteraction: (
+                id: string,
+                x: number,
+                y: number,
+                w: number,
+                h: number,
+                texture: string | undefined,
+                onInteract: () => void,
+            ) => void,
+        ) {
+            const rows = map.length;
+            const cols = map[0].length;
+            let interactionId = 0;
+
+            const visited = Array.from({ length: rows }, () =>
+                Array(cols).fill(false),
+            );
+
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    const char = map[y][x];
+
+                    if (!INTERACTION_DEFS[char] || visited[y][x]) continue;
+
+                    const def = INTERACTION_DEFS[char];
+
+                    // mark occupied cells
+                    for (let dy = 0; dy < def.height; dy++) {
+                        for (let dx = 0; dx < def.width; dx++) {
+                            if (map[y + dy]?.[x + dx] === char) {
+                                visited[y + dy][x + dx] = true;
+                            }
+                        }
+                    }
+
+                    addInteraction(
+                        `interaction-${char}-${interactionId++}`,
+                        x * CELL_SIZE,
+                        y * CELL_SIZE,
+                        def.width * CELL_SIZE,
+                        def.height * CELL_SIZE,
+                        def.texture,
+                        def.onInteract,
+                    );
+                }
+            }
+        }
+
         function findPlayerSpawn(map: string[]) {
             for (let y = 0; y < map.length; y++) {
                 for (let x = 0; x < map[y].length; x++) {
@@ -73,45 +212,6 @@ export default class HomeScene implements Scene {
             }
             return { x: 1, y: 1 };
         }
-
-        const addWallG = (
-            id: string,
-            gx: number,
-            gy: number,
-            gw: number,
-            gh: number,
-        ) =>
-            this.world.addEntity(
-                createSolid({
-                    id,
-                    x: gx * CELL_SIZE,
-                    y: gy * CELL_SIZE,
-                    width: gw * CELL_SIZE,
-                    height: gh * CELL_SIZE,
-                    priority: 2,
-                    text: new ImageTexture("house/wall/wood.png"),
-                }),
-            );
-
-        const addFurniture = (
-            id: string,
-            x: number,
-            y: number,
-            w: number,
-            h: number,
-            texture: string,
-        ) =>
-            this.world.addEntity(
-                createEntity({
-                    id,
-                    x,
-                    y,
-                    width: w,
-                    height: h,
-                    priority: 1,
-                    text: new ImageTexture(texture),
-                }),
-            );
 
         const GRID_COLS = 32;
         const GRID_ROWS = 32;
@@ -133,11 +233,11 @@ export default class HomeScene implements Scene {
             "#......................EEEEEEEE#",
             "#..........#..........##########",
             "#..........#..........#........#",
-            "#....TTT...#..........#........#",
-            "#....TTT...#..........#........#",
-            "#....TTT...#...................#",
-            "#....TTT...#...................#",
-            "#....TTT...#..........#........#",
+            "#...TTT....#..........#........#",
+            "#...TTT....#..........#........#",
+            "#...TTT....#...................#",
+            "#..........#...................#",
+            "#..........#..........#........#",
             "#..........#..........#........#",
             "#..........#..........#........#",
             "#..........#..........##########",
@@ -161,6 +261,53 @@ export default class HomeScene implements Scene {
             "#........#........#............#",
             "################################",
         ];
+        generateObjectsFromAscii(
+            ASCII_MAP,
+            (id, x, y, w, h, texture, solid) => {
+                this.world.addEntity(
+                    solid
+                        ? createSolid({
+                              id,
+                              x,
+                              y,
+                              width: w,
+                              height: h,
+                              priority: 1,
+                              text: new ImageTexture(texture),
+                          })
+                        : createEntity({
+                              id,
+                              x,
+                              y,
+                              width: w,
+                              height: h,
+                              priority: 1,
+                              text: new ImageTexture(texture),
+                          }),
+                );
+            },
+        );
+        generateInteractionsFromAscii(
+            ASCII_MAP,
+            (id, x, y, w, h, texture, onInteract) => {
+                const entity = withInteractable(
+                    createEntity({
+                        id,
+                        x,
+                        y,
+                        width: w,
+                        height: h,
+                        priority: 1,
+                        text: texture
+                            ? new ImageTexture(texture)
+                            : new ImageTexture("undefined"),
+                    }),
+                    { onInteract },
+                );
+
+                this.world.addEntity(entity);
+            },
+        );
 
         generateWallsFromAscii(ASCII_MAP, (id, x, y, w, h) => {
             this.world.addEntity(
