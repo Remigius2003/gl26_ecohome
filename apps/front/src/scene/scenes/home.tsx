@@ -73,7 +73,7 @@ export default class HomeScene implements Scene {
         generateInteractionsFromAscii(
             ASCII_MAP,
             CELL_SIZE,
-            (id, x, y, w, h, tex, onInteract) => {
+            (id, x, y, w, h, tex, priority, onInteract) => {
                 this.world.addEntity(
                     withInteractable(
                         createEntity({
@@ -82,7 +82,7 @@ export default class HomeScene implements Scene {
                             y,
                             width: w,
                             height: h,
-                            priority: 1,
+                            priority: priority,
                             text: new ImageTexture(tex ?? "undefined"),
                         }),
                         { onInteract },

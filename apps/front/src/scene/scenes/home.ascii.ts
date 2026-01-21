@@ -12,7 +12,14 @@ export function findPlayerSpawn(map: string[]) {
 export function generateWallsFromAscii(
     map: string[],
     cellSize: number,
-    addWall: (id: string, x: number, y: number, w: number, h: number) => void,
+    addWall: (
+        id: string,
+        x: number,
+        y: number,
+        w: number,
+        h: number,
+        priority: number,
+    ) => void,
 ) {
     let id = 0;
     map.forEach((row, y) =>
@@ -24,6 +31,7 @@ export function generateWallsFromAscii(
                     y * cellSize,
                     cellSize,
                     cellSize,
+                    4,
                 );
             }
         }),
@@ -86,6 +94,7 @@ export function generateInteractionsFromAscii(
         w: number,
         h: number,
         texture: string | undefined,
+        priority: number,
         onInteract: () => void,
     ) => void,
 ) {
@@ -116,6 +125,7 @@ export function generateInteractionsFromAscii(
                 def.width * cellSize,
                 def.height * cellSize,
                 def.texture,
+                def.priority,
                 def.onInteract,
             );
         }

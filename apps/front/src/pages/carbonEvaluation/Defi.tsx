@@ -24,7 +24,7 @@ export default function Defi() {
         <div class="defi-container">
             <h1>Défis Écologiques !</h1>
 
-            <button class="btn-back" onClick={() => navigate(-1)}>
+            <button class="btn-back" onClick={() => navigate("/home")}>
                 <img
                     src="public/Red-Left-Arrow.png"
                     alt="Retour"

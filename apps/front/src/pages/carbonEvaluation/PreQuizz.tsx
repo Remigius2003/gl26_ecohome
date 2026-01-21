@@ -28,7 +28,7 @@ export default function PreQuizz() {
     const location = useLocation();
 
     const urlType = new URLSearchParams(location.search).get(
-        "type"
+        "type",
     ) as QuizzType | null;
     const validType = Object.keys(TYPE_CONFIG).includes(urlType || "")
         ? urlType!
@@ -55,7 +55,7 @@ export default function PreQuizz() {
 
     return (
         <div class={`alim-page ${TYPE_BG_CLASS[validType]}`}>
-            <button class="back-button" onClick={() => navigate("/")}>
+            <button class="back-button" onClick={() => navigate("/home")}>
                 ← Retour
             </button>
 

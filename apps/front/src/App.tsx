@@ -1,4 +1,4 @@
-import { Router, Route, A } from "@solidjs/router";
+import { Router, Route, A, useNavigate } from "@solidjs/router";
 import { lazy } from "solid-js";
 
 const DevPage = lazy(() => import("@pages/debug/DevPanel"));
@@ -18,6 +18,19 @@ const Defi = lazy(() => import("@pages/carbonEvaluation/Defi"));
 //const LightMaze = lazy(() => import("@pages/games/LightMaze"));
 const Defi2 = lazy(() => import("@pages/carbonEvaluation/Defi2"));
 const CGU = lazy(() => import("@pages/CGU"));
+
+import { createSignal } from "solid-js";
+
+//global navigation
+let navigateFn: ((path: string) => void) | null = null;
+export function setGlobalNavigate(fn: (path: string) => void) {
+    navigateFn = fn;
+}
+
+export function globalNavigate(path: string) {
+    if (!navigateFn) throw new Error("Navigate function not set yet!");
+    navigateFn(path);
+}
 
 const Layout = (props: any) => (
     <>
