@@ -27,7 +27,7 @@ export function createPlayer(x: number, y: number, size: number): Character {
         y,
         width: size * 0.5,
         height: size * 0.5,
-        speed: 400,
+        speed: 1000,
         text: new ColorTexture("#4fc3f7", "white"),
     });
 }

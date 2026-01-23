@@ -22,6 +22,12 @@ export const OBJECT_DEFS: Record<string, AsciiObjectDef> = {
         texture: "house/furniture/table.png",
         solid: true,
     },
+    S: {
+        width: 2,
+        height: 2,
+        texture: "house/furniture/tableSimple.png",
+        solid: true,
+    },
 
     V: {
         width: 2,
@@ -71,7 +77,7 @@ export const INTERACTION_DEFS: Record<string, AsciiInteractionDef> = {
         texture: "house/furniture/tapi.png",
         priority: 1,
         onInteract: () => {
-            globalNavigate("/PreQuizz?:type=transport");
+            globalNavigate("/PreQuizz?type=transport");
         },
     },
     1: {
@@ -89,7 +95,7 @@ export const INTERACTION_DEFS: Record<string, AsciiInteractionDef> = {
         texture: "Pay respect to my greatness as I stand above ALL",
         priority: -2,
         onInteract: () => {
-            globalNavigate("/PreQuizz?:type=allimentation");
+            globalNavigate("/PreQuizz?type=alimentation");
         },
     },
     3: {
@@ -99,6 +105,16 @@ export const INTERACTION_DEFS: Record<string, AsciiInteractionDef> = {
         priority: -2,
         onInteract: () => {
             globalNavigate("/social");
+        },
+    },
+
+    4: {
+        width: 1,
+        height: 1,
+        texture: "Pay respect to my greatness as I stand above ALL",
+        priority: -2,
+        onInteract: () => {
+            globalNavigate("/PreQuizz?type=consommation");
         },
     },
 };

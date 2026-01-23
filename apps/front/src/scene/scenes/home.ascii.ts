@@ -19,21 +19,34 @@ export function generateWallsFromAscii(
         w: number,
         h: number,
         priority: number,
+        texturePath: string, // NEW
     ) => void,
 ) {
     let id = 0;
+
+    const height = map.length;
+
     map.forEach((row, y) =>
         [...row].forEach((char, x) => {
-            if (char === "#") {
-                addWall(
-                    `wall-${id++}`,
-                    x * cellSize,
-                    y * cellSize,
-                    cellSize,
-                    cellSize,
-                    4,
-                );
-            }
+            if (char !== "#") return;
+
+            const hasWallAbove = y > 0 && map[y - 1][x] === "#";
+            const hasWallBelow = y < height - 1 && map[y + 1][x] === "#";
+
+            const texturePath =
+                hasWallAbove && hasWallBelow
+                    ? "house/wall/wood2.png"
+                    : "house/wall/wood.png";
+
+            addWall(
+                `wall-${id++}`,
+                x * cellSize,
+                y * cellSize,
+                cellSize,
+                cellSize,
+                4,
+                texturePath,
+            );
         }),
     );
 }

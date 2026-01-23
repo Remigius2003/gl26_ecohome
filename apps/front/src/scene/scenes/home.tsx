@@ -91,19 +91,23 @@ export default class HomeScene implements Scene {
             },
         );
 
-        generateWallsFromAscii(ASCII_MAP, CELL_SIZE, (id, x, y, w, h) => {
-            this.world.addEntity(
-                createSolid({
-                    id,
-                    x,
-                    y,
-                    width: w,
-                    height: h,
-                    priority: 2,
-                    text: new ImageTexture("house/wall/wood.png"),
-                }),
-            );
-        });
+        generateWallsFromAscii(
+            ASCII_MAP,
+            CELL_SIZE,
+            (id, x, y, w, h, priority, texturePath) => {
+                this.world.addEntity(
+                    createSolid({
+                        id,
+                        x,
+                        y,
+                        width: w,
+                        height: h,
+                        priority: 2,
+                        text: new ImageTexture(texturePath),
+                    }),
+                );
+            },
+        );
 
         const spawn = findPlayerSpawn(ASCII_MAP);
         this.player = createPlayer(
