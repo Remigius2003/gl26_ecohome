@@ -15,8 +15,7 @@ import { ASCII_MAP, CELL_SIZE, GRID_COLS, GRID_ROWS } from "./home.map";
 
 import {
     generateWallsFromAscii,
-    generateObjectsFromAscii,
-    generateInteractionsFromAscii,
+    generateThingsFromAscii,
     findPlayerSpawn,
 } from "./home.ascii";
 
@@ -44,19 +43,33 @@ export default class HomeScene implements Scene {
                 this.world.addEntity(tile);
             }
         }
-
-        generateObjectsFromAscii(ASCII_MAP, CELL_SIZE, (...args) => {
-            const [id, x, y, w, h, texture, solid] = args;
-            this.world.addEntity(
-                solid
+        generateThingsFromAscii(
+            ASCII_MAP,
+            CELL_SIZE,
+            (
+                id,
+                x,
+                y,
+                w,
+                h,
+                texture,
+                solid,
+                priority,
+                areaOfInteraction,
+                onInteract,
+            ) => {
+                // Create base object
+                const baseEntity = solid
                     ? createSolid({
                           id,
                           x,
                           y,
                           width: w,
                           height: h,
-                          priority: 1,
-                          text: new ImageTexture(texture),
+                          priority,
+                          text: texture
+                              ? new ImageTexture(texture)
+                              : new ImageTexture("void"),
                       })
                     : createEntity({
                           id,
@@ -64,30 +77,37 @@ export default class HomeScene implements Scene {
                           y,
                           width: w,
                           height: h,
-                          priority: 1,
-                          text: new ImageTexture(texture),
-                      }),
-            );
-        });
+                          priority,
+                          text: texture
+                              ? new ImageTexture(texture)
+                              : new ImageTexture("void"),
+                      });
 
-        generateInteractionsFromAscii(
-            ASCII_MAP,
-            CELL_SIZE,
-            (id, x, y, w, h, tex, priority, onInteract) => {
+                // No interaction
+                if (areaOfInteraction < 0) {
+                    this.world.addEntity(baseEntity);
+                    return;
+                }
+
+                // Expand interaction area
+                const padding = areaOfInteraction * CELL_SIZE;
+
+                const interactionEntity = createEntity({
+                    id: `${id}-interaction`,
+                    x: x - padding,
+                    y: y - padding,
+                    width: w + padding * 2,
+                    height: h + padding * 2,
+                    priority,
+                    text: new ImageTexture("void"), // invisible interaction zone
+                });
+
                 this.world.addEntity(
-                    withInteractable(
-                        createEntity({
-                            id,
-                            x,
-                            y,
-                            width: w,
-                            height: h,
-                            priority: priority,
-                            text: new ImageTexture(tex ?? "undefined"),
-                        }),
-                        { onInteract },
-                    ),
+                    withInteractable(interactionEntity, { onInteract }),
                 );
+
+                // Add the visible/solid object separately
+                this.world.addEntity(baseEntity);
             },
         );
 
