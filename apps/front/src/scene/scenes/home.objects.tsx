@@ -87,7 +87,9 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
     R: {
         width: 2,
         height: 2,
-        areaOfInteraction: 1,
+        texture: "le tapis",
+        solid: false,
+        areaOfInteraction: 0,
         priority: 1,
         onInteract: () => {
             globalNavigate("/PreQuizz?type=transport");
