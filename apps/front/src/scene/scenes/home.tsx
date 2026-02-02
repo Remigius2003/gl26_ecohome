@@ -98,7 +98,7 @@ export default class HomeScene implements Scene {
                     y: y - padding,
                     width: w + padding * 2,
                     height: h + padding * 2,
-                    priority,
+                    priority: -1,
                     text: new ImageTexture("void"), // invisible interaction zone
                 });
 
