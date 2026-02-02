@@ -63,33 +63,10 @@ export default function App() {
                 <Route path="/PreQuizz" component={PreQuizz} />
                 <Route path="/Quizz" component={Quizz} />
                 <Route path="/Defi" component={Defi} />
-
+                <Route path="/Customisation" component={Customisation} />
                 <Route path="/Defi2" component={Defi2} />
                 <Route path="/CGU" component={CGU} />
                 <Route path="/Defi2/:defiId" component={Defi2} />
-                <Route path="*404" component={NotFound} />
-            </Router>
-        </div>
-    );
-    return (
-        <div style={{ "font-family": "sans-serif", padding: "1rem" }}>
-            <Router root={Layout}>
-                <Route path="/" component={DevPage} />
-                <Route path="/home" component={HomePage} />
-                <Route path="/dev" component={DevPage} />
-                <Route path="/login" component={Login} />
-                <Route path="/social" component={Social} />
-                <Route path="/register" component={Register} />
-                <Route path="/welcome" component={Welcome} />
-                <Route path="/settings" component={Settings} />
-                <Route path="/AddFriend" component={AddFriend} />
-                <Route path="/ChooseFriend" component={ChooseFriend} />
-                <Route path="/GameMenu" component={GameMenu} />
-                <Route path="/Quizz" component={Quizz} />
-                <Route path="/Defi" component={Defi} />
-                <Route path="/Defi2" component={Defi2} />
-                <Route path="/CGU" component={CGU} />
-                <Route path="/Customisation" component={Customisation} />
                 <Route path="*404" component={NotFound} />
             </Router>
         </div>
