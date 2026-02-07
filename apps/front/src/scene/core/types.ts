@@ -1,4 +1,4 @@
-export type SceneType = "home" | "trilogique" | "ecogrid" | "lightshadow";
+export type SceneType = "home" | "home2" | "trilogique" | "ecogrid" | "lightshadow";
 
 export type EntityId = string;
 

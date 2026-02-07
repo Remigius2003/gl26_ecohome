@@ -1,12 +1,19 @@
 export class InputHandler {
   private keys: Record<string, boolean> = {};
 
+  private normalizeKey(key: string): string {
+    const lower = key.toLowerCase();
+    // Safari may report space as "spacebar"
+    if (lower === " " || lower === "spacebar" || lower === "space") return " ";
+    return lower;
+  }
+
   private keyDownHandler = (e: KeyboardEvent) => {
-    this.keys[e.key.toLowerCase()] = true;
+    this.keys[this.normalizeKey(e.key)] = true;
   };
 
   private keyUpHandler = (e: KeyboardEvent) => {
-    this.keys[e.key.toLowerCase()] = false;
+    this.keys[this.normalizeKey(e.key)] = false;
   };
 
   constructor() {

@@ -1,5 +1,3 @@
-// scenes/home/HomeScene.ts
-
 import { Scene, SceneType, Character } from "../core/types";
 import { ImageTexture } from "../core/texture";
 import { Camera } from "../logic/camera";
@@ -11,23 +9,22 @@ import {
     NPCController,
 } from "../logic/movement";
 
-import { ASCII_MAP, CELL_SIZE, GRID_COLS, GRID_ROWS } from "./home.map";
+import { ASCII_MAP, CELL_SIZE, GRID_COLS, GRID_ROWS } from "./home2.map";
 
 import {
     generateWallsFromAscii,
     generateThingsFromAscii,
     findPlayerSpawn,
-} from "./home.ascii";
+} from "./home2.ascii";
 
 import { createPlayer, createGuideNPC, createFloorTile } from "./home.entities";
 
-export default class HomeScene implements Scene {
+export default class Home2Scene implements Scene {
     private world!: World;
     private camera!: Camera;
     private player!: Character;
     private playerController!: PlayerController;
     private npcControllers: NPCController[] = [];
-    private debugLog: string[] = [];
 
     init(canvas: HTMLCanvasElement, onSwitchScene: (t: SceneType) => void) {
         this.world = new World(GRID_COLS * CELL_SIZE, GRID_ROWS * CELL_SIZE);
@@ -59,9 +56,6 @@ export default class HomeScene implements Scene {
                 areaOfInteraction,
                 onInteract,
             ) => {
-                console.log(`[ASCII] Processing object ${id}:`, {
-                    x, y, w, h, solid, areaOfInteraction, hasOnInteract: !!onInteract
-                });
                 // Create base object
                 const baseEntity = solid
                     ? createSolid({
@@ -95,7 +89,6 @@ export default class HomeScene implements Scene {
 
                 // Expand interaction area
                 const padding = areaOfInteraction * CELL_SIZE;
-                const isStairs = id.includes('E');
 
                 const interactionEntity = createEntity({
                     id: `${id}-interaction`,
@@ -107,33 +100,11 @@ export default class HomeScene implements Scene {
                     text: new ImageTexture("void"), // invisible interaction zone
                 });
 
-                if (isStairs) {
-                    console.log(`🪜 [STAIRS] Creating interaction zone for id=${id}`, {
-                        x: x - padding,
-                        y: y - padding,
-                        w: w + padding * 2,
-                        h: h + padding * 2,
-                        hasOnInteract: !!onInteract,
-                    });
-                }
-
-                console.log(`🎯 [Interaction] Created for ${id}:`, {
-                    x: x - padding,
-                    y: y - padding,
-                    w: w + padding * 2,
-                    h: h + padding * 2,
-                    areaOfInteraction,
-                });
-
-                const interactableEntity = withInteractable(interactionEntity, {
-                    onInteract: onInteract,
-                });
-
-                if (isStairs) {
-                    console.log(`🪜 [STAIRS] About to add to world, entity:`, interactableEntity.id);
-                }
-
-                this.world.addEntity(interactableEntity);
+                this.world.addEntity(
+                    withInteractable(interactionEntity, {
+                        onInteract: onInteract,
+                    }),
+                );
 
                 // Add the visible/solid object separately
                 this.world.addEntity(baseEntity);
@@ -177,25 +148,14 @@ export default class HomeScene implements Scene {
         this.camera.resize(w, h);
     }
 
-    private log(msg: string) {
-        this.debugLog.push(msg);
-        console.log(msg);
-        if (this.debugLog.length > 20) this.debugLog.shift();
-    }
     handleInput(input: Record<string, boolean>) {
         this.playerController.update(0, input);
         if (input[" "] || input["enter"]) {
-            console.log("⌨️ SPACE/ENTER pressed!");
             const target = this.world.getInteraction(this.player);
-            console.log(`🎯 getInteraction result:`, target?.id || "NULL/UNDEFINED");
-            if (target) {
-                console.log(`✅ Target found! Calling onInteract...`);
-                target.onInteract();
-            } else {
-                console.log(`❌ No target found!`);
-            }
+            if (target) target.onInteract();
         }
     }
+
     update(dt: number) {
         PhysicsSystem.move(this.player, dt, this.world);
         this.npcControllers.forEach((ctrl) => ctrl.update(dt));
@@ -204,6 +164,7 @@ export default class HomeScene implements Scene {
         );
         this.camera.follow(this.player, this.world);
     }
+
     render(ctx: CanvasRenderingContext2D) {
         ctx.fillStyle = "#1a1a1a";
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -212,15 +173,15 @@ export default class HomeScene implements Scene {
         this.camera.release(ctx);
         const interaction = this.world.getInteraction(this.player);
         if (interaction) {
-            console.log(`[Render] Detected interaction:`, interaction.id);
             ctx.fillStyle = "white";
             ctx.textAlign = "center";
             ctx.fillText(
-                "Press SPACE to enter",
+                "Press SPACE to interact",
                 this.player.x + this.player.width / 2,
                 this.player.y - 10,
             );
         }
     }
+
     clean() {}
 }

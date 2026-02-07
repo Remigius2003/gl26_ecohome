@@ -5,6 +5,7 @@ const DevPage = lazy(() => import("@pages/debug/DevPanel"));
 const NotFound = lazy(() => import("@pages/NotFound"));
 const Settings = lazy(() => import("@pages/Settings"));
 const HomePage = lazy(() => import("@pages/Home"));
+const Home2Page = lazy(() => import("@pages/Home2"));
 
 const Social = lazy(() => import("@pages/social/Social"));
 const Welcome = lazy(() => import("@pages/auth/Welcome"));
@@ -20,6 +21,8 @@ const Defi2 = lazy(() => import("@pages/carbonEvaluation/Defi2"));
 const CGU = lazy(() => import("@pages/CGU"));
 
 import { createSignal } from "solid-js";
+import { switchScene } from "./scene";
+import type { SceneType } from "./scene/core/types";
 
 //global navigation
 let navigateFn: ((path: string) => void) | null = null;
@@ -30,6 +33,21 @@ export function setGlobalNavigate(fn: (path: string) => void) {
 export function globalNavigate(path: string) {
     if (!navigateFn) throw new Error("Navigate function not set yet!");
     navigateFn(path);
+}
+
+// global scene switching
+let sceneChangeFn: ((scene: SceneType) => void) | null = null;
+export function setGlobalSceneSwitch(fn: (scene: SceneType) => void) {
+    sceneChangeFn = fn;
+}
+
+export function globalSwitchScene(scene: SceneType) {
+    if (!sceneChangeFn) {
+        // Fallback to switchScene from engine if available
+        switchScene(scene);
+        return;
+    }
+    sceneChangeFn(scene);
 }
 const Customisation = lazy(() => import("@pages/Customisation"));
 
@@ -52,6 +70,7 @@ export default function App() {
             <Router root={Layout}>
                 <Route path="/" component={DevPage} />
                 <Route path="/home" component={HomePage} />
+                <Route path="/home2" component={Home2Page} />
                 <Route path="/dev" component={DevPage} />
                 <Route path="/login" component={Login} />
                 <Route path="/social" component={Social} />
@@ -67,7 +86,7 @@ export default function App() {
                 <Route path="/Defi2" component={Defi2} />
                 <Route path="/CGU" component={CGU} />
                 <Route path="/Defi2/:defiId" component={Defi2} />
-                <Route path="*404" component={NotFound} />
+                <Route path="*" component={NotFound} />
             </Router>
         </div>
     );
