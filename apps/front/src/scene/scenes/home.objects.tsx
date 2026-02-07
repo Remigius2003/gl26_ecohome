@@ -78,10 +78,15 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         height: 2,
         texture: "house/furniture/esc.png",
         solid: false,
-        areaOfInteraction: 0,
+        areaOfInteraction: 1,
         priority: 1,
         onInteract: () => {
-            console.log("Go upstairs");
+            console.log("🪜 STAIRS INTERACTION TRIGGERED!");
+            console.log("📍 Calling alert...");
+            alert("2eme etage");
+            console.log("📍 Alert dismissed, calling globalSwitchScene...");
+            globalNavigate("/home2");
+            console.log("📍 globalNavigate(/home2) called!");
         },
     },
     R: {
