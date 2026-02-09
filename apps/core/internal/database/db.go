@@ -2,7 +2,7 @@ package database
 
 import (
 	"fmt"
-	"gl26_ecohome/game/config"
+	"gl26_ecohome/core/config"
 	"log"
 
 	"gorm.io/driver/postgres"

@@ -8,6 +8,8 @@ import {
 	isSolid,
 	isInteractable,
 	IsDynamic,
+	isGroup,
+	Group,
 } from '../core/types';
 
 export class World {
@@ -16,9 +18,9 @@ export class World {
 	private height: number = 0;
 	private width: number = 0;
 
-	interactibles: (Entity & Interactable)[] = [];
+	interactibles: (Entity & (Interactable | Group))[] = [];
+	collidables: (Entity & (Solid | Group))[] = [];
 	dynamics: (Entity & Dynamic)[] = [];
-	solids: (Entity & Solid)[] = [];
 
 	constructor(width: number, height: number) {
 		this.width = width;
@@ -34,8 +36,8 @@ export class World {
 		this.renderables[e.priority].push(e);
 		this.entities.set(e.id, e);
 
-		if (isSolid(e)) this.solids.push(e);
-		if (isInteractable(e)) this.interactibles.push(e);
+		if (isInteractable(e) || isGroup(e)) this.interactibles.push(e);
+		if (isSolid(e) || isGroup(e)) this.collidables.push(e);
 		if (IsDynamic(e)) this.dynamics.push(e);
 	}
 
@@ -47,8 +49,9 @@ export class World {
 		const layer = this.renderables[e.priority];
 		if (layer) this.removeFromArray(layer, e);
 
-		if (isSolid(e)) this.removeFromArray(this.solids, e);
-		if (isInteractable(e)) this.removeFromArray(this.interactibles, e);
+		if (isInteractable(e) || isGroup(e))
+			this.removeFromArray(this.interactibles, e);
+		if (isSolid(e) || isGroup(e)) this.removeFromArray(this.collidables, e);
 		if (IsDynamic(e)) this.removeFromArray(this.dynamics, e);
 	}
 
@@ -61,32 +64,80 @@ export class World {
 		arr.pop();
 	}
 
+	private recursiveCollide(
+		ent: Entity,
+		obs: Entity,
+		move: { dx: number; dy: number },
+		ox: number = 0,
+		oy: number = 0,
+	) {
+		if (move.dx == 0 && move.dy == 0) return;
+
+		let absX = obs.x + ox;
+		let absY = obs.y + oy;
+
+		if (isGroup(obs)) {
+			for (const child of obs.getChildrens())
+				if (ent !== obs) this.recursiveCollide(ent, child, move, absX, absY);
+		}
+		if (isSolid(obs)) {
+			const { ax, ay } = computeMovementAABB(
+				ent,
+				{ ...obs, x: absX, y: absY },
+				move.dx,
+				move.dy,
+			);
+			move.dx = move.dx < 0 ? Math.max(move.dx, ax) : Math.min(move.dx, ax);
+			move.dy = move.dy < 0 ? Math.max(move.dy, ay) : Math.min(move.dy, ay);
+		}
+	}
+
 	resolveMovement(
 		ent: Entity,
 		dx: number,
-		dy: number
+		dy: number,
 	): { dx: number; dy: number } {
 		if (ent.y + dy < 0 || ent.y + ent.height + dy > this.height) dy = 0;
 		if (ent.x + dx < 0 || ent.x + ent.width + dx > this.width) dx = 0;
+		if (!isSolid(ent) && !isGroup(ent)) return { dx, dy };
 		if (dx === 0 && dy === 0) return { dx: 0, dy: 0 };
-		if (!isSolid(ent)) return { dx, dy };
 
-		let aax = dx,
-			aay = dy;
+		let result = { dx, dy };
 
-		for (const solid of this.solids) {
-			if (aax === 0 && aay === 0) break;
-			if (solid === ent) continue;
-			const { ax, ay } = computeMovementAABB(ent, solid, dx, dy);
-			aax = dx < 0 ? Math.max(aax, ax) : Math.min(aax, ax);
-			aay = dy < 0 ? Math.max(aay, ay) : Math.min(aay, ay);
+		for (const obstacle of this.collidables) {
+			if (obstacle === ent) continue;
+			this.recursiveCollide(ent, obstacle, result);
 		}
 
-		return { dx: aax, dy: aay };
+		return result;
+	}
+
+	private recursiveInteract(
+		target: Entity,
+		obs: Entity,
+		ox: number = 0,
+		oy: number = 0,
+	): (Entity & Interactable) | null {
+		let absX = obs.x + ox;
+		let absY = obs.y + oy;
+
+		if (!checkAABB(target, { ...obs, x: absX, y: absY })) return null;
+
+		if (isGroup(obs))
+			for (const child of obs.getChildrens()) {
+				const found = this.recursiveInteract(target, child, absX, absY);
+				if (found) return found;
+			}
+
+		return isInteractable(obs) ? obs : null;
 	}
 
 	getInteraction(target: Entity): (Entity & Interactable) | null {
-		for (const e of this.interactibles) if (checkAABB(target, e)) return e;
+		for (const e of this.interactibles) {
+			const hit = this.recursiveInteract(target, e);
+			if (hit) return hit;
+		}
+
 		return null;
 	}
 
