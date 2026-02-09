@@ -1,122 +1,192 @@
-import { Console, log } from "console";
-import { Texture } from "./types";
+import { Group, Texture } from './types';
 
 export class ColorTexture implements Texture {
-    constructor(
-        public color: string,
-        public stroke?: string,
-    ) {}
-    draw(
-        ctx: CanvasRenderingContext2D,
-        x: number,
-        y: number,
-        w: number,
-        h: number,
-    ) {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(x, y, w, h);
-        if (this.stroke) {
-            ctx.strokeStyle = this.stroke;
-            ctx.strokeRect(x, y, w, h);
-        }
-    }
-}
+	constructor(
+		public color: string,
+		public stroke?: string,
+	) {}
+	draw(
+		ctx: CanvasRenderingContext2D,
+		x: number,
+		y: number,
+		w: number,
+		h: number,
+	) {
+		ctx.fillStyle = this.color;
+		ctx.fillRect(x, y, w, h);
 
-export class ImageTextureOld implements Texture {
-    private img: HTMLImageElement;
-    private loaded = false;
-
-    constructor(src: string) {
-        this.img = new Image();
-        this.img.src = src;
-        this.img.onload = () => (this.loaded = true);
-    }
-
-    draw(
-        ctx: CanvasRenderingContext2D,
-        x: number,
-        y: number,
-        w: number,
-        h: number,
-    ) {
-        if (this.loaded) {
-            ctx.drawImage(this.img, x, y, w, h);
-        } else {
-            ctx.fillStyle = "#333";
-            ctx.fillRect(x, y, w, h);
-        }
-    }
+		if (this.stroke) {
+			ctx.strokeStyle = this.stroke;
+			ctx.strokeRect(x, y, w, h);
+		}
+	}
 }
 
 export class ImageTexture implements Texture {
-    private imgs: HTMLImageElement[];
-    private loaded = false;
-    private index = 2;
-    private sym = false;
-    private ratio = 15;
-    private counter = 0;
+	private img: HTMLImageElement;
+	private loaded = false;
 
-    constructor(src: string, additionnal?: string[]) {
-        this.imgs = [new Image()];
-        this.imgs[0].src = src;
-        this.imgs[0].onload = () => (this.loaded = true);
+	private symX = false;
+	private symY = false;
 
-        if (additionnal) {
-            for (let i = 0; i < additionnal.length; i++) {
-                const img = new Image();
-                img.src = additionnal[i];
-                img.onload = () => {
-                    if (this.imgs.every((img) => img.complete)) {
-                        this.loaded = true;
-                    }
-                };
-                this.imgs.push(img);
-            }
-        }
-    }
+	constructor(src: string) {
+		this.img = new Image();
+		this.img.src = src;
+		this.img.onload = () => (this.loaded = true);
+	}
 
-    setTexture(index: number) {
-        if (index >= this.imgs.length) {
-            console.log("now?");
-        } else {
-            this.index = index;
-        }
-    }
-    nextTexture() {
-        this.counter += 1;
-        if (this.ratio < this.counter) {
-            this.index = (this.index + 1) % this.imgs.length;
-            this.counter = 0;
-        }
-    }
+	setSymX(value: boolean) {
+		this.symX = value;
+	}
 
-    setSymetrie(True: boolean) {
-        this.sym = True;
-    }
-    draw(
-        ctx: CanvasRenderingContext2D,
-        x: number,
-        y: number,
-        w: number,
-        h: number,
-    ) {
-        if (!this.loaded) {
-            ctx.fillStyle = "#333";
-            ctx.fillRect(x, y, w, h);
-            return;
-        }
-        const img =
-            this.imgs.length === 1 ? this.imgs[0] : this.imgs[this.index];
+	setSymY(value: boolean) {
+		this.symY = value;
+	}
 
-        if (!this.sym) {
-            ctx.drawImage(img, x, y, w, h);
-            return;
-        }
+	draw(
+		ctx: CanvasRenderingContext2D,
+		x: number,
+		y: number,
+		w: number,
+		h: number,
+	) {
+		if (!this.loaded) return;
 
-        ctx.save();
-        ctx.translate(x + w, y);
-        ctx.scale(-1, 1);
-        ctx.drawImage(img, 0, 0, w, h);
-        ctx.restore();
-    }
+		ctx.save();
+		ctx.translate(x + (this.symX ? w : 0), y + (this.symY ? h : 0));
+
+		ctx.scale(this.symX ? -1 : 1, this.symY ? -1 : 1);
+
+		ctx.drawImage(this.img, 0, 0, w, h);
+		ctx.restore();
+	}
+}
+
+export class SwapTexture implements Texture {
+	private imgs: HTMLImageElement[] = [];
+	private loaded = false;
+
+	private index = 0;
+	private counter = 0;
+	private ratio = 15;
+
+	private symX = false;
+	private symY = false;
+
+	constructor(src: string, additional?: string[]) {
+		const sources = [src, ...(additional ?? [])];
+
+		let loadedCount = 0;
+		for (const s of sources) {
+			const img = new Image();
+			img.src = s;
+			img.onload = () => {
+				loadedCount++;
+				if (loadedCount === sources.length) this.loaded = true;
+			};
+			this.imgs.push(img);
+		}
+	}
+
+	setTexture(index: number) {
+		if (index < 0 || index >= this.imgs.length) return;
+		this.index = index;
+	}
+
+	nextTexture() {
+		if (!this.loaded) return;
+
+		this.counter++;
+		if (this.counter >= this.ratio) {
+			this.index = (this.index + 1) % this.imgs.length;
+			this.counter = 0;
+		}
+	}
+
+	setSymX(value: boolean) {
+		this.symX = value;
+	}
+
+	setSymY(value: boolean) {
+		this.symY = value;
+	}
+
+	draw(
+		ctx: CanvasRenderingContext2D,
+		x: number,
+		y: number,
+		w: number,
+		h: number,
+	) {
+		if (!this.loaded) return;
+		const img = this.imgs[this.index];
+
+		ctx.save();
+		ctx.translate(x + (this.symX ? w : 0), y + (this.symY ? h : 0));
+
+		ctx.scale(this.symX ? -1 : 1, this.symY ? -1 : 1);
+
+		ctx.drawImage(img, 0, 0, w, h);
+		ctx.restore();
+	}
+}
+
+export class TransparentTexture implements Texture {
+	draw() {}
+}
+
+export class TiledTexture implements Texture {
+	private img: HTMLImageElement;
+	private loaded = false;
+	private pattern: CanvasPattern | null = null;
+
+	constructor(
+		src: string,
+		public offsetX: number = 0,
+		public offsetY: number = 0,
+		public scale: number = 1,
+	) {
+		this.img = new Image();
+		this.img.src = src;
+		this.img.onload = () => (this.loaded = true);
+	}
+
+	draw(
+		ctx: CanvasRenderingContext2D,
+		x: number,
+		y: number,
+		w: number,
+		h: number,
+	) {
+		if (!this.loaded) return;
+		if (!this.pattern) {
+			this.pattern = ctx.createPattern(this.img, 'repeat');
+			if (!this.pattern) return;
+		}
+
+		ctx.save();
+
+		const matrix = new DOMMatrix()
+			.translate(x + this.offsetX, y + this.offsetY)
+			.scale(this.scale);
+
+		this.pattern.setTransform(matrix);
+		ctx.fillStyle = this.pattern;
+		ctx.fillRect(x, y, w, h);
+
+		ctx.restore();
+	}
+}
+
+export class GroupTexture implements Texture {
+	constructor(private grp: Group) {}
+
+	draw(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+		const sorted = [...this.grp.getChildrens()].sort(
+			(a, b) => a.priority - b.priority,
+		);
+
+		for (const child of sorted)
+			child.text.draw(ctx, x + child.x, y + child.y, child.width, child.height);
+	}
 }

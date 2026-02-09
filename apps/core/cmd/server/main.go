@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"gl26_ecohome/game/config"
-	"gl26_ecohome/game/internal/database"
-	"gl26_ecohome/game/internal/routes"
+	"gl26_ecohome/core/config"
+	"gl26_ecohome/core/internal/database"
+	"gl26_ecohome/core/internal/routes"
 	"log"
 
 	"github.com/gin-contrib/cors"
@@ -27,7 +27,7 @@ func main() {
     routes.SetupRoutes(router)
 
 	port := config.GetConfig().APIPort
-    log.Printf("Game Service running on port :%s\n", port)
+    log.Printf("Core Service running on port :%s\n", port)
 
     router.Run(fmt.Sprintf(":%s", port))
 }

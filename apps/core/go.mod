@@ -1,4 +1,4 @@
-module gl26_ecohome/game
+module gl26_ecohome/core
 
 go 1.24.1
 

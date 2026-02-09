@@ -8,12 +8,12 @@ services:
     environment:
       - GIN_MODE=debug
 
-  game:
+  core:
     build:
-      context: ./apps/game
+      context: ./apps/core
       dockerfile: Dockerfile.dev
     volumes:
-      - ./apps/game:/app
+      - ./apps/core:/app
     environment:
       - GIN_MODE=debug
 
