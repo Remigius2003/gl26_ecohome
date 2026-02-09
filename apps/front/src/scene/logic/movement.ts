@@ -1,3 +1,4 @@
+import { ImageTexture } from "@scene/core/texture";
 import { Controller, Dynamic, Entity, InputState } from "../core/types";
 import { World } from "./world";
 
@@ -36,10 +37,32 @@ export class PlayerController implements Controller<Entity & Dynamic> {
         this.entity.vx = 0;
         this.entity.vy = 0;
 
-        if (input["arrowup"] || input["z"]) this.entity.vy = -1;
-        if (input["arrowdown"] || input["s"]) this.entity.vy = 1;
-        if (input["arrowleft"] || input["q"]) this.entity.vx = -1;
-        if (input["arrowright"] || input["d"]) this.entity.vx = 1;
+        if (input["arrowup"] || input["z"]) {
+            this.entity.vy = -1;
+            if (this.entity.text instanceof ImageTexture) {
+                this.entity.text.nextTexture();
+            }
+        }
+        if (input["arrowdown"] || input["s"]) {
+            this.entity.vy = 1;
+            if (this.entity.text instanceof ImageTexture) {
+                this.entity.text.nextTexture();
+            }
+        }
+        if (input["arrowleft"] || input["q"]) {
+            this.entity.vx = -1;
+            if (this.entity.text instanceof ImageTexture) {
+                this.entity.text.setSymetrie(false);
+                this.entity.text.nextTexture();
+            }
+        }
+        if (input["arrowright"] || input["d"]) {
+            this.entity.vx = 1;
+            if (this.entity.text instanceof ImageTexture) {
+                this.entity.text.setSymetrie(true);
+                this.entity.text.nextTexture();
+            }
+        }
     }
 }
 
