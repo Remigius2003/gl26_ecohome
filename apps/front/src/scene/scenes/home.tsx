@@ -59,10 +59,6 @@ export default class HomeScene implements Scene {
                 areaOfInteraction,
                 onInteract,
             ) => {
-                console.log(`[ASCII] Processing object ${id}:`, {
-                    x, y, w, h, solid, areaOfInteraction, hasOnInteract: !!onInteract
-                });
-                // Create base object
                 const baseEntity = solid
                     ? createSolid({
                           id,
@@ -95,7 +91,6 @@ export default class HomeScene implements Scene {
 
                 // Expand interaction area
                 const padding = areaOfInteraction * CELL_SIZE;
-                const isStairs = id.includes('E');
 
                 const interactionEntity = createEntity({
                     id: `${id}-interaction`,
@@ -104,34 +99,12 @@ export default class HomeScene implements Scene {
                     width: w + padding * 2,
                     height: h + padding * 2,
                     priority: -1,
-                    text: new ImageTexture("void"), // invisible interaction zone
-                });
-
-                if (isStairs) {
-                    console.log(`🪜 [STAIRS] Creating interaction zone for id=${id}`, {
-                        x: x - padding,
-                        y: y - padding,
-                        w: w + padding * 2,
-                        h: h + padding * 2,
-                        hasOnInteract: !!onInteract,
-                    });
-                }
-
-                console.log(`🎯 [Interaction] Created for ${id}:`, {
-                    x: x - padding,
-                    y: y - padding,
-                    w: w + padding * 2,
-                    h: h + padding * 2,
-                    areaOfInteraction,
+                    text: new ImageTexture("void"),
                 });
 
                 const interactableEntity = withInteractable(interactionEntity, {
                     onInteract: onInteract,
                 });
-
-                if (isStairs) {
-                    console.log(`🪜 [STAIRS] About to add to world, entity:`, interactableEntity.id);
-                }
 
                 this.world.addEntity(interactableEntity);
 
@@ -187,7 +160,10 @@ export default class HomeScene implements Scene {
         if (input[" "] || input["enter"]) {
             console.log("⌨️ SPACE/ENTER pressed!");
             const target = this.world.getInteraction(this.player);
-            console.log(`🎯 getInteraction result:`, target?.id || "NULL/UNDEFINED");
+            console.log(
+                `🎯 getInteraction result:`,
+                target?.id || "NULL/UNDEFINED",
+            );
             if (target) {
                 console.log(`✅ Target found! Calling onInteract...`);
                 target.onInteract();
