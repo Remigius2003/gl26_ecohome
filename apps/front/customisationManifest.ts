@@ -6,14 +6,15 @@ export const customisationManifest = {
       "/chara/clothes/dress1.png",
       "/chara/clothes/dress2.png",
       "/chara/clothes/dressPlaceholder.png",
-      "/chara/clothes/ecoHome.png",
+      "/chara/clothes/ecohome_tshirt facing left.png",
+      "/chara/clothes/ecohome_tshirt facing right.png",
+      "/chara/clothes/marcel.png",
     ],
   },
   hair: {
     icon: "/chara/hair/icon.png",
     items: [
       null,
-      "/chara/hair/bodyStanding.png",
       "/chara/hair/hair.png",
     ],
   },
@@ -25,12 +26,16 @@ export const customisationManifest = {
       "/chara/hat/holder.png",
     ],
   },
-  shoes: {
-    icon: "/chara/shoes/icon.png",
+  Shoes: {
+    icon: "/chara/Shoes/icon.png",
     items: [
       null,
-      "/chara/shoes/baskets.png",
-      "/chara/shoes/doc_matys.png",
+      "/chara/Shoes/baskets.png",
+      "/chara/Shoes/bodyW shoes template - Copie.png",
+      "/chara/Shoes/bodyW shoes template.png",
+      "/chara/Shoes/doc_matys.png",
+      "/chara/Shoes/shoes place holder.png",
+      "/chara/Shoes/W doc_matys.png",
     ],
   },
 } as const;
