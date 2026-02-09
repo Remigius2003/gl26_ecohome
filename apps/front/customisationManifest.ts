@@ -6,6 +6,7 @@ export const customisationManifest = {
       "/chara/clothes/dress1.png",
       "/chara/clothes/dress2.png",
       "/chara/clothes/dressPlaceholder.png",
+      "/chara/clothes/ecoHome.png",
     ],
   },
   hair: {
@@ -22,6 +23,14 @@ export const customisationManifest = {
       null,
       "/chara/hat/hat.png",
       "/chara/hat/holder.png",
+    ],
+  },
+  shoes: {
+    icon: "/chara/shoes/icon.png",
+    items: [
+      null,
+      "/chara/shoes/baskets.png",
+      "/chara/shoes/doc_matys.png",
     ],
   },
 } as const;
