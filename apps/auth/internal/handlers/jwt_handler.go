@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"gl26_ecohome/auths/internal/models"
 	"gl26_ecohome/auths/pkg/utils"
@@ -11,18 +12,19 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 const (
 	SECRET_KEYS_FILE = "data/secret_keys.json"
-	JWT_DURATION = 42 * time.Minute
+	JWT_DURATION     = 42 * time.Minute
 )
 
 var (
-	secretKeyMu     sync.RWMutex
-	currentKey      models.JWTSecretKey
-	nextKey         models.JWTSecretKey
-	oldKey          models.JWTSecretKey
+	secretKeyMu sync.RWMutex
+	currentKey  models.JWTSecretKey
+	nextKey     models.JWTSecretKey
+	oldKey      models.JWTSecretKey
 )
 
 func saveSecretKeys() error {
@@ -132,37 +134,34 @@ func SecretKeysHandler(c *gin.Context) {
 }
 
 func JWTHandler(c *gin.Context) {
-	var req struct {
-		UserId uint `json:"user_id"`
-		Token  string `json:"refresh_token"`
-	}
-
-	if err := c.BindJSON(&req); err != nil {
+	var req models.TokenRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
-	refreshToken, err := verifyToken(&tokenReq{
-		UserId: req.UserId,
-		Token: req.Token,
-	})
-	
+	_, err := verifyToken(req.UserId, req.RefreshToken)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
-		return
-	}
-
-    if refreshToken == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
 
 	secretKeyMu.RLock()
 	key := currentKey.Key
+	kid := currentKey.Id
 	secretKeyMu.RUnlock()
 
 	expiration := time.Now().Add(JWT_DURATION)
-	token, err := utils.GenerateJWT(req.UserId, expiration, key)
+	claims := jwt.MapClaims{
+		"user_id": req.UserId,
+		"exp":     expiration.Unix(),
+		"iat":     time.Now().Unix(),
+	}
+
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	jwtToken.Header["kid"] = kid
+
+	token, err := jwtToken.SignedString([]byte(key))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate JWT"})
 		return
@@ -172,4 +171,63 @@ func JWTHandler(c *gin.Context) {
 		Token:     token,
 		ExpiresAt: expiration,
 	})
+}
+
+func VerifyJWT(tokenString string) (uint, error) {
+	if tokenString == "" {
+		return 0, errors.New("missing token")
+	}
+
+	var claims jwt.MapClaims
+	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
+
+		kidValue, ok := token.Header["kid"]
+		if !ok {
+			return nil, errors.New("missing kid header")
+		}
+
+		kidFloat, ok := kidValue.(float64)
+		if !ok {
+			return nil, errors.New("invalid kid format")
+		}
+
+		kid := uint(kidFloat)
+
+		secretKeyMu.RLock()
+		defer secretKeyMu.RUnlock()
+
+		switch kid {
+		case currentKey.Id:
+			return []byte(currentKey.Key), nil
+		case oldKey.Id:
+			return []byte(oldKey.Key), nil
+		case nextKey.Id:
+			return []byte(nextKey.Key), nil
+		default:
+			return nil, errors.New("unknown kid")
+		}
+	})
+
+	if err != nil || !token.Valid {
+		return 0, errors.New("invalid token")
+	}
+
+	exp, err := claims.GetExpirationTime()
+	if err != nil {
+		return 0, errors.New("missing expiration")
+	}
+
+	if exp.Time.Before(time.Now()) {
+		return 0, errors.New("token expired")
+	}
+
+	userIDFloat, ok := claims["user_id"].(float64)
+	if !ok {
+		return 0, errors.New("invalid user_id claim")
+	}
+
+	return uint(userIDFloat), nil
 }

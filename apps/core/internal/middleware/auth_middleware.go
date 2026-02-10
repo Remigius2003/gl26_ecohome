@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"gl26_ecohome/auths/config"
-	"gl26_ecohome/auths/internal/handlers"
+	"gl26_ecohome/core/config"
+	"gl26_ecohome/core/internal/authclient"
 	"net/http"
 	"strings"
 
@@ -11,7 +11,7 @@ import (
 
 func APIKeyMiddleware(c *gin.Context) {
 	expectedKey := config.GetConfig().APIKey
-	apiKey := c.GetHeader("AUTH-API-KEY")
+	apiKey := c.GetHeader("CORE-API-KEY")
 
 	if apiKey != expectedKey {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
@@ -39,7 +39,7 @@ func JWTMiddleware(c *gin.Context) {
 	}
 
 	tokenString := strings.TrimPrefix(authHeader, prefix)
-	userID, err := handlers.VerifyJWT(tokenString)
+	userID, err := authclient.VerifyJWT(tokenString)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		c.Abort()

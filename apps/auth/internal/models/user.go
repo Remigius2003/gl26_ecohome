@@ -11,3 +11,11 @@ type User struct {
 	CreatedAt    time.Time `json:"created_at,omitempty"`
 }
 
+type ChangePasswordRequest struct {
+	OldPassword string `json:"old_password" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required"`
+}
+
+type ChangeUsernameRequest struct {
+	Username string `json:"username" binding:"required"`
+}

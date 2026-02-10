@@ -92,6 +92,8 @@ services:
       DB_USER: postgres
       DB_PASSWORD: password
       DB_NAME: appdb
+      AUTH_SERVICE_URL: 'http://auth:5000'
+      AUTH_SERVICE_KEY: 'secretKey'
     healthcheck:
       test: ['CMD-SHELL', 'curl --fail http://core:5002/health || exit 1']
       interval: 30s
@@ -112,8 +114,8 @@ services:
       core:
         condition: service_healthy
     environment:
-      AUTH_HOST: localhost/users
-      CORE_HOST: localhost/ws
+      AUTH_HOST: localhost/auths
+      CORE_HOST: localhost/users
 
   anubis:
     build:

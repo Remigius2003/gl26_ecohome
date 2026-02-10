@@ -44,7 +44,7 @@ export function setItem<T>(
 	value: T,
 	ttl: number = Cache.DEFAULT_TTL,
 	updateTtl?: boolean,
-	block?: string
+	block?: string,
 ): void {
 	var timestamp = now();
 	var expiry = timestamp + ttl;
@@ -159,7 +159,7 @@ export function clear(block?: string): void {
 			(key) =>
 				key.startsWith(Cache.BLOCK_PREFIX) ||
 				key.startsWith(Cache.BDATA_PREFIX) ||
-				key.startsWith(Cache.UNIT_PREFIX)
+				key.startsWith(Cache.UNIT_PREFIX),
 		)
 		.forEach((key) => localStorage.removeItem(key));
 }
@@ -190,7 +190,7 @@ export function clearExpired(): void {
 
 export function generateKey(
 	endpoint: string,
-	params?: Record<string, any>
+	params?: Record<string, any>,
 ): string {
 	const baseKey = endpoint.replace(/^\/+/, '').replace(/\/+$/, '');
 	if (!params) return baseKey;
@@ -202,8 +202,15 @@ export function generateKey(
 				obj[key] = params[key];
 				return obj;
 			},
-			{} as Record<string, any>
+			{} as Record<string, any>,
 		);
 
 	return `${baseKey}?${new URLSearchParams(sortedParams).toString()}`;
+}
+
+export function ttlFromDate(date: Date | string): number {
+	const target =
+		typeof date === 'string' ? new Date(date).getTime() : date.getTime();
+	const remaining = target - now();
+	return remaining > 0 ? remaining : 0;
 }

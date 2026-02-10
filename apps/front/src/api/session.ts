@@ -1,0 +1,107 @@
+import * as TokenApi from './token';
+import * as UserApi from './user';
+import * as Cache from './cache';
+
+// -------------------
+//  CONFIGURATION
+// -------------------
+
+const SESSION = 'session_v1';
+const KEYS = {
+	refresh: 'refresh_token',
+	access: 'access_token',
+	userId: 'user_id',
+};
+
+const THRESHOLDS = {
+	refresh: 24 * 60 * 60 * 1000,
+	user: 5 * 60 * 1000,
+	jwt: 60 * 1000,
+};
+
+// -------------------
+//  SESSION MANAGER
+// -------------------
+
+class SessionManager {
+	private static instance: SessionManager;
+	private refreshPromise: Promise<string> | null = null;
+
+	private constructor() {}
+	static getInstance() {
+		return (this.instance ??= new SessionManager());
+	}
+
+	private isExpiring(date: Date | string, ms: number) {
+		return new Date(date).getTime() - Date.now() < ms;
+	}
+
+	private setSession<T>(
+		key: string,
+		value: T,
+		expiresAt: Date | string,
+		persist = false,
+	) {
+		Cache.setItem(key, value, Cache.ttlFromDate(expiresAt), persist, SESSION);
+	}
+
+	// -------------------
+	//  CORE SESSION
+	// -------------------
+
+	get userId(): number | null {
+		return Cache.getItem<number>(KEYS.userId, SESSION);
+	}
+
+	get isAuthenticated(): boolean {
+		return !!this.userId;
+	}
+
+	async getAccessToken(): Promise<string> {
+		const access = Cache.getItem<TokenApi.JWTToken>(KEYS.access, SESSION);
+		if (access && !this.isExpiring(access.expires_at, THRESHOLDS.jwt))
+			return access.token;
+
+		return (this.refreshPromise ??= this.refreshAccessToken().finally(
+			() => (this.refreshPromise = null),
+		));
+	}
+
+	private async refreshAccessToken(): Promise<string> {
+		const userId = this.userId;
+
+		let refresh = Cache.getItem<TokenApi.RefreshToken>(KEYS.refresh, SESSION);
+		if (!userId || !refresh) throw new Error('No active session');
+
+		try {
+			if (this.isExpiring(refresh.expires_at, THRESHOLDS.refresh)) {
+				refresh = await TokenApi.refreshToken(userId, refresh.token);
+				this.setSession(KEYS.refresh, refresh, refresh.expires_at, true);
+				this.setSession(KEYS.userId, userId, refresh.expires_at);
+			}
+
+			const jwt = await TokenApi.generateJWT(userId, refresh.token);
+			this.setSession(KEYS.access, jwt, jwt.expires_at);
+
+			return jwt.token;
+		} catch (e) {
+			Cache.clear(SESSION);
+			throw e;
+		}
+	}
+
+	async login(credentials: Parameters<typeof UserApi.login>[0]): Promise<void> {
+		const { token, user_id } = await UserApi.login(credentials);
+		this.setSession(KEYS.refresh, token, token.expires_at, true);
+		this.setSession(KEYS.userId, user_id, token.expires_at);
+	}
+
+	async logout(): Promise<void> {
+		const refresh = Cache.getItem<TokenApi.RefreshToken>(KEYS.refresh, SESSION);
+		if (this.userId && refresh)
+			UserApi.logout(refresh.token).catch(console.warn);
+		Cache.clear(SESSION);
+	}
+}
+
+export const Session = SessionManager.getInstance();

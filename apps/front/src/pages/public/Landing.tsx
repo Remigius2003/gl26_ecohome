@@ -88,7 +88,7 @@ const Landing: Component = () => {
 							<h3>Évoluez</h3>
 							<p>
 								Votre maison virtuelle reflète vos efforts. Plus vous économisez
-								de CO₂, plus votre village devient beau et vivant.
+								de CO₂, plus votre maison devient belle et vivante.
 							</p>
 						</div>
 					</div>

@@ -1,5 +1,4 @@
 import { RefreshToken, ApiErrorImpl, authApiFetch as apiFetch } from '@api';
-import { createWrapper, FetchPolicy } from '@api';
 
 // -------------------
 //  MODELS DEFINITION
@@ -46,15 +45,33 @@ export const login = (credentials: {
 	});
 };
 
-export const logout = (user_id: number, refresh_token: string) =>
-	apiFetch<{ message: string }>('/logout', {
+export const logout = (refresh_token: string) =>
+	apiFetch<void>('/logout', {
+		auth: true,
 		method: 'POST',
-		body: JSON.stringify({ user_id, refresh_token }),
+		body: JSON.stringify({ refresh_token }),
 	});
 
-export const getUserInfo = (user_id: number) =>
-	apiFetch<User>(`/info?id=${user_id}`);
+export const deleteAccount = (password: string, refresh_token: string) =>
+	apiFetch<{ message: string }>('/', {
+		auth: true,
+		method: 'DELETE',
+		body: JSON.stringify({ password, refresh_token }),
+	});
 
-// -------------------
-//   WRAPPER DEFINITION
-// -------------------
+export const changePassword = (old_password: string, new_password: string) =>
+	apiFetch<{ message: string }>('/password', {
+		auth: true,
+		method: 'PUT',
+		body: JSON.stringify({ old_password, new_password }),
+	});
+
+export const changeUsername = (username: string) =>
+	apiFetch<{ message: string }>('/username', {
+		auth: true,
+		method: 'PUT',
+		body: JSON.stringify({ username }),
+	});
+
+//export const getUserInfo = (user_id: number) =>
+//	apiFetch<User>(`/info?id=${user_id}`);

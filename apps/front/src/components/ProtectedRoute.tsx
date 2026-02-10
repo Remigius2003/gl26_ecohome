@@ -1,6 +1,6 @@
 import { useNavigate } from '@solidjs/router';
 import { createEffect, JSX, Show } from 'solid-js';
-import * as Cache from '@api';
+import { Session } from '@api';
 
 interface ProtectedRouteProps {
 	children: JSX.Element;
@@ -9,15 +9,9 @@ interface ProtectedRouteProps {
 export function ProtectedRoute(props: ProtectedRouteProps) {
 	const navigate = useNavigate();
 
-	const isAuthenticated = () => {
-		return !!localStorage.getItem('current_user_id');
-	};
-
 	createEffect(() => {
-		if (!isAuthenticated()) {
-			navigate('/', { replace: true });
-		}
+		if (!Session.isAuthenticated) navigate('/', { replace: true });
 	});
 
-	return <Show when={isAuthenticated()}>{props.children}</Show>;
+	return <Show when={Session.isAuthenticated}>{props.children}</Show>;
 }
