@@ -36,7 +36,7 @@ func loadConfig() *Config {
 	}
 
 	return &Config{
-		APIPort: getEnv("PORT", "5001"),
+		APIPort: getEnv("PORT", "5002"),
 		APIKey:  getEnv("API_KEY", "secretKey"),
 		DBHost:  getEnv("DB_HOST", "database"),
 		DBPort:  getEnv("DB_PORT", "5432"),
