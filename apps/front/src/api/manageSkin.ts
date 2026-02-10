@@ -1,14 +1,13 @@
-import { Types, Skin, Frame, parseTypes } from "./SkinParser"; // import your parsing helpers
+import { Types, Skin, parseTypes } from "./SkinParser"; // import your parsing helpers
 
 export class Skins {
     types: Types[] = [];
-    equipped: Record<string, Skin> = {}; // key = type name, value = selected Skin
+    equipped: Record<string, Skin> = {};
+    constructor() {}
 
-    constructor() {
-        // Parse types and skins from public/chara
-        this.types = parseTypes();
+    async init() {
+        this.types = await parseTypes();
 
-        // Load from localStorage
         const stored = localStorage.getItem("equippedSkins");
         if (stored) {
             try {
@@ -17,7 +16,7 @@ export class Skins {
                     const type = this.types.find((t) => t.name === typeName);
                     if (!type) continue;
 
-                    const skinIndex = parsed[typeName] as number; // store index of Skin
+                    const skinIndex = parsed[typeName] as number;
                     if (type.skins[skinIndex]) {
                         this.equipped[typeName] = type.skins[skinIndex];
                     }
@@ -27,7 +26,6 @@ export class Skins {
             }
         }
 
-        // Initialize missing equipped skins randomly
         for (const type of this.types) {
             if (!this.equipped[type.name]) {
                 const randomSkin =

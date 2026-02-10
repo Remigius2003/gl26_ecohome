@@ -43,7 +43,10 @@ export abstract class BaseWorldScene implements Scene {
     // Abstract property: each scene must provide its own map data
     protected abstract mapData: MapData;
 
-    init(canvas: HTMLCanvasElement, onSwitchScene: (t: SceneType) => void) {
+    async init(
+        canvas: HTMLCanvasElement,
+        onSwitchScene: (t: SceneType) => void,
+    ) {
         const { GRID_COLS, GRID_ROWS, CELL_SIZE, ASCII_MAP } = this.mapData;
 
         this.world = new World(GRID_COLS * CELL_SIZE, GRID_ROWS * CELL_SIZE);
@@ -142,7 +145,7 @@ export abstract class BaseWorldScene implements Scene {
             : spawn.y * CELL_SIZE;
 
         this.player = createPlayer(initialX, initialY, PLAYER_SIZE);
-        this.applySkins(this.player, PLAYER_SIZE);
+        await this.applySkins(this.player, PLAYER_SIZE);
 
         this.player.speed = 1000;
         this.playerController = new PlayerController(this.player);
@@ -176,8 +179,9 @@ export abstract class BaseWorldScene implements Scene {
         return solid ? createSolid(config) : createEntity(config);
     }
 
-    private applySkins(player: any, size: number) {
+    private async applySkins(player: any, size: number) {
         const skinsManager = new Skins();
+        await skinsManager.init();
         Object.entries(skinsManager.equipped).forEach(([typeName, skin]) => {
             if (!skin || !skin.frames.length) return;
             player.add(
