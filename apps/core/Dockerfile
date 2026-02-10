@@ -24,7 +24,7 @@ RUN apk add --no-cache curl ca-certificates
 COPY --from=builder /app/main .
 
 # Expose the port
-EXPOSE 5001
+EXPOSE 5002
 
 # Run the Go binary
 CMD ["./main"]

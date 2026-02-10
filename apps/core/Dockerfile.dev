@@ -20,7 +20,7 @@ RUN apt-get update || true \
     && rm -rf /var/lib/apt/lists/*
 
 # Expose the service port
-EXPOSE 5001
+EXPOSE 5002
 
 # Use Air for live-reloading
 CMD ["air"]

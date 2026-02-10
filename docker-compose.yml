@@ -81,7 +81,7 @@ services:
       dockerfile: Dockerfile
     restart: always
     ports:
-      - '5001:5001'
+      - '5002:5002'
     depends_on:
       database:
         condition: service_healthy
@@ -93,7 +93,7 @@ services:
       DB_PASSWORD: password
       DB_NAME: appdb
     healthcheck:
-      test: ['CMD-SHELL', 'curl --fail http://core:5001/health || exit 1']
+      test: ['CMD-SHELL', 'curl --fail http://core:5002/health || exit 1']
       interval: 30s
       retries: 5
       start_period: 15s
