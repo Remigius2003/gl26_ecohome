@@ -10,6 +10,7 @@
     "treeTexture": "/game/trilogique/images/env/tree_new.png",
     
     "priorities": {
+<<<<<<< HEAD
         "house_main": { "id": "house_main", "x": 7, "y": 3, "width": 5, "height": 4, "text": "/game/trilogique/images/env/house.png", "priority": 10 },
 
         "path_01": { "id": "p01", "x": 9, "y": 7, "width": 1, "height": 1, "text": "/game/trilogique/images/env/background_rock.png", "priority": 0, "walkable": true },
@@ -33,6 +34,30 @@
         "13": { "id": "bush_flowering_01", "x": 13, "y": 4, "width": 1, "height": 1, "text": "/game/trilogique/images/env/bush_flowers.png", "priority": 10 },
         "14": { "id": "bush_dense_01", "x": 3, "y": 10, "width": 1, "height": 1, "text": "/game/trilogique/images/env/bush_dense.png", "priority": 10 },
         "15": { "id": "pebbles_01", "x": 10, "y": 9, "width": 1, "height": 1, "text": "/game/trilogique/images/env/pebbles.png", "priority": 2, "walkable": true }
+=======
+        "10": {
+            "id": "tree_01",
+            "x": 7,
+            "y": 4,
+            "width": 2,
+            "height": 2,
+<<<<<<< HEAD
+            "text": "/game/trilogique/images/env/tree.jpg",
+=======
+            "text": "/game/trilogique/images/env/.jpg",
+>>>>>>> 04bc606 (some little modification)
+            "priority": 10
+        },
+        "11": {
+            "id": "rock_01",
+            "x": 7,
+            "y": 7,
+            "width": 1,
+            "height": 1,
+            "text": "/game/trilogique/images/env/rock.png",
+            "priority": 11
+        }
+>>>>>>> 42b0a60 (some little modification)
     },
 
     "categories": [

@@ -63,52 +63,76 @@ export class ImageTexture implements Texture {
     }
 }
 
-export class Sprite implements Texture {
-    private imgs: HTMLImageElement[] = [];
+interface SpriteData {
+    img: HTMLImageElement;
+    offsetX: number;
+    offsetY: number;
+    ratio: number;
+}
+
+export class Sprite {
+    private frames: SpriteData[] = [];
     private loaded = false;
 
     private index = 0;
     private counter = 0;
-    private ratio = 15;
 
     private symX = false;
     private symY = false;
 
-    constructor(srcOrFrames: string | Frame[], additional?: string[]) {
-        const sources: string[] = [];
+    constructor(
+        srcOrFrames: string | string[] | Frame[],
+        additional?: string[],
+    ) {
+        const inputFrames: Frame[] = [];
 
-        if (Array.isArray(srcOrFrames) && srcOrFrames[0] instanceof Frame) {
-            sources.push(...srcOrFrames.map((f) => f.image));
-        } else if (typeof srcOrFrames === "string") {
-            sources.push(srcOrFrames);
-            if (additional) sources.push(...additional);
+        if (typeof srcOrFrames === "string") {
+            inputFrames.push(new Frame(srcOrFrames));
+            if (additional) {
+                additional.forEach((src) => inputFrames.push(new Frame(src)));
+            }
+        } else if (Array.isArray(srcOrFrames)) {
+            for (const item of srcOrFrames) {
+                if (typeof item === "string") {
+                    inputFrames.push(new Frame(item));
+                } else if (item instanceof Frame) {
+                    inputFrames.push(item);
+                }
+            }
         } else {
-            throw new Error("Invalid SwapTexture constructor parameters");
+            throw new Error("Invalid Sprite constructor parameters");
         }
-
         let loadedCount = 0;
-        for (const s of sources) {
+        for (const f of inputFrames) {
             const img = new Image();
-            img.src = s;
+            img.src = f.image;
             img.onload = () => {
                 loadedCount++;
-                if (loadedCount === sources.length) this.loaded = true;
+                if (loadedCount === inputFrames.length) this.loaded = true;
             };
-            this.imgs.push(img);
+
+            this.frames.push({
+                img,
+                offsetX: f.offsetX,
+                offsetY: f.offsetY,
+                ratio: f.ratio,
+            });
         }
     }
 
     setTexture(index: number) {
-        if (index < 0 || index >= this.imgs.length) return;
+        if (index < 0 || index >= this.frames.length) return;
         this.index = index;
+        this.counter = 0;
     }
 
     nextTexture() {
-        if (!this.loaded) return;
+        if (!this.loaded || this.frames.length <= 1) return;
 
         this.counter++;
-        if (this.counter >= this.ratio) {
-            this.index = (this.index + 1) % this.imgs.length;
+        const currentFrame = this.frames[this.index];
+        if (this.counter >= currentFrame.ratio) {
+            this.index = (this.index + 1) % this.frames.length;
             this.counter = 0;
         }
     }
@@ -128,15 +152,19 @@ export class Sprite implements Texture {
         w: number,
         h: number,
     ) {
-        if (!this.loaded) return;
-        const img = this.imgs[this.index];
+        if (!this.loaded || this.frames.length === 0) return;
+
+        const currentFrame = this.frames[this.index];
 
         ctx.save();
-        ctx.translate(x + (this.symX ? w : 0), y + (this.symY ? h : 0));
 
+        const drawX = x + currentFrame.offsetX;
+        const drawY = y + currentFrame.offsetY;
+
+        ctx.translate(drawX + (this.symX ? w : 0), drawY + (this.symY ? h : 0));
         ctx.scale(this.symX ? -1 : 1, this.symY ? -1 : 1);
 
-        ctx.drawImage(img, 0, 0, w, h);
+        ctx.drawImage(currentFrame.img, 0, 0, w, h);
         ctx.restore();
     }
 }

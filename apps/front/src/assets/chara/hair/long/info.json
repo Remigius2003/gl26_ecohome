@@ -1,0 +1,18 @@
+{
+    "Frame": 4,
+    "AllFrame": {
+        "image": "long.png"
+    },
+    "1": {
+        "offsetY": -10
+    },
+    "2": {
+        "offsetY": -7
+    },
+    "3": {
+        "offsetY": -10
+    },
+    "4": {
+        "offsetY": -10
+    }
+}
