@@ -1,41 +1,40 @@
 package handlers
 
 import (
+	"errors"
+	"fmt"
 	"gl26_ecohome/auths/internal/database"
 	"gl26_ecohome/auths/internal/models"
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 func RegisterHandler(c *gin.Context) {
-	db := database.GetDatabase()
-
-	var req struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-		Email    string `json:"email"`
-	}
-
-	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input !"})
+	var req models.RegisterRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password !"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
 		return
 	}
 
 	user := models.User{
-        Username:     req.Username,
-        Email:        req.Email,
-        PasswordHash: string(hash),
-    }
+		Username:     req.Username,
+		Email:        req.Email,
+		PasswordHash: string(hash),
+	}
 
-	if err := db.Create(&user).Error; err != nil {
+	if err := database.GetDatabase().Create(&user).Error; err != nil {
+		log.Println(err.Error())
 		c.JSON(http.StatusConflict, gin.H{"error": "Username or email already taken"})
 		return
 	}
@@ -44,41 +43,41 @@ func RegisterHandler(c *gin.Context) {
 }
 
 func LoginHandler(c *gin.Context) {
+	var req models.LoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	if (req.Username == "" && req.Email == "") || (req.Username != "" && req.Email != "") || req.Password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Required field is missing"})
+		return
+	}
+
 	db := database.GetDatabase()
-	
-	var req struct {
-		Username string `json:"username,omitempty"`
-		Email    string `json:"email,omitempty"`
-		Password string `json:"password"`
-	}
-
-	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input !"})
-		return
-	}
-
-	if (req.Username == "" && req.Email == "") ||
-		(req.Username != "" && req.Email != "") {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Provide username OR email"})
-		return
-	}
-
 	var user models.User
-	if req.Username != "" {
-		db.Where("username = ?", req.Username).First(&user)
-	} else {
-		db.Where("email = ?", req.Email).First(&user)
+
+	field := "username"
+	identifier := req.Username
+	if req.Email != "" {
+		field = "email"
+		identifier = req.Email
 	}
 
-	if user.Id == 0 {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
-        return
-    }
+	if err := db.Where(field+" = ?", identifier).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Server error"})
+		return
+	}
 
 	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)) != nil {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
-        return
-    }
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
 
 	token, err := generateToken(user.Id)
 	if err != nil {
@@ -86,45 +85,128 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 
-    c.JSON(http.StatusOK, gin.H{"user_id": user.Id, "token": token})
+	c.JSON(http.StatusOK, gin.H{"user_id": user.Id, "token": token})
 }
 
-func InfosHandler(c *gin.Context) {
-	db := database.GetDatabase()
-	id := c.Query("id")
+func ChangePasswordHandler(c *gin.Context) {
+	var req models.ChangePasswordRequest
+	userID := c.GetUint("user_id")
 
-	var user models.User
-	if err := db.First(&user, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
-		return
-	}
-	
-    c.JSON(http.StatusOK, user)
-}
-
-func LogoutHandler(c *gin.Context) {
-	db := database.GetDatabase()
-
-	var req tokenReq
-	if err := c.BindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
-	token, err := verifyToken(&req)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
-		return
-	}
-
-	if token == nil {
+	var user models.User
+	db := database.GetDatabase()
+	if err := db.First(&user, userID).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
 
-	db.Model(&models.RefreshToken{}).
-		Where("user_id = ?", req.UserId).
-		Update("is_active", false)
+	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.OldPassword)) != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Logged out"})
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Hash failure"})
+		return
+	}
+
+	user.PasswordHash = string(hash)
+	if err := db.Save(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Update failed"})
+		return
+	}
+
+	c.JSON(http.StatusOK, "Password updated successfully")
+}
+
+func LogoutHandler(c *gin.Context) {
+	var req models.LogoutRequest
+	userID := c.GetUint("user_id")
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	token, err := verifyToken(userID, req.RefreshToken)
+	if err != nil || token == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
+
+	if err := database.GetDatabase().Model(&models.RefreshToken{}).
+		Where("id = ?", token.Id).Update("is_active", false).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Logout failed"})
+		return
+	}
+
+	c.JSON(http.StatusOK, "Logged out")
+}
+
+func DeleteAccountHandler(c *gin.Context) {
+	var req models.DeleteAccountRequest
+	userID := c.GetUint("user_id")
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	if _, err := verifyToken(userID, req.RefreshToken); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
+
+	var user models.User
+	db := database.GetDatabase()
+	if err := db.First(&user, userID).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
+
+	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)) != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
+
+	anon := fmt.Sprintf("deleted_%d_%d", userID, time.Now().Unix())
+	user.Username = anon
+	user.Email = anon + "@deleted.local"
+	user.PasswordHash = ""
+	user.IsActive = false
+
+	tx := db.Begin()
+	if err := tx.Save(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete account"})
+		tx.Rollback()
+		return
+	}
+
+	tx.Model(&models.RefreshToken{}).Where("user_id = ?", userID).Update("is_active", false)
+	tx.Commit()
+
+	c.JSON(http.StatusOK, gin.H{"message": "Account anonymised"})
+}
+
+func ChangeUsernameHandler(c *gin.Context) {
+	var req models.ChangeUsernameRequest
+	userID := c.GetUint("user_id")
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	if err := database.GetDatabase().Model(&models.User{}).
+		Where("id = ?", userID).Update("username", req.Username).Error; err != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "Username taken"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Username updated"})
 }

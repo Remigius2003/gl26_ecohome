@@ -1,15 +1,19 @@
-import { createSignal } from 'solid-js';
+import { createEffect, createSignal } from 'solid-js';
 import { useNavigate, A } from '@solidjs/router';
-import { register, User } from '@api';
+import { register, Session } from '@api';
 import { FaSolidLeaf } from 'solid-icons/fa';
 import CGU from '@pages/public/CGU';
 import './Auth.css';
 import './Landing.css';
 
 export default function Register() {
-	const navigate = useNavigate();
-	const [showCGU, setShowCGU] = createSignal(false);
 	const [acceptedCGU, setAcceptedCGU] = createSignal(false);
+	const [showCGU, setShowCGU] = createSignal(false);
+
+	const navigate = useNavigate();
+	createEffect(() => {
+		if (Session.isAuthenticated) navigate('/', { replace: true });
+	});
 
 	const handleSubmit = async (e: SubmitEvent) => {
 		e.preventDefault();
@@ -33,9 +37,12 @@ export default function Register() {
 		}
 
 		try {
-			const user: User = await register(username, password, email);
-			console.log('Utilisateur créé :', user);
-			navigate('/login');
+			await register(username, password, email);
+			await Session.login({
+				email: email,
+				password: password,
+			});
+			navigate('/', { replace: true });
 		} catch (err) {
 			alert("Nom d'utilisateur et/ou email déjà pris");
 			console.error("Erreur lors de l'inscription", err);

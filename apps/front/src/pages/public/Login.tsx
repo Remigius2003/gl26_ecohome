@@ -1,11 +1,16 @@
-import { login, generateJWT, LoginResponse, JWTToken } from '@api';
 import { useNavigate, A } from '@solidjs/router';
 import { FaSolidLeaf } from 'solid-icons/fa';
-import './Auth.css';
+import { createEffect } from 'solid-js';
+import { Session } from '@api';
 import './Landing.css';
+import './Auth.css';
 
 export default function Login() {
 	const navigate = useNavigate();
+
+	createEffect(() => {
+		if (Session.isAuthenticated) navigate('/', { replace: true });
+	});
 
 	const handleSubmit = async (e: SubmitEvent) => {
 		e.preventDefault();
@@ -17,15 +22,12 @@ export default function Login() {
 		const password = data.get('password') as string;
 
 		try {
-			const rep: LoginResponse = await login({
+			await Session.login({
 				email: email,
 				password: password,
 			});
 
-			const jwt: JWTToken = await generateJWT(rep.user_id, rep.token.token);
-
-			console.log('Logged in successfully');
-			navigate('/home');
+			navigate('/', { replace: true });
 		} catch (err) {
 			alert('Email et/ou mot de passe incorrect');
 			console.error('Erreur lors de la connexion', err);
