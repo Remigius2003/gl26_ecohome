@@ -1,9 +1,9 @@
-import { RouteSectionProps } from '@solidjs/router';
-import CGU from '@pages/CGU';
-import { Component } from 'solid-js';
+import { RouteSectionProps } from "@solidjs/router";
+import CGU from "./CGU";
+import { Component } from "solid-js";
 
 const CGURoute: Component<RouteSectionProps> = () => {
-	return <CGU />;
+  return <CGU />;
 };
 
 export default CGURoute;
