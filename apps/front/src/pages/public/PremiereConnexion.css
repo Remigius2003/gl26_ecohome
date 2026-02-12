@@ -1,0 +1,81 @@
+/* Overlay (inchangé) */
+.overlay {
+	position: fixed;
+	inset: 0;
+	background-color: rgba(0, 0, 0, 0.4);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000;
+}
+
+/* Popup */
+.premiere-connexion-container {
+	background-color: #f7edda;
+	width: 450px;
+	max-width: 90%;
+	max-height: 75vh;
+	overflow-y: auto;
+	padding: 30px;
+	border-radius: 16px;
+	border: 2px solid #e6d3a3;
+	box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+	font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+	display: flex;
+	flex-direction: column;
+	position: relative; /* Nécessaire pour positionner la croix en absolute */
+}
+
+/* Bouton croix (positionné en haut à droite de la popup) */
+.btn-croix {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 5px;
+}
+
+.btn-croix img {
+	width: 20px;
+	height: 20px;
+}
+
+/* Groupe de boutons en bas */
+.button-group {
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
+	margin-top: 20px;
+}
+
+/* Boutons Précédent/Suivant */
+.précédent,
+.suivant {
+	padding: 8px 16px;
+	border: none;
+	border-radius: 6px;
+	font-family: inherit;
+	font-size: 14px;
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+.précédent {
+	background-color: #e6d3a3;
+	color: #4b3a22;
+}
+
+.précédent:hover {
+	background-color: #d4c291;
+}
+
+.suivant {
+	background-color: #5c4326;
+	color: white;
+}
+
+.suivant:hover {
+	background-color: #4b3a22;
+}
