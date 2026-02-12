@@ -22,6 +22,7 @@ const Quizz = lazy(() => import('@pages/carbonEvaluation/Quizz'));
 const Defi = lazy(() => import('@pages/carbonEvaluation/Defi'));
 //const LightMaze = lazy(() => import("@pages/games/LightMaze"));
 const Defi2 = lazy(() => import('@pages/carbonEvaluation/Defi2'));
+const PremiereConnexion = lazy(() => import('@pages/public/PremiereConnexion'));
 
 import { switchScene } from './scene';
 import type { SceneType } from './scene/core/types';
@@ -82,6 +83,7 @@ export default function App() {
 				<Route path="/Customisation" component={Customisation} />
 				<Route path="/Defi2" component={Defi2} />
 				<Route path="/Defi2/:defiId" component={Defi2} />
+				<Route path="/PremiereConnexion" component={PremiereConnexion} />
 
 				{/* Game */}
 			</Router>
