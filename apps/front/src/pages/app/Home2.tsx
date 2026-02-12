@@ -8,7 +8,7 @@ export default function Home2() {
     const navigate = useNavigate();
     setGlobalNavigate(navigate);
     setGlobalSceneSwitch(switchScene);
-    const scene: SceneType = "home2";
+    //const scene: SceneType = "home2";
 
-    return <SceneCanvas scene={scene} />;
+    //return <SceneCanvas scene={scene} />;
 }
