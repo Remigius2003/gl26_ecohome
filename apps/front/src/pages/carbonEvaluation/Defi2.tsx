@@ -2,7 +2,7 @@ import { createSignal, createEffect } from "solid-js";
 import { useNavigate, useParams } from "@solidjs/router";
 import { dailyChallenges } from "../../quizz/trashLoader";
 import type { defiQuestion, defiAnswer } from "../../quizz/Types";
-import { handleDefiAnswer } from "../../quizz/defi";
+import { handleDefiAnswer } from "../../quizz/Defi";
 import "./Quizz.css";
 
 export default function Defi2() {
