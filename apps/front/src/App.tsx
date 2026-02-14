@@ -5,6 +5,8 @@ const DevPage = lazy(() => import("@pages/debug/DevPanel"));
 const NotFound = lazy(() => import("@pages/NotFound"));
 const Settings = lazy(() => import("@pages/Settings"));
 const HomePage = lazy(() => import("@pages/Home"));
+const LightShadow = lazy(() => import("@pages/games/LightShadow"));
+
 
 const Social = lazy(() => import("@pages/social/Social"));
 const Welcome = lazy(() => import("@pages/auth/Welcome"));
@@ -26,6 +28,7 @@ let navigateFn: ((path: string) => void) | null = null;
 export function setGlobalNavigate(fn: (path: string) => void) {
     navigateFn = fn;
 }
+
 
 export function globalNavigate(path: string) {
     if (!navigateFn) throw new Error("Navigate function not set yet!");
@@ -62,6 +65,8 @@ export default function App() {
                 <Route path="/PreQuizz" component={PreQuizz} />
                 <Route path="/Quizz" component={Quizz} />
                 <Route path="/Defi" component={Defi} />
+                <Route path="/LightShadow" component={LightShadow} />
+
 
                 <Route path="/Defi2" component={Defi2} />
                 <Route path="/CGU" component={CGU} />

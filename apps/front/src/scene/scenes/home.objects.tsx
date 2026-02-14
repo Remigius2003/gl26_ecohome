@@ -53,13 +53,90 @@ export const OBJECT_DEFS: Record<string, AsciiObjectDef> = {
         texture: "house/furniture/chairtoleft.png",
         solid: true,
     },
+    Q: {
+        width: 2,
+        height: 2,
+        texture: "house/furniture/chair_conf.png",
+        solid: true,
+    },
     F: {
         width: 1,
         height: 2,
         texture: "house/furniture/frigo.png",
         solid: true,
     },
+
+    W: {
+        width: 2,
+        height: 2,
+        texture: "house/furniture/machine_alaver.png",
+        solid: true,
+    },
+
+    O: {
+        width: 2,
+        height: 2,
+        texture: "house/furniture/four.png",
+        solid: true,
+    },
+
+    M: {
+        width: 2,
+        height: 1,
+        texture: "house/furniture/micro_onde.png",
+        solid: false,
+    },
+
+    N: {
+        width: 3,
+        height: 3,
+        texture: "house/furniture/piano.png",
+        solid: true,
+    },
+
+    K: {
+        width: 6,
+        height: 2,
+        texture: "house/furniture/cuisine.png",
+        solid: true,
+    },
+
+    A: {
+        width: 1,
+        height: 1,
+        texture: "house/furniture/chaise_salon.png",
+        solid: true,
+    },
+
+    Z: {
+        width: 3,
+        height: 3,
+        texture: "house/furniture/sofa_oriente.png",
+        solid: true,
+    },
+
+    B: {
+        width: 6,
+        height: 6,
+        texture: "house/furniture/lit.png",
+        solid: true,
+    },
+
+    H: {
+        width: 2,
+        height: 2,
+        texture: "house/furniture/horloge.png",
+        solid: false,
+    },
+
+    Y: {
+        width: 2,
+        height: 1,
+        texture: "house/furniture/tab_basse.png",
+        solid: true,
+    }
 };
+
 
 export const INTERACTION_DEFS: Record<string, AsciiInteractionDef> = {
     E: {
