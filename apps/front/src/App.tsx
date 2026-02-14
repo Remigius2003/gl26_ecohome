@@ -1,25 +1,22 @@
-import { Router, Route } from '@solidjs/router';
-import { lazy } from 'solid-js';
-const DevPage = lazy(() => import('@pages/DevPanel'));
+import { Router, Route, A, useNavigate } from "@solidjs/router";
+import { lazy } from "solid-js";
 
-// Public
-const CGU = lazy(() => import('@pages/public/CGURoute'));
-const NotFound = lazy(() => import('@pages/public/NotFound'));
-const Landing = lazy(() => import('@pages/public/Landing'));
-const Register = lazy(() => import('@pages/public/Register'));
-const Login = lazy(() => import('@pages/public/Login'));
+const DevPage = lazy(() => import("@pages/debug/DevPanel"));
+const NotFound = lazy(() => import("@pages/NotFound"));
+const Settings = lazy(() => import("@pages/Settings"));
+const HomePage = lazy(() => import("@pages/Home"));
+const LightShadow = lazy(() => import("@pages/games/LightShadow"));
 
-// App
-const Settings = lazy(() => import('@pages/app/Settings'));
-const HomePage = lazy(() => import('@pages/app/Home'));
-const Home2Page = lazy(() => import('@pages/app/Home2'));
 
-const Social = lazy(() => import('@pages/social/Social'));
-const AddFriend = lazy(() => import('@pages/social/AddFriend'));
-const ChooseFriend = lazy(() => import('@pages/social/ChooseFriend'));
-const PreQuizz = lazy(() => import('@pages/carbonEvaluation/PreQuizz'));
-const Quizz = lazy(() => import('@pages/carbonEvaluation/Quizz'));
-const Defi = lazy(() => import('@pages/carbonEvaluation/Defi'));
+const Social = lazy(() => import("@pages/social/Social"));
+const Welcome = lazy(() => import("@pages/auth/Welcome"));
+const Register = lazy(() => import("@pages/auth/Register"));
+const Login = lazy(() => import("@pages/auth/Login"));
+const AddFriend = lazy(() => import("@pages/social/AddFriend"));
+const ChooseFriend = lazy(() => import("@pages/social/ChooseFriend"));
+const PreQuizz = lazy(() => import("@pages/carbonEvaluation/PreQuizz"));
+const Quizz = lazy(() => import("@pages/carbonEvaluation/Quizz"));
+const Defi = lazy(() => import("@pages/carbonEvaluation/Defi"));
 //const LightMaze = lazy(() => import("@pages/games/LightMaze"));
 const Defi2 = lazy(() => import('@pages/carbonEvaluation/Defi2'));
 const PremiereConnexion = lazy(() => import('@pages/public/PremiereConnexion'));
@@ -57,37 +54,31 @@ const Customisation = lazy(() => import('@pages/app/Customisation'));
 const Layout = (props: any) => <>{props.children}</>;
 
 export default function App() {
-	return (
-		<div style={{ 'font-family': 'sans-serif' }}>
-			<Router root={Layout}>
-				{/* Dev */}
-				<Route path="/dev" component={DevPage} />
+    return (
+        <div style={{ "font-family": "sans-serif", padding: "1rem" }}>
+            <Router root={Layout}>
+                <Route path="/" component={DevPage} />
+                <Route path="/home" component={HomePage} />
+                <Route path="/dev" component={DevPage} />
+                <Route path="/login" component={Login} />
+                <Route path="/social" component={Social} />
+                <Route path="/register" component={Register} />
+                <Route path="/welcome" component={Welcome} />
+                <Route path="/settings" component={Settings} />
+                <Route path="/AddFriend" component={AddFriend} />
+                <Route path="/ChooseFriend" component={ChooseFriend} />
+                <Route path="/PreQuizz" component={PreQuizz} />
+                <Route path="/Quizz" component={Quizz} />
+                <Route path="/Defi" component={Defi} />
+                <Route path="/LightShadow" component={LightShadow} />
 
-				{/* Public */}
-				<Route path="/" component={Landing} />
-				<Route path="/cgu" component={CGU} />
-				<Route path="*" component={NotFound} />
-				<Route path="/login" component={Login} />
-				<Route path="/register" component={Register} />
 
-				{/* App */}
-				<Route path="/home" component={HomePage} />
-				<Route path="/home2" component={Home2Page} />
-				<Route path="/social" component={Social} />
-				<Route path="/settings" component={Settings} />
-				<Route path="/AddFriend" component={AddFriend} />
-				<Route path="/ChooseFriend" component={ChooseFriend} />
-				<Route path="/PreQuizz" component={PreQuizz} />
-				<Route path="/Quizz" component={Quizz} />
-				<Route path="/Defi" component={Defi} />
-				<Route path="/Customisation" component={Customisation} />
-				<Route path="/Defi2" component={Defi2} />
-				<Route path="/Defi2/:defiId" component={Defi2} />
-				<Route path="/PremiereConnexion" component={PremiereConnexion} />
-
-				{/* Game */}
-			</Router>
-		</div>
-	);
+                <Route path="/Defi2" component={Defi2} />
+                <Route path="/CGU" component={CGU} />
+                <Route path="/Defi2/:defiId" component={Defi2} />
+                <Route path="*404" component={NotFound} />
+            </Router>
+        </div>
+    );
 }
 //<Route path="/LightMaze" component={LightMaze} />

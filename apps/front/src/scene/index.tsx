@@ -4,6 +4,7 @@ import { Engine } from "./core/engine";
 
 // Scenes Imports
 import HomeScene from "./scenes/home";
+import Home2Scene from "./scenes/home2";
 import EcoGrid from "./scenes/ecogrid";
 import TriLogique from "./scenes/trilogique";
 import LightShadow from "./scenes/lightshadow";
@@ -19,6 +20,7 @@ export const initializeScene = (canvas: HTMLCanvasElement) => {
 
   engine = new Engine(canvas);
   engine.registerScene("home", new HomeScene());
+  engine.registerScene("home2", new Home2Scene());
   engine.registerScene("ecogrid", new EcoGrid());
   engine.registerScene("trilogique", new TriLogique());
   engine.registerScene("lightshadow", new LightShadow());

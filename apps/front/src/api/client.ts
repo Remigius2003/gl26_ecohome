@@ -30,7 +30,7 @@ export const isApiError = (error: unknown): error is ApiError =>
 export function createApiClient(baseUrl: string) {
   async function apiFetch<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
     const normalizedEndpoint = endpoint.replace(/^\/+/, "");
@@ -45,6 +45,7 @@ export function createApiClient(baseUrl: string) {
     };
 
     try {
+      console.log(url);
       const res = await fetch(url, config);
 
       if (res.ok) {
@@ -62,8 +63,8 @@ export function createApiClient(baseUrl: string) {
         new ApiErrorImpl(
           res.status,
           `Failed to ${endpoint} (${res.statusText}) : ${details.error}`,
-          details
-        )
+          details,
+        ),
       );
     } catch (err) {
       if (err instanceof TypeError) {
@@ -98,13 +99,13 @@ const withHttpsFallback = (envValue?: string, fallback = "") => {
 
 const AUTH_API_URL = withHttpsFallback(
   import.meta.env.VITE_AUTH_HOST,
-  "https://localhost/users"
+  "https://localhost/users",
 );
 
-const GAME_API_URL = withHttpsFallback(
-  import.meta.env.VITE_GAME_HOST,
-  "https://localhost/ws"
+const CORE_API_URL = withHttpsFallback(
+  import.meta.env.VITE_CORE_HOST,
+  "https://localhost/ws",
 );
 
 export const authApiFetch = createApiClient(AUTH_API_URL);
-export const gameApiFetch = createApiClient(GAME_API_URL);
+export const coreApiFetch = createApiClient(CORE_API_URL);

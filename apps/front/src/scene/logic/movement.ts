@@ -1,4 +1,12 @@
-import { Controller, Dynamic, Entity, InputState } from "../core/types";
+import { SwapTexture } from "@scene/core/texture";
+import {
+    Controller,
+    Dynamic,
+    Entity,
+    Group,
+    InputState,
+    isGroup,
+} from "../core/types";
 import { World } from "./world";
 
 export class PhysicsSystem {
@@ -24,6 +32,26 @@ export class PhysicsSystem {
 
         entity.vx = 0;
         entity.vy = 0;
+
+        const updateEntities = (ent: Entity) => {
+            if (dx === 0 && dy === 0) return;
+            if (!isGroup(ent)) {
+                const text = ent.text instanceof SwapTexture ? ent.text : null;
+                if (!text) return;
+
+                text.nextTexture();
+                if (dx > 0) text.setSymX(true);
+                if (dx < 0) text.setSymX(false);
+
+                return;
+            }
+
+            let entities = ent.getChildrens();
+            for (let i = 0; i < entities.length; i++)
+                updateEntities(entities[i]);
+        };
+
+        updateEntities(entity);
     }
 }
 
