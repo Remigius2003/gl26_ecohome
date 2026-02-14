@@ -134,6 +134,40 @@ export const OBJECT_DEFS: Record<string, AsciiObjectDef> = {
         height: 1,
         texture: "house/furniture/tab_basse.png",
         solid: true,
+    }, 
+
+    D: {
+        width: 2,
+        height: 2,
+        texture: "house/furniture/armoire.png",
+        solid: true,
+    },
+
+    G: {
+        width: 3,
+        height: 2,
+        texture: "house/furniture/etagere.png",
+        solid: true,
+    },
+
+    J: {
+        width: 3,
+        height: 2,
+        texture: "house/furniture/chemine.png",
+        solid: true,
+    },
+
+    U: {
+        width: 1,
+        height: 2,
+        texture: "house/furniture/bath.png",
+        solid: true,
+    }, 
+    s: {
+        width: 3,
+        height: 3,
+        texture: "house/furniture/sofa.png",
+        solid: false,
     }
 };
 
