@@ -1,5 +1,6 @@
-import { Router, Route, A, useNavigate } from "@solidjs/router";
-import { lazy } from "solid-js";
+import { Router, Route } from '@solidjs/router';
+import { lazy } from 'solid-js';
+const DevPage = lazy(() => import('@pages/DevPanel'));
 
 const DevPage = lazy(() => import("@pages/debug/DevPanel"));
 const NotFound = lazy(() => import("@pages/NotFound"));
@@ -8,45 +9,53 @@ const HomePage = lazy(() => import("@pages/Home"));
 const LightShadow = lazy(() => import("@pages/games/LightShadow"));
 
 
-const Social = lazy(() => import("@pages/social/Social"));
-const Welcome = lazy(() => import("@pages/auth/Welcome"));
-const Register = lazy(() => import("@pages/auth/Register"));
-const Login = lazy(() => import("@pages/auth/Login"));
-const AddFriend = lazy(() => import("@pages/social/AddFriend"));
-const ChooseFriend = lazy(() => import("@pages/social/ChooseFriend"));
-const PreQuizz = lazy(() => import("@pages/carbonEvaluation/PreQuizz"));
-const Quizz = lazy(() => import("@pages/carbonEvaluation/Quizz"));
-const Defi = lazy(() => import("@pages/carbonEvaluation/Defi"));
-//const LightMaze = lazy(() => import("@pages/games/LightMaze"));
-const Defi2 = lazy(() => import("@pages/carbonEvaluation/Defi2"));
-const CGU = lazy(() => import("@pages/CGU"));
+// App
+const Settings = lazy(() => import('@pages/app/Settings'));
+const HomePage = lazy(() => import('@pages/app/Home'));
+const Home2Page = lazy(() => import('@pages/app/Home2'));
 
-import { createSignal } from "solid-js";
+const Social = lazy(() => import('@pages/social/Social'));
+const AddFriend = lazy(() => import('@pages/social/AddFriend'));
+const ChooseFriend = lazy(() => import('@pages/social/ChooseFriend'));
+const PreQuizz = lazy(() => import('@pages/carbonEvaluation/PreQuizz'));
+const Quizz = lazy(() => import('@pages/carbonEvaluation/Quizz'));
+const Defi = lazy(() => import('@pages/carbonEvaluation/Defi'));
+//const LightMaze = lazy(() => import("@pages/games/LightMaze"));
+const Defi2 = lazy(() => import('@pages/carbonEvaluation/Defi2'));
+const PremiereConnexion = lazy(() => import('@pages/public/PremiereConnexion'));
+
+import { switchScene } from './scene';
+import type { SceneType } from './scene/core/types';
 
 //global navigation
 let navigateFn: ((path: string) => void) | null = null;
 export function setGlobalNavigate(fn: (path: string) => void) {
-    navigateFn = fn;
+	navigateFn = fn;
 }
 
 
 export function globalNavigate(path: string) {
-    if (!navigateFn) throw new Error("Navigate function not set yet!");
-    navigateFn(path);
+	if (!navigateFn) throw new Error('Navigate function not set yet!');
+	navigateFn(path);
 }
 
-const Layout = (props: any) => (
-    <>
-        {/*<header>
-      <h1>Eco Home</h1>
-      <nav style={{ "margin-bottom": "1rem" }}>
-        <A href="/">Home</A> |<A href="/dev">Dev Page</A> |{" "}
-        <A href="/settings">Settings</A>
-      </nav>
-    </header>*/}
-        {props.children}
-    </>
-);
+// global scene switching
+let sceneChangeFn: ((scene: SceneType) => void) | null = null;
+export function setGlobalSceneSwitch(fn: (scene: SceneType) => void) {
+	sceneChangeFn = fn;
+}
+
+export function globalSwitchScene(scene: SceneType) {
+	if (!sceneChangeFn) {
+		// Fallback to switchScene from engine if available
+		switchScene(scene);
+		return;
+	}
+	sceneChangeFn(scene);
+}
+const Customisation = lazy(() => import('@pages/app/Customisation'));
+
+const Layout = (props: any) => <>{props.children}</>;
 
 export default function App() {
     return (
@@ -68,12 +77,9 @@ export default function App() {
                 <Route path="/LightShadow" component={LightShadow} />
 
 
-                <Route path="/Defi2" component={Defi2} />
-                <Route path="/CGU" component={CGU} />
-                <Route path="/Defi2/:defiId" component={Defi2} />
-                <Route path="*404" component={NotFound} />
-            </Router>
-        </div>
-    );
+				{/* Game */}
+			</Router>
+		</div>
+	);
 }
 //<Route path="/LightMaze" component={LightMaze} />

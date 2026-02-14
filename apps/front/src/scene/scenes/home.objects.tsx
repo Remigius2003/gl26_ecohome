@@ -1,57 +1,65 @@
 import { globalNavigate } from "../../App";
 
-export type AsciiObjectDef = {
+export type AsciiThingDef = {
     width: number;
     height: number;
-    texture: string;
-    solid?: boolean;
-};
 
-export type AsciiInteractionDef = {
-    width: number;
-    height: number;
-    onInteract: () => void;
+    // rendering
     texture?: string;
-    priority: number;
-};
+    solid?: boolean;
 
-export const OBJECT_DEFS: Record<string, AsciiObjectDef> = {
+    // interaction (optional)
+    areaOfInteraction?: number; // default -1
+    priority?: number; // default 0
+    onInteract?: () => void;
+};
+export const THING_DEFS: Record<string, AsciiThingDef> = {
     T: {
         width: 3,
         height: 3,
         texture: "house/furniture/table.png",
         solid: true,
+        areaOfInteraction: 1,
+        priority: 0,
+        onInteract: () => {
+            globalNavigate("/social");
+        },
     },
     S: {
         width: 2,
         height: 2,
         texture: "house/furniture/tableSimple.png",
         solid: true,
+        areaOfInteraction: 1,
+        priority: 0,
+        onInteract: () => {
+            globalNavigate("/social");
+        },
     },
-
     V: {
         width: 2,
         height: 2,
         texture: "house/furniture/tv.png",
         solid: true,
-    },
-    E: {
-        width: 8,
-        height: 2,
-        texture: "house/furniture/esc.png",
-        solid: false,
+        priority: 0,
     },
     C: {
         width: 1,
         height: 1,
         texture: "house/furniture/chairFace.png",
         solid: true,
+        priority: 0,
     },
     L: {
         width: 1,
         height: 1,
         texture: "house/furniture/chairtoleft.png",
         solid: true,
+        areaOfInteraction: 0,
+        priority: 0,
+        onInteract: () => {
+            console.log("S'assoir sur la chaise");
+        },
     },
     Q: {
         width: 2,
@@ -64,6 +72,11 @@ export const OBJECT_DEFS: Record<string, AsciiObjectDef> = {
         height: 2,
         texture: "house/furniture/frigo.png",
         solid: true,
+        areaOfInteraction: 1,
+        priority: 0,
+        onInteract: () => {
+            globalNavigate("/PreQuizz?type=alimentation");
+        },
     },
 
     W: {
@@ -176,56 +189,28 @@ export const INTERACTION_DEFS: Record<string, AsciiInteractionDef> = {
     E: {
         width: 8,
         height: 2,
-        texture: "Pay respect to my greatness as I stand above ALL",
-        priority: -1,
+        texture: "house/furniture/esc.png",
+        solid: false,
+        areaOfInteraction: 1,
+        priority: 1,
         onInteract: () => {
-            console.log("Go upstairs");
+            console.log("🪜 STAIRS INTERACTION TRIGGERED!");
+            console.log("📍 Calling alert...");
+            alert("2eme etage");
+            console.log("📍 Alert dismissed, calling globalSwitchScene...");
+            globalNavigate("/home2");
+            console.log("📍 globalNavigate(/home2) called!");
         },
     },
     R: {
         width: 2,
         height: 2,
-        texture: "house/furniture/tapi.png",
+        texture: "le tapis",
+        solid: false,
+        areaOfInteraction: 0,
         priority: 1,
         onInteract: () => {
             globalNavigate("/PreQuizz?type=transport");
-        },
-    },
-    1: {
-        width: 1,
-        height: 1,
-        texture: "Pay respect to my greatness as I stand above ALL",
-        priority: -2,
-        onInteract: () => {
-            globalNavigate("/Defi");
-        },
-    },
-    2: {
-        width: 1,
-        height: 1,
-        texture: "Pay respect to my greatness as I stand above ALL",
-        priority: -2,
-        onInteract: () => {
-            globalNavigate("/PreQuizz?type=alimentation");
-        },
-    },
-    3: {
-        width: 1,
-        height: 1,
-        texture: "Pay respect to my greatness as I stand above ALL",
-        priority: -2,
-        onInteract: () => {
-            globalNavigate("/social");
-        },
-    },
-
-    4: {
-        width: 1,
-        height: 1,
-        texture: "Pay respect to my greatness as I stand above ALL",
-        priority: -2,
-        onInteract: () => {
-            globalNavigate("/PreQuizz?type=consommation");
         },
     },
 };

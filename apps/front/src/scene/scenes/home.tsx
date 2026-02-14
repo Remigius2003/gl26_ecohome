@@ -1,10 +1,15 @@
 // scenes/home/HomeScene.ts
 
-import { Scene, SceneType, Character } from "../core/types";
-import { ImageTexture } from "../core/texture";
+import { Scene, SceneType, Dynamic } from "../core/types";
+import { ImageTexture, SwapTexture, TransparentTexture } from "../core/texture";
 import { Camera } from "../logic/camera";
 import { World } from "../logic/world";
-import { createEntity, createSolid, withInteractable } from "../logic/factory";
+import {
+    createEntity,
+    createSolid,
+    withDynamic,
+    withInteractable,
+} from "../logic/factory";
 import {
     PhysicsSystem,
     PlayerController,
@@ -15,19 +20,21 @@ import { ASCII_MAP, CELL_SIZE, GRID_COLS, GRID_ROWS } from "./home.map";
 
 import {
     generateWallsFromAscii,
-    generateObjectsFromAscii,
-    generateInteractionsFromAscii,
+    generateThingsFromAscii,
     findPlayerSpawn,
 } from "./home.ascii";
 
-import { createPlayer, createGuideNPC, createFloorTile } from "./home.entities";
+import { createFloorTile, createPlayer } from "./home.entities";
+import { Group } from "@scene/core/group";
+import { Skins } from "@api/manageSkin";
 
 export default class HomeScene implements Scene {
     private world!: World;
     private camera!: Camera;
-    private player!: Character;
+    private player!: Group & Dynamic;
     private playerController!: PlayerController;
     private npcControllers: NPCController[] = [];
+    private debugLog: string[] = [];
 
     init(canvas: HTMLCanvasElement, onSwitchScene: (t: SceneType) => void) {
         this.world = new World(GRID_COLS * CELL_SIZE, GRID_ROWS * CELL_SIZE);
@@ -44,19 +51,32 @@ export default class HomeScene implements Scene {
                 this.world.addEntity(tile);
             }
         }
-
-        generateObjectsFromAscii(ASCII_MAP, CELL_SIZE, (...args) => {
-            const [id, x, y, w, h, texture, solid] = args;
-            this.world.addEntity(
-                solid
+        generateThingsFromAscii(
+            ASCII_MAP,
+            CELL_SIZE,
+            (
+                id,
+                x,
+                y,
+                w,
+                h,
+                texture,
+                solid,
+                priority,
+                areaOfInteraction,
+                onInteract,
+            ) => {
+                const baseEntity = solid
                     ? createSolid({
                           id,
                           x,
                           y,
                           width: w,
                           height: h,
-                          priority: 1,
-                          text: new ImageTexture(texture),
+                          priority,
+                          text: texture
+                              ? new ImageTexture(texture)
+                              : new TransparentTexture(),
                       })
                     : createEntity({
                           id,
@@ -64,30 +84,39 @@ export default class HomeScene implements Scene {
                           y,
                           width: w,
                           height: h,
-                          priority: 1,
-                          text: new ImageTexture(texture),
-                      }),
-            );
-        });
+                          priority,
+                          text: texture
+                              ? new ImageTexture(texture)
+                              : new TransparentTexture(),
+                      });
 
-        generateInteractionsFromAscii(
-            ASCII_MAP,
-            CELL_SIZE,
-            (id, x, y, w, h, tex, priority, onInteract) => {
-                this.world.addEntity(
-                    withInteractable(
-                        createEntity({
-                            id,
-                            x,
-                            y,
-                            width: w,
-                            height: h,
-                            priority: priority,
-                            text: new ImageTexture(tex ?? "undefined"),
-                        }),
-                        { onInteract },
-                    ),
-                );
+                // No interaction
+                if (areaOfInteraction < 0) {
+                    this.world.addEntity(baseEntity);
+                    return;
+                }
+
+                // Expand interaction area
+                const padding = areaOfInteraction * CELL_SIZE;
+
+                const interactionEntity = createEntity({
+                    id: `${id}-interaction`,
+                    x: x - padding,
+                    y: y - padding,
+                    width: w + padding * 2,
+                    height: h + padding * 2,
+                    priority: -1,
+                    text: new TransparentTexture(),
+                });
+
+                const interactableEntity = withInteractable(interactionEntity, {
+                    onInteract: onInteract,
+                });
+
+                this.world.addEntity(interactableEntity);
+
+                // Add the visible/solid object separately
+                this.world.addEntity(baseEntity);
             },
         );
 
@@ -110,28 +139,57 @@ export default class HomeScene implements Scene {
         );
 
         const spawn = findPlayerSpawn(ASCII_MAP);
+        const PLAYER_SIZE = CELL_SIZE * 0.7;
         this.player = createPlayer(
             spawn.x * CELL_SIZE,
             spawn.y * CELL_SIZE,
-            CELL_SIZE,
+            PLAYER_SIZE,
         );
 
-        this.playerController = new PlayerController(this.player);
-        this.world.addEntity(this.player);
+        const skinsManager = new Skins();
+        const allEquippedEntries = Object.entries(skinsManager.equipped); // [typeName, Skin][]
 
-        const npc = createGuideNPC();
-        this.world.addEntity(npc);
-        this.npcControllers.push(new NPCController(npc));
+        allEquippedEntries.forEach(([typeName, skin]) => {
+            if (!skin) return;
+
+            const frames = skin.frames;
+            if (frames.length === 0) return;
+
+            this.player.add(
+                createEntity({
+                    id: typeName,
+                    x: 0,
+                    y: 0,
+                    width: 2 * PLAYER_SIZE,
+                    height: 2 * PLAYER_SIZE,
+                    priority: frames.length > 1 ? 4 : 3,
+                    text: new SwapTexture(frames),
+                }),
+            );
+        });
+
+        this.world.addEntity(this.player);
+        this.player.speed = 1000;
+        this.playerController = new PlayerController(this.player);
     }
 
     resizeScene(w: number, h: number) {
         this.camera.resize(w, h);
     }
+
+    private log(msg: string) {
+        this.debugLog.push(msg);
+        console.log(msg);
+        if (this.debugLog.length > 20) this.debugLog.shift();
+    }
     handleInput(input: Record<string, boolean>) {
         this.playerController.update(0, input);
         if (input[" "] || input["enter"]) {
             const target = this.world.getInteraction(this.player);
-            if (target) target.onInteract();
+            if (target) {
+                target.onInteract();
+            } else {
+            }
         }
     }
     update(dt: number) {
@@ -150,6 +208,7 @@ export default class HomeScene implements Scene {
         this.camera.release(ctx);
         const interaction = this.world.getInteraction(this.player);
         if (interaction) {
+            console.log(`[Render] Detected interaction:`, interaction.id);
             ctx.fillStyle = "white";
             ctx.textAlign = "center";
             ctx.fillText(
