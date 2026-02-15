@@ -1,17 +1,18 @@
 import { globalNavigate } from "../../App";
+import { buildThingDefs } from "../furniture";
+import type { AsciiThingDef } from "../furniture/types";
 
-export type AsciiThingDef = {
-    width: number;
-    height: number;
-
-    // rendering
-    texture?: string;
-    solid?: boolean;
-
-    // interaction (optional)
-    areaOfInteraction?: number; // default -1
-    priority?: number; // default 0
-    onInteract?: () => void;
+const resolveInteraction = (interaction?: string) => {
+    if (!interaction) return undefined;
+    if (interaction.startsWith("nav:")) {
+        const path = interaction.slice("nav:".length);
+        return () => globalNavigate(path);
+    }
+    if (interaction.startsWith("log:")) {
+        const msg = interaction.slice("log:".length);
+        return () => console.log(msg);
+    }
+    return undefined;
 };
 export const THING_DEFS: Record<string, AsciiThingDef> = {
     T: {

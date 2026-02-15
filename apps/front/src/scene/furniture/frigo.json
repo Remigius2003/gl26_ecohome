@@ -1,0 +1,10 @@
+{
+  "symbol": "F",
+  "width": 1,
+  "height": 2,
+  "texture": "/house/furniture/frigo.png",
+  "solid": true,
+  "areaOfInteraction": 1,
+  "priority": 0,
+  "interaction": "nav:/PreQuizz?type=alimentation"
+}
