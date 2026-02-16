@@ -459,7 +459,7 @@ export default class TrilogiqueScene implements Scene {
 
         setTimeout(() => {
             if (this.onSwitchScene) {
-                window.location.href = "/";
+                window.location.href = "/lobby/trilogique";
             }
         }, 1500);
     }

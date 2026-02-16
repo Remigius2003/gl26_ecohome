@@ -23,9 +23,20 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         texture: "house/furniture/bed.png",
         solid: true,
         areaOfInteraction: 1,
-        priority: 0,
+        priority: 2,
         onInteract: () => {
             console.log("Interacting with bed");
+        },
+    },
+    T: {
+        width: 2,
+        height: 2,
+        texture: "house/furniture/trilogique.png",
+        solid: true,
+        areaOfInteraction: 1,
+        priority: 2,
+        onInteract: () => {
+            globalNavigate("/lobby/trilogique");
         },
     },
     M: {
@@ -34,7 +45,7 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         texture: "house/furniture/mirror.png",
         solid: true,
         areaOfInteraction: 0,
-        priority: 0,
+        priority: 2,
         onInteract: () => {
             console.log("Looking in mirror");
         },
@@ -45,7 +56,7 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         texture: "house/furniture/dresser.png",
         solid: true,
         areaOfInteraction: 1,
-        priority: 0,
+        priority: 2,
         onInteract: () => {
             console.log("Interacting with dresser");
         },
@@ -56,7 +67,7 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         texture: "house/furniture/wardrobe.png",
         solid: true,
         areaOfInteraction: 1,
-        priority: 0,
+        priority: 2,
         onInteract: () => {
             console.log("Interacting with wardrobe");
         },
@@ -67,7 +78,7 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         texture: "house/furniture/shelves.png",
         solid: true,
         areaOfInteraction: 1,
-        priority: 0,
+        priority: 2,
         onInteract: () => {
             console.log("Looking at shelves");
         },
@@ -78,7 +89,7 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         texture: "house/furniture/lamp.png",
         solid: false,
         areaOfInteraction: 1,
-        priority: 0,
+        priority: 2,
         onInteract: () => {
             console.log("Interacting with lamp");
         },
@@ -92,8 +103,6 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         areaOfInteraction: 1,
         priority: 1,
         onInteract: () => {
-            console.log("Go downstairs");
-            alert("1er etage");
             globalNavigate("/home");
         },
     },
@@ -104,7 +113,7 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         texture: "house/furniture/desk.png",
         solid: true,
         areaOfInteraction: 1,
-        priority: 0,
+        priority: 2,
         onInteract: () => {
             console.log("Interacting with desk");
         },
