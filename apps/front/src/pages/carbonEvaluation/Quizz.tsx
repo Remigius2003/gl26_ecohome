@@ -24,17 +24,17 @@ export default function Quizz() {
     const location = useLocation();
 
     const urlType = new URLSearchParams(location.search).get(
-        "type"
+        "type",
     ) as QuizzType | null;
     const validType = Object.keys(ROOT_QUESTION_ID).includes(urlType || "")
         ? urlType!
         : DEFAULT_TYPE;
 
     const [selectedAnswer, setSelectedAnswer] = createSignal<number | null>(
-        null
+        null,
     );
     const [questionId, setQuestionId] = createSignal(
-        ROOT_QUESTION_ID[validType]
+        ROOT_QUESTION_ID[validType],
     );
     const [question, setQuestion] = createSignal<Question | null>(null);
     const [loading, setLoading] = createSignal(true);
@@ -83,7 +83,7 @@ export default function Quizz() {
 
     return (
         <div class="quizz-container">
-            <img src="/public/Quizz_game.png" alt="Quizz" />
+            <img src="/Quizz_game.png" alt="Quizz" />
 
             <h1>
                 {loading()

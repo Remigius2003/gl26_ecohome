@@ -1,0 +1,9 @@
+{
+    "Frame": 4,
+    "AllFrame": {
+        "image": "red1.png"
+    },
+    "2": {
+        "offsetY": -10
+    }
+}

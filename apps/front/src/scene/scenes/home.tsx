@@ -1,7 +1,7 @@
 // scenes/home/HomeScene.ts
 
 import { Scene, SceneType, Dynamic } from "../core/types";
-import { ImageTexture, SwapTexture, TransparentTexture } from "../core/texture";
+import { ImageTexture, Sprite, TransparentTexture } from "../core/texture";
 import { Camera } from "../logic/camera";
 import { World } from "../logic/world";
 import {
@@ -163,7 +163,7 @@ export default class HomeScene implements Scene {
                     width: 2 * PLAYER_SIZE,
                     height: 2 * PLAYER_SIZE,
                     priority: frames.length > 1 ? 4 : 3,
-                    text: new SwapTexture(frames),
+                    text: new Sprite(frames),
                 }),
             );
         });

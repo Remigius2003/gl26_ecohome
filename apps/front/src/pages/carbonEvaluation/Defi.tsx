@@ -26,7 +26,7 @@ export default function Defi() {
 
             <button class="btn-back" onClick={() => navigate("/home")}>
                 <img
-                    src="public/Red-Left-Arrow.png"
+                    src="Red-Left-Arrow.png"
                     alt="Retour"
                     width={32}
                     height={24}

@@ -1,4 +1,4 @@
-import { SwapTexture } from "@scene/core/texture";
+import { Sprite } from "@scene/core/texture";
 import {
     Controller,
     Dynamic,
@@ -36,7 +36,7 @@ export class PhysicsSystem {
         const updateEntities = (ent: Entity) => {
             if (dx === 0 && dy === 0) return;
             if (!isGroup(ent)) {
-                const text = ent.text instanceof SwapTexture ? ent.text : null;
+                const text = ent.text instanceof Sprite ? ent.text : null;
                 if (!text) return;
 
                 text.nextTexture();
