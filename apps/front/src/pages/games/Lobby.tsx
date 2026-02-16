@@ -1,6 +1,6 @@
 import "./Lobby.css";
 import { createSignal, For, onMount, onCleanup } from "solid-js";
-import { useParams } from "@solidjs/router";
+import { useParams, useNavigate } from "@solidjs/router";
 import {
     loadGamesById,
     isSceneImage,
@@ -16,6 +16,7 @@ const itemsInit = [
 
 export default function Lobby() {
     const params = useParams();
+    const navigate = useNavigate();
     const gameId = () => params.gameId || "space";
 
     const [items, setItems] = createSignal(itemsInit);
@@ -90,8 +91,51 @@ export default function Lobby() {
         alert("Quick action clicked!");
     };
 
+    const playClick = () => {
+        navigate(`/trilogique`);
+        return;
+        if (loading() || error()) return; // don't navigate if loading or error
+        const g = game();
+        if (!g) {
+            // fallback: navigate to a generic place using the current index
+            const idx = current();
+            navigate(`/game/${encodeURIComponent(String(idx))}`);
+            return;
+        }
+
+        // If the image is a scene, navigate to a scene route; otherwise use game id
+        if (isSceneImage(g.image) && g.image.sceneId) {
+            const sceneId = encodeURIComponent(String(g.image.sceneId));
+            navigate(`/scene/${sceneId}`);
+        } else if ((g as any).id !== undefined) {
+            // prefer a real game id if available
+            const id = encodeURIComponent(String((g as any).id));
+            navigate(`/game/${id}`);
+        } else {
+            // fallback to index if no id property on game
+            navigate(`/game/${encodeURIComponent(String(current()))}`);
+        }
+    };
+
+    const continueClick = () => {
+        navigate(`/trilogique`);
+        return;
+        const g = game();
+        if (!g) return;
+        if (isSceneImage(g.image) && g.image.sceneId) {
+            navigate(
+                `/scene/${encodeURIComponent(String(g.image.sceneId))}?resume=1`,
+            );
+        } else if ((g as any).id !== undefined) {
+            navigate(
+                `/game/${encodeURIComponent(String((g as any).id))}?resume=1`,
+            );
+        } else {
+            navigate(`/game/${encodeURIComponent(String(current()))}?resume=1`);
+        }
+    };
+
     return (
-        // assign ref using function so Solid receives the DOM element
         <div
             class="container"
             ref={(el) => (containerRef = el as HTMLDivElement)}
@@ -106,11 +150,8 @@ export default function Lobby() {
                             <div
                                 class={`rect-wrapper ${direction()}`}
                                 style={{
-                                    // We use calc() to center the element itself (-50%)
-                                    // AND add your calculated distance
                                     transform: `translateX(calc(-50% + ${translateFor(idx)}px))`,
 
-                                    // Optional: Add z-index so the active item is always visually on top
                                     "z-index": idx === current() ? 10 : 1,
                                 }}
                                 onClick={() => handleClick(idx)}
@@ -180,14 +221,26 @@ export default function Lobby() {
                 <div class="quick-action" aria-hidden={false}>
                     <div class="buttons">
                         <div class="quick-action">
-                            <button class="qa-image" onClick={quickActionClick}>
+                            <button
+                                class="qa-image"
+                                onClick={quickActionClick}
+                                type="button"
+                            >
                                 <img src="/game/Stats.png" alt="preview" />
                             </button>
                             <div class="qa-text">Best Score : idk</div>
                         </div>
 
-                        <button class="btn">Jouer</button>
-                        <button class="btn">Continuer</button>
+                        <button class="btn" onClick={playClick} type="button">
+                            Jouer
+                        </button>
+                        <button
+                            class="btn"
+                            onClick={continueClick}
+                            type="button"
+                        >
+                            Continuer
+                        </button>
                     </div>
                 </div>
             </div>

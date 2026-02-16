@@ -93,13 +93,6 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         solid: true,
     },
 
-    M: {
-        width: 2,
-        height: 1,
-        texture: "house/furniture/micro_onde.png",
-        solid: false,
-    },
-
     N: {
         width: 3,
         height: 3,
@@ -147,7 +140,7 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         height: 1,
         texture: "house/furniture/tab_basse.png",
         solid: true,
-    }, 
+    },
 
     D: {
         width: 2,
@@ -175,17 +168,13 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         height: 2,
         texture: "house/furniture/bath.png",
         solid: true,
-    }, 
+    },
     s: {
         width: 3,
         height: 3,
         texture: "house/furniture/sofa.png",
         solid: false,
-    }
-};
-
-
-export const INTERACTION_DEFS: Record<string, AsciiInteractionDef> = {
+    },
     E: {
         width: 8,
         height: 2,
@@ -194,12 +183,8 @@ export const INTERACTION_DEFS: Record<string, AsciiInteractionDef> = {
         areaOfInteraction: 1,
         priority: 1,
         onInteract: () => {
-            console.log("🪜 STAIRS INTERACTION TRIGGERED!");
-            console.log("📍 Calling alert...");
             alert("2eme etage");
-            console.log("📍 Alert dismissed, calling globalSwitchScene...");
             globalNavigate("/home2");
-            console.log("📍 globalNavigate(/home2) called!");
         },
     },
     R: {

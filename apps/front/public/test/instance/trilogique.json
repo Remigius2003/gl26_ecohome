@@ -1,16 +1,16 @@
 {
     "games": [
         {
-            "name": "trilogique - level 1",
+            "name": "trilogique - level 1 - test ",
             "id": "level1",
             "image": { "type": "static", "link": "/fairy.png" },
-            "description": "An initialisation to trilogique"
+            "description": "A testing level to be sure the whole system is working well an scalable (every thing is json encode if you want to make a level (public/game/trilogique))"
         },
         {
-            "name": "trilogique - level 2 — Tower",
+            "name": "trilogique - level 2 - not implemented yet",
             "id": "level2",
             "image": { "type": "scene", "sceneId": "towerSceneX" },
-            "description": "A challenge"
+            "description": "When someone does the json we will have a level 2"
         }
     ]
 }
