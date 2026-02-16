@@ -57,30 +57,29 @@ function parseCategory(
     categoryName: string,
     images: Record<string, string>,
 ): Skin[] {
-    // Filter images for this category
-    const prefix = `/public/chara/${categoryName}/`;
+    // 1. Updated prefix to match the src path
+    const prefix = `/src/assets/chara/${categoryName}/`;
     const categoryFiles = Object.keys(images).filter((p) =>
         p.startsWith(prefix),
     );
 
-    // Map subfolders
     const folders: Record<string, string[]> = {};
     const standaloneImages: string[] = [];
 
     for (const filePath of categoryFiles) {
-        const relativePath = filePath.replace(prefix, ""); // e.g., skinA/frame1.png or frame.png
+        // Use the resolved URL (the value), not the file path (the key)
+        const assetUrl = images[filePath];
+        const relativePath = filePath.replace(prefix, "");
         const parts = relativePath.split("/");
 
         if (parts.length === 1) {
-            // Top-level image => standalone skin
             if (isImage(parts[0]) && parts[0] !== "icon.png") {
-                standaloneImages.push(filePath);
+                standaloneImages.push(assetUrl); // Store the URL
             }
         } else if (parts.length >= 2) {
-            // Subfolder => collect frames
             const folderName = parts[0];
             if (!folders[folderName]) folders[folderName] = [];
-            folders[folderName].push(filePath);
+            folders[folderName].push(assetUrl); // Store the URL
         }
     }
 
@@ -98,25 +97,27 @@ function parseCategory(
 
     return skins;
 }
-
-// Main function
 export function parseTypes(): Types[] {
-    // Import all images eagerly
-    const images = import.meta.glob("/public/chara/**/*.{png,jpg,jpeg,webp}", {
-        eager: true,
-    });
+    const images = import.meta.glob(
+        "/src/assets/chara/**/*.{png,jpg,jpeg,webp}",
+        {
+            eager: true,
+            import: "default",
+        },
+    ) as Record<string, string>;
 
-    // Determine category folders
     const categoriesSet = new Set<string>();
     for (const filePath in images) {
-        const parts = filePath.split("/").slice(-3); // ["chara", "category", ...]
-        if (parts.length >= 2) {
-            categoriesSet.add(parts[1]);
+        // Updated slice to handle /src/assets/chara/category/file.png
+        // Split results: ["", "src", "assets", "chara", "category", "file.png"]
+        const parts = filePath.split("/");
+        const charaIndex = parts.indexOf("chara");
+        if (charaIndex !== -1 && parts[charaIndex + 1]) {
+            categoriesSet.add(parts[charaIndex + 1]);
         }
     }
 
     const types: Types[] = [];
-
     for (const category of categoriesSet) {
         const skins = parseCategory(category, images);
         if (skins.length > 0) types.push(new Types(category, skins));

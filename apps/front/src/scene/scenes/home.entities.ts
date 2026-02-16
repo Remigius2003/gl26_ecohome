@@ -2,7 +2,7 @@ import { Character, Dynamic, Entity, Solid, Texture } from "../core/types";
 import {
     ColorTexture,
     ImageTexture,
-    SwapTexture,
+    Sprite,
     TransparentTexture,
 } from "../core/texture";
 import { withDynamic, withSolid } from "../logic/factory";
@@ -101,7 +101,7 @@ export function createPlayer(x: number, y: number, size: number) {
                 w: size * 2,
                 h: size * 2,
                 priority: 2,
-                text: new SwapTexture("/chara/bodyStanding.png", [
+                text: new Sprite("/chara/bodyStanding.png", [
                     "/chara/bodyW.png",
                     "/chara/bodyStanding.png",
                     "/chara/bodyW2.png",

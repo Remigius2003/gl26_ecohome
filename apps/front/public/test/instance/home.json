@@ -1,0 +1,16 @@
+{
+    "games": [
+        {
+            "name": "Your House — Living Room",
+            "id": "home-main-01",
+            "image": { "type": "scene", "sceneId": "homeScene01" },
+            "description": "Manage your base and personalize the living room."
+        },
+        {
+            "name": "Your House — Garden",
+            "id": "home-garden-01",
+            "image": { "type": "static", "link": "/images/home-garden.jpg" },
+            "description": "Tend the garden and grow plants."
+        }
+    ]
+}

@@ -1,0 +1,52 @@
+{
+    "games": [
+        {
+            "name": "Friend1 — Mini Home",
+            "id": "f1-home-01",
+            "image": { "type": "static", "link": "/images/f1-home.jpg" },
+            "description": "A cozy corner owned by Friend 1."
+        },
+        {
+            "name": "Friend1 — Park",
+            "id": "f1-park-01",
+            "image": { "type": "static", "link": "/images/f1-park.jpg" },
+            "description": "A pleasant park where Friend 1 plays."
+        },
+        {
+            "name": "Friend1 — Mini Home",
+            "id": "f1-home-01",
+            "image": { "type": "static", "link": "/images/f1-home.jpg" },
+            "description": "A cozy corner owned by Friend 1."
+        },
+        {
+            "name": "Friend1 — Park",
+            "id": "f1-park-01",
+            "image": { "type": "static", "link": "/images/f1-park.jpg" },
+            "description": "A pleasant park where Friend 1 plays."
+        },
+        {
+            "name": "Friend1 — Mini Home",
+            "id": "f1-home-01",
+            "image": { "type": "static", "link": "/images/f1-home.jpg" },
+            "description": "A cozy corner owned by Friend 1."
+        },
+        {
+            "name": "Friend1 — Park",
+            "id": "f1-park-01",
+            "image": { "type": "static", "link": "/images/f1-park.jpg" },
+            "description": "A pleasant park where Friend 1 plays."
+        },
+        {
+            "name": "Friend1 — Mini Home",
+            "id": "f1-home-01",
+            "image": { "type": "static", "link": "/images/f1-home.jpg" },
+            "description": "A cozy corner owned by Friend 1."
+        },
+        {
+            "name": "Friend1 — Park",
+            "id": "f1-park-01",
+            "image": { "type": "static", "link": "/images/f1-park.jpg" },
+            "description": "A pleasant park where Friend 1 plays."
+        }
+    ]
+}

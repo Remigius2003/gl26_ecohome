@@ -63,7 +63,7 @@ export class ImageTexture implements Texture {
     }
 }
 
-export class SwapTexture implements Texture {
+export class Sprite implements Texture {
     private imgs: HTMLImageElement[] = [];
     private loaded = false;
 
