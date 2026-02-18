@@ -1,9 +1,9 @@
 import { createSignal, Switch, Match, Component, Show } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
-import { Session, changePassword, changeUsername, deleteAccount } from '@api';
 import Profile from './Profile';
 import Friends from './Friends';
 import Defi from './Defi';
+import './app.css';
 import {
 	FaSolidUser,
 	FaSolidUserGroup,
@@ -15,7 +15,13 @@ import {
 	FaSolidKey,
 	FaSolidIdCard,
 } from 'solid-icons/fa';
-import './app.css';
+import {
+	Session,
+	changePassword,
+	changeUsername,
+	deleteAccount,
+	profileWrapper,
+} from '@api';
 
 interface SettingsProps {
 	onClose: () => void;
@@ -141,24 +147,42 @@ const AccountSettings = (props: { onLogout: () => void }) => {
 	const [showDelete, setShowDelete] = createSignal(false);
 	const [deletePass, setDeletePass] = createSignal('');
 
+	type FeedbackState = 'idle' | 'loading' | 'success' | 'error';
+	const [usernameFeedback, setUsernameFeedback] =
+		createSignal<FeedbackState>('idle');
+	const [usernameError, setUsernameError] = createSignal('');
+	const [passFeedback, setPassFeedback] = createSignal<FeedbackState>('idle');
+	const [passError, setPassError] = createSignal('');
+
 	const handleChangePassword = async (e: Event) => {
 		e.preventDefault();
+		setPassFeedback('loading');
+		setPassError('');
 		try {
 			await changePassword(oldPass(), newPass());
-			alert('Mot de passe mis à jour !');
+			setPassFeedback('success');
 			setOldPass('');
 			setNewPass('');
+			setTimeout(() => setPassFeedback('idle'), 3000);
 		} catch (err: any) {
-			alert(err.message || 'Erreur');
+			setPassError(err.message || 'Erreur lors de la mise à jour');
+			setPassFeedback('error');
 		}
 	};
 
 	const handleChangeUsername = async (e: Event) => {
 		e.preventDefault();
+		setUsernameFeedback('loading');
+		setUsernameError('');
 		try {
 			await changeUsername(newUsername());
+			profileWrapper.invalidate(undefined as any);
+			setUsernameFeedback('success');
+			setNewUsername('');
+			setTimeout(() => setUsernameFeedback('idle'), 3000);
 		} catch (err: any) {
-			alert(err.message || 'Erreur');
+			setUsernameError(err.message || 'Erreur lors du changement');
+			setUsernameFeedback('error');
 		}
 	};
 
@@ -188,10 +212,36 @@ const AccountSettings = (props: { onLogout: () => void }) => {
 						value={newUsername()}
 						onInput={(e) => setNewUsername(e.currentTarget.value)}
 					/>
-					<button type="submit" class="btn-secondary" disabled={!newUsername()}>
-						Modifier
+					<button
+						type="submit"
+						class="btn-secondary"
+						disabled={!newUsername() || usernameFeedback() === 'loading'}
+					>
+						{usernameFeedback() === 'loading' ? '…' : 'Modifier'}
 					</button>
 				</form>
+				<Show when={usernameFeedback() === 'success'}>
+					<p
+						style={{
+							color: 'var(--primary-green)',
+							'margin-top': '6px',
+							'font-size': '0.85rem',
+						}}
+					>
+						✓ Pseudo mis à jour avec succès !
+					</p>
+				</Show>
+				<Show when={usernameFeedback() === 'error'}>
+					<p
+						style={{
+							color: 'var(--danger-red)',
+							'margin-top': '6px',
+							'font-size': '0.85rem',
+						}}
+					>
+						{usernameError()}
+					</p>
+				</Show>
 			</div>
 
 			<div class="setting-group">
@@ -219,11 +269,35 @@ const AccountSettings = (props: { onLogout: () => void }) => {
 					<button
 						type="submit"
 						class="auth-button"
-						disabled={!oldPass() || !newPass()}
+						disabled={!oldPass() || !newPass() || passFeedback() === 'loading'}
 					>
-						Mettre à jour le mot de passe
+						{passFeedback() === 'loading'
+							? 'Mise à jour…'
+							: 'Mettre à jour le mot de passe'}
 					</button>
 				</form>
+				<Show when={passFeedback() === 'success'}>
+					<p
+						style={{
+							color: 'var(--primary-green)',
+							'margin-top': '6px',
+							'font-size': '0.85rem',
+						}}
+					>
+						✓ Mot de passe mis à jour !
+					</p>
+				</Show>
+				<Show when={passFeedback() === 'error'}>
+					<p
+						style={{
+							color: 'var(--danger-red)',
+							'margin-top': '6px',
+							'font-size': '0.85rem',
+						}}
+					>
+						{passError()}
+					</p>
+				</Show>
 			</div>
 
 			<div

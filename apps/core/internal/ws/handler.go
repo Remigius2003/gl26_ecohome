@@ -17,7 +17,7 @@ func ServeWs(c *gin.Context) {
 		return
 	}
 
-	userID, err := authclient.VerifyJWT(token)
+	userId, err := authclient.VerifyJWT(token)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		return
@@ -32,7 +32,7 @@ func ServeWs(c *gin.Context) {
 		Hub:    hub,
 		Conn:   conn,
 		Send:   make(chan []byte, 256),
-		UserID: userID,
+		UserId: userId,
 	}
 
 	client.Hub.register <- client

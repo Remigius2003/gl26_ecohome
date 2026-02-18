@@ -44,7 +44,7 @@ func VerifyJWT(tokenString string) (uint, error) {
 		return 0, ErrInvalidToken
 	}
 
-	return claims.UserID, nil
+	return claims.UserId, nil
 }
 
 func parseToken(tokenString string, keys *models.SecretKeysResponse) (*jwt.Token, error) {

@@ -39,13 +39,13 @@ func JWTMiddleware(c *gin.Context) {
 	}
 
 	tokenString := strings.TrimPrefix(authHeader, prefix)
-	userID, err := authclient.VerifyJWT(tokenString)
+	userId, err := authclient.VerifyJWT(tokenString)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		c.Abort()
 		return
 	}
 
-	c.Set("user_id", userID)
+	c.Set("user_id", userId)
 	c.Next()
 }

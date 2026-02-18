@@ -45,7 +45,7 @@ func GetProfileHandler(c *gin.Context) {
 	err := db.Where("user_id = ?", targetID).First(&profile).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		profile = models.Profile{
-			UserID:        targetID,
+			UserId:        targetID,
 			Bio:           "New Player, here to save the planet !",
 			IsGraphPublic: false,
 		}
@@ -60,7 +60,7 @@ func GetProfileHandler(c *gin.Context) {
 	}
 
 	response := models.PublicProfile{
-		UserID:        user.Id,
+		UserId:        user.Id,
 		Username:      user.Username,
 		Bio:           profile.Bio,
 		IsGraphPublic: profile.IsGraphPublic,
@@ -89,7 +89,7 @@ func UpdateProfileHandler(c *gin.Context) {
 
 	var profile models.Profile
 	if err := db.First(&profile, userID).Error; err != nil {
-		profile = models.Profile{UserID: userID}
+		profile = models.Profile{UserId: userID}
 	}
 
 	profile.Bio = input.Bio
@@ -139,7 +139,7 @@ func UploadAvatarHandler(c *gin.Context) {
 
 	var profile models.Profile
 	if err := db.First(&profile, userID).Error; err != nil {
-		profile = models.Profile{UserID: userID}
+		profile = models.Profile{UserId: userID}
 	}
 
 	profile.AvatarData = fileBytes

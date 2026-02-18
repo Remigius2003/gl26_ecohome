@@ -45,7 +45,7 @@ func SubmitQuizzResult(c *gin.Context) {
 	}
 
 	result := models.QuizzResult{
-		UserID:   userID,
+		UserId:   userID,
 		Category: payload.Category,
 		Emission: payload.Emission,
 		Date:     time.Now(),
