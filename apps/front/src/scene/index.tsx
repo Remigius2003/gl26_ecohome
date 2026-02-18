@@ -1,8 +1,6 @@
-
 import { SceneType } from "./core/types";
 import { Engine } from "./core/engine";
 
-// Scenes Imports
 import HomeScene from "./scenes/home";
 import Home2Scene from "./scenes/home2";
 import EcoGrid from "./scenes/ecogrid";
@@ -10,6 +8,9 @@ import TrilogiqueScene from "./scenes/trilogique/trilogique";
 import LightShadow from "./scenes/lightshadow";
 
 let engine: Engine | null = null;
+
+const trilogiqueInstance = new TrilogiqueScene();
+
 export type { SceneType };
 
 export const initializeScene = (canvas: HTMLCanvasElement) => {
@@ -22,7 +23,7 @@ export const initializeScene = (canvas: HTMLCanvasElement) => {
     engine.registerScene("home", new HomeScene());
     engine.registerScene("home2", new Home2Scene());
     engine.registerScene("ecogrid", new EcoGrid());
-    engine.registerScene("trilogique", new TrilogiqueScene());
+    engine.registerScene("trilogique", trilogiqueInstance);
     engine.registerScene("lightshadow", new LightShadow());
 
     return engine;
@@ -33,3 +34,7 @@ export const cleanScene = () => engine?.clean();
 export const switchScene = (sceneType: SceneType) =>
     engine?.setScene(sceneType);
 export const resizeWindow = (w: number, h: number) => engine?.resize(w, h);
+
+export const setTrilogiqueLevel = (levelId: string) => {
+    trilogiqueInstance.loadGameLevel(levelId);
+};

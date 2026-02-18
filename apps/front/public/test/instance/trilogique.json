@@ -7,10 +7,28 @@
             "description": "A testing level to be sure the whole system is working well an scalable (every thing is json encode if you want to make a level (public/game/trilogique))"
         },
         {
-            "name": "trilogique - level 2 - not implemented yet",
+            "name": "trilogique - level 2",
             "id": "level2",
             "image": { "type": "scene", "sceneId": "towerSceneX" },
             "description": "When someone does the json we will have a level 2"
+        },
+        {
+            "name": "trilogique - level 3",
+            "id": "level2",
+            "image": { "type": "scene", "sceneId": "towerSceneX" },
+            "description": "When someone does the json we will have a level 3"
+        },
+        {
+            "name": "trilogique - level 4",
+            "id": "level2",
+            "image": { "type": "scene", "sceneId": "towerSceneX" },
+            "description": "When someone does the json we will have a level 4"
+        },
+        {
+            "name": "trilogique - level 5",
+            "id": "level2",
+            "image": { "type": "scene", "sceneId": "towerSceneX" },
+            "description": "When someone does the json we will have a level 5"
         }
     ]
 }

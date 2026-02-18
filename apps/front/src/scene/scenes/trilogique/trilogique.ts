@@ -75,14 +75,20 @@ export default class TrilogiqueScene implements Scene {
     init(canvas: HTMLCanvasElement, onSwitchScene: (t: SceneType) => void) {
         this.camera = new Camera(canvas.width, canvas.height);
         this.world = new World(1000, 1000);
-        this.onSwitchScene = onSwitchScene; // Save callback for redirection
-        this.loadLevel(canvas);
+        this.onSwitchScene = onSwitchScene;
+        this.isLoading = true;
     }
 
-    async loadLevel(canvas: HTMLCanvasElement) {
+    async loadGameLevel(levelId: string) {
+        this.isLoading = true;
+        this.world = new World(1000, 1000);
+        this.gameWorldData = null;
+        this.heldItemData = null;
+
         try {
+            console.log(`Loading level: ${levelId}`);
             this.gameWorldData = await GameWorld.unserialise(
-                "/game/trilogique/niveau1.json",
+                `/game/trilogique/niveau${levelId}.json`,
             );
 
             this.world = new World(
@@ -100,12 +106,12 @@ export default class TrilogiqueScene implements Scene {
             this.setupStaticMap();
             this.setupMachines();
 
-            // Initial items
             for (let i = 0; i < 3; i++) this.spawnRandomItemFromData();
 
             this.isLoading = false;
         } catch (e) {
-            console.error(e);
+            console.error(`Failed to load level ${levelId}`, e);
+            this.log("Error loading level");
         }
     }
 

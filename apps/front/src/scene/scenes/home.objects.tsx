@@ -122,8 +122,8 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
     },
 
     B: {
-        width: 6,
-        height: 6,
+        width: 4,
+        height: 4,
         texture: "house/furniture/lit.png",
         solid: true,
     },
@@ -147,6 +147,10 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         height: 2,
         texture: "house/furniture/armoire.png",
         solid: true,
+        areaOfInteraction: 1,
+        onInteract: () => {
+            globalNavigate("/customisation");
+        },
     },
 
     G: {
@@ -183,7 +187,6 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         areaOfInteraction: 1,
         priority: 1,
         onInteract: () => {
-            alert("2eme etage");
             globalNavigate("/home2");
         },
     },
