@@ -30,28 +30,28 @@ func (h *Hub) Run() {
 		select {
 		case client := <-h.register:
 			h.mu.Lock()
-			if h.clients[client.UserID] == nil {
-				h.clients[client.UserID] = make(map[*Client]bool)
+			if h.clients[client.UserId] == nil {
+				h.clients[client.UserId] = make(map[*Client]bool)
 			}
-			h.clients[client.UserID][client] = true
+			h.clients[client.UserId][client] = true
 			h.mu.Unlock()
 
-			log.Printf("User %d connected. Total connections for user: %d", client.UserID, len(h.clients[client.UserID]))
+			log.Printf("User %d connected. Total connections for user: %d", client.UserId, len(h.clients[client.UserId]))
 
 		case client := <-h.unregister:
 			h.mu.Lock()
-			if userClients, ok := h.clients[client.UserID]; ok {
+			if userClients, ok := h.clients[client.UserId]; ok {
 				if _, ok := userClients[client]; ok {
 					delete(userClients, client)
 					close(client.Send)
 
 					if len(userClients) == 0 {
-						delete(h.clients, client.UserID)
+						delete(h.clients, client.UserId)
 					}
 				}
 			}
 			h.mu.Unlock()
-			log.Printf("User %d disconnected", client.UserID)
+			log.Printf("User %d disconnected", client.UserId)
 
 		case message := <-h.broadcast:
 			h.mu.Lock()
@@ -73,7 +73,7 @@ func (h *Hub) Run() {
 	}
 }
 
-func (h *Hub) SendToUser(targetID uint, message interface{}) {
+func (h *Hub) SendToUser(targetId uint, message interface{}) {
 	msgBytes, err := json.Marshal(message)
 	if err != nil {
 		log.Printf("Error marshaling WS message: %v", err)
@@ -83,7 +83,7 @@ func (h *Hub) SendToUser(targetID uint, message interface{}) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	userClients, ok := h.clients[targetID]
+	userClients, ok := h.clients[targetId]
 	if !ok {
 		return
 	}

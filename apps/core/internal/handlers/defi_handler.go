@@ -24,8 +24,8 @@ func GetDailyDefis(c *gin.Context) {
 
 		for _, def := range generated {
 			newAssignment := models.DailyDefi{
-				UserID:       userID,
-				DefiID:       def.ID,
+				UserId:       userID,
+				DefiId:       def.Id,
 				DateAssigned: today,
 				Status:       "PENDING",
 				RewardEarned: 0,
@@ -37,10 +37,10 @@ func GetDailyDefis(c *gin.Context) {
 
 	response := make([]gin.H, 0)
 	for _, ud := range userDefis {
-		content, ok := cm.GetDefi(ud.DefiID)
+		content, ok := cm.GetDefi(ud.DefiId)
 		if ok {
 			response = append(response, gin.H{
-				"id":            content.ID,
+				"id":            content.Id,
 				"defi":          content.Defi,
 				"category":      content.Category,
 				"leafReward":    content.LeafReward,
@@ -92,7 +92,7 @@ func CompleteDefi(c *gin.Context) {
 	if defiContent.OverQuestions != nil {
 		valid := false
 		for _, ans := range defiContent.OverQuestions.Responses {
-			if ans.ID == req.AnswerID {
+			if ans.Id == req.AnswerID {
 				if ans.LeafReward > 0 {
 					valid = true
 					rewardToGrant = ans.LeafReward

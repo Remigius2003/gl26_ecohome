@@ -91,7 +91,7 @@ func (cm *ContentManager) LoadContent(rootPath string) error {
 
 			cm.Defis = append(cm.Defis, defis...)
 			for _, d := range defis {
-				cm.DefiMap[d.ID] = d
+				cm.DefiMap[d.Id] = d
 			}
 		}
 		return nil

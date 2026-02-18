@@ -81,4 +81,4 @@ class RealtimeClient {
   }
 }
 
-export const WsBus = RealtimeClient.getInstance();
+export const RTClient = RealtimeClient.getInstance();

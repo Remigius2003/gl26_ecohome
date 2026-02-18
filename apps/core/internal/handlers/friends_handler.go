@@ -12,7 +12,7 @@ import (
 func SearchUsersHandler(c *gin.Context) {
 	db := database.GetDatabase()
 	query := c.Query("q")
-	
+
 	if len(query) < 3 {
 		c.JSON(http.StatusOK, []models.PublicProfile{})
 		return
@@ -30,8 +30,8 @@ func SearchUsersHandler(c *gin.Context) {
 	results := make([]models.PublicProfile, 0)
 	for _, u := range users {
 		results = append(results, models.PublicProfile{
-			UserID:    u.Id, 
-			Username:  u.Username, 
+			UserId:    u.Id,
+			Username:  u.Username,
 			AvatarURL: fmt.Sprintf("/users/avatar/%d", u.Id),
 		})
 	}
@@ -42,8 +42,10 @@ func SearchUsersHandler(c *gin.Context) {
 func SendFriendRequestHandler(c *gin.Context) {
 	db := database.GetDatabase()
 	requesterID := c.MustGet("user_id").(uint)
-	
-	var input struct { TargetID uint `json:"target_id"` }
+
+	var input struct {
+		TargetID uint `json:"target_id"`
+	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
@@ -62,7 +64,7 @@ func SendFriendRequestHandler(c *gin.Context) {
 	}
 
 	var existing models.Friendship
-	err := db.Where("(requester_id = ? AND addressee_id = ?) OR (requester_id = ? AND addressee_id = ?)", 
+	err := db.Where("(requester_id = ? AND addressee_id = ?) OR (requester_id = ? AND addressee_id = ?)",
 		requesterID, input.TargetID, input.TargetID, requesterID).First(&existing).Error
 
 	if err == nil {
@@ -71,16 +73,16 @@ func SendFriendRequestHandler(c *gin.Context) {
 	}
 
 	req := models.Friendship{
-		RequesterID: requesterID,
-		AddresseeID: input.TargetID,
+		RequesterId: requesterID,
+		AddresseeId: input.TargetID,
 		Status:      models.StatusPending,
 	}
-	
+
 	if err := db.Create(&req).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send request"})
 		return
 	}
-	
+
 	c.JSON(http.StatusCreated, gin.H{"message": "Request sent"})
 }
 
@@ -95,8 +97,8 @@ func RespondFriendRequestHandler(c *gin.Context) {
 	}
 
 	var req models.Friendship
-	err := db.Where("requester_id = ? AND addressee_id = ? AND status = ?", 
-		input.TargetID, userID, models.StatusPending).First(&req).Error
+	err := db.Where("requester_id = ? AND addressee_id = ? AND status = ?",
+		input.TargetId, userID, models.StatusPending).First(&req).Error
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Request not found"})
@@ -119,7 +121,7 @@ func RespondFriendRequestHandler(c *gin.Context) {
 func ListFriendsHandler(c *gin.Context) {
 	db := database.GetDatabase()
 	userID := c.MustGet("user_id").(uint)
-	
+
 	type FriendResult struct {
 		UserID   uint
 		Username string
@@ -127,7 +129,7 @@ func ListFriendsHandler(c *gin.Context) {
 	}
 
 	var results []FriendResult
-	
+
 	query := `
 		SELECT u.id as user_id, u.username, p.bio
 		FROM users u
@@ -145,10 +147,10 @@ func ListFriendsHandler(c *gin.Context) {
 
 	response := make([]models.PublicProfile, len(results))
 	for i, r := range results {
-		avatarUrl := fmt.Sprintf("/users/avatar/%d", r.UserID) 
-		
+		avatarUrl := fmt.Sprintf("/users/avatar/%d", r.UserID)
+
 		response[i] = models.PublicProfile{
-			UserID:    r.UserID,
+			UserId:    r.UserID,
 			Username:  r.Username,
 			Bio:       r.Bio,
 			AvatarURL: avatarUrl,
@@ -162,14 +164,14 @@ func ListRequestsHandler(c *gin.Context) {
 	db := database.GetDatabase()
 	userID := c.MustGet("user_id").(uint)
 
-	var requests []models.PublicProfile	
+	var requests []models.PublicProfile
 	query := `
 		SELECT u.id as user_id, u.username
 		FROM users u
 		JOIN friendships f ON f.requester_id = u.id
 		WHERE f.addressee_id = ? AND f.status = 'PENDING'
 	`
-	
+
 	if err := db.Raw(query, userID).Scan(&requests).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch requests"})
 		return
