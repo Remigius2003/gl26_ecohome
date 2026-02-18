@@ -4,6 +4,7 @@ import (
 	"gl26_ecohome/core/internal/handlers"
 	"gl26_ecohome/core/internal/middleware"
 	"gl26_ecohome/core/internal/services"
+	"gl26_ecohome/core/internal/ws"
 	"log"
 	"net/http"
 
@@ -14,6 +15,8 @@ func SetupRoutes(router *gin.Engine) {
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "OK"})
 	})
+
+	router.GET("/ws", ws.ServeWs)
 	router.GET("/users/avatar/:id", handlers.GetAvatarHandler)
 
 	if err := services.GetContentManager().LoadContent("internal/data"); err != nil {
