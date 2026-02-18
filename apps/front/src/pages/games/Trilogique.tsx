@@ -1,8 +1,18 @@
+import { createEffect } from "solid-js";
+import { useParams } from "@solidjs/router";
 import SceneCanvas from "@components/SceneCanvas";
-import type { SceneType } from "@scene";
+import { SceneType, setTrilogiqueLevel } from "@scene";
 
-export default function Trilogique() {
-    console.log("trilogique");
+export default function TrilogiqueGame() {
+    const params = useParams();
+
     const scene: SceneType = "trilogique";
+    createEffect(() => {
+        if (params.gamePath) {
+            console.log("Setting Trilogique level to:", params.gamePath);
+            setTrilogiqueLevel(params.gamePath);
+        }
+    });
+
     return <SceneCanvas scene={scene} />;
 }

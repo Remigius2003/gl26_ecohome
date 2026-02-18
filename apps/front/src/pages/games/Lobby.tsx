@@ -92,47 +92,15 @@ export default function Lobby() {
     };
 
     const playClick = () => {
-        navigate(`/trilogique`);
+        if (loading() || error()) return;
+        const idx = current() + 1;
+        navigate(`/trilogique/${encodeURIComponent(String(idx))}`);
         return;
-        if (loading() || error()) return; // don't navigate if loading or error
-        const g = game();
-        if (!g) {
-            // fallback: navigate to a generic place using the current index
-            const idx = current();
-            navigate(`/game/${encodeURIComponent(String(idx))}`);
-            return;
-        }
-
-        // If the image is a scene, navigate to a scene route; otherwise use game id
-        if (isSceneImage(g.image) && g.image.sceneId) {
-            const sceneId = encodeURIComponent(String(g.image.sceneId));
-            navigate(`/scene/${sceneId}`);
-        } else if ((g as any).id !== undefined) {
-            // prefer a real game id if available
-            const id = encodeURIComponent(String((g as any).id));
-            navigate(`/game/${id}`);
-        } else {
-            // fallback to index if no id property on game
-            navigate(`/game/${encodeURIComponent(String(current()))}`);
-        }
     };
 
     const continueClick = () => {
-        navigate(`/trilogique`);
+        // Todo
         return;
-        const g = game();
-        if (!g) return;
-        if (isSceneImage(g.image) && g.image.sceneId) {
-            navigate(
-                `/scene/${encodeURIComponent(String(g.image.sceneId))}?resume=1`,
-            );
-        } else if ((g as any).id !== undefined) {
-            navigate(
-                `/game/${encodeURIComponent(String((g as any).id))}?resume=1`,
-            );
-        } else {
-            navigate(`/game/${encodeURIComponent(String(current()))}?resume=1`);
-        }
     };
 
     return (
