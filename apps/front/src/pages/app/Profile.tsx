@@ -138,6 +138,9 @@ const Profile: Component = () => {
 									'background-image': avatarPreview()
 										? `url(${avatarPreview()})`
 										: undefined,
+									'background-color': avatarPreview()
+										? 'transparent'
+										: 'var(--primary-green)',
 									'background-size': 'cover',
 									'background-position': 'center',
 									'background-repeat': 'no-repeat',
@@ -206,7 +209,7 @@ const Profile: Component = () => {
 								/>
 							</div>
 
-							<div class="form-group toggle-group">
+							<div class="toggle-group">
 								<label class="toggle-label">
 									<span>Rendre mon graphique public</span>
 									<div class="toggle-switch">

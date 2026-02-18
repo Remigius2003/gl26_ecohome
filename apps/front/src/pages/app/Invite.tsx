@@ -1,7 +1,10 @@
-// Invite.tsx
 import { Component, createSignal, Show } from 'solid-js';
 import { useParams, useNavigate } from '@solidjs/router';
-import { sendFriendRequest } from '@api';
+import {
+	sendFriendRequest,
+	sentFriendRequestsWrapper,
+	friendsListWrapper,
+} from '@api';
 import './app.css';
 
 const Invite: Component = () => {
@@ -15,6 +18,10 @@ const Invite: Component = () => {
 		setStatus('loading');
 		try {
 			await sendFriendRequest(Number(params.id));
+
+			sentFriendRequestsWrapper.invalidate(undefined);
+			friendsListWrapper.invalidate(undefined);
+
 			setStatus('success');
 		} catch (e) {
 			console.error('Erreur lors de la demande :', e);

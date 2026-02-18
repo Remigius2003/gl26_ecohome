@@ -47,9 +47,9 @@ class RealtimeClient {
     Session.getAccessToken().then((token) => {
       if (!token) return;
 
-      const host = import.meta.env.VITE_CORE_HOST || "core:5002";
+      const host = import.meta.env.VITE_WS_HOST || "core:5002/ws";
       const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-      const url = `${protocol}://${host.replace(/^https?:\/\//, "")}/ws?token=${token}`;
+      const url = `${protocol}://${host.replace(/^https?:\/\//, "")}?token=${token}`;
 
       this.socket = new WebSocket(url);
 
@@ -81,4 +81,4 @@ class RealtimeClient {
   }
 }
 
-export const WsBus = RealtimeClient.getInstance();
+export const RTClient = RealtimeClient.getInstance();

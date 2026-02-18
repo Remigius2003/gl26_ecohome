@@ -12,8 +12,8 @@ const (
 )
 
 type Friendship struct {
-	RequesterID uint             `gorm:"primaryKey" json:"requester_id"`
-	AddresseeID uint             `gorm:"primaryKey" json:"addressee_id"`
+	RequesterId uint             `gorm:"primaryKey" json:"requester_id"`
+	AddresseeId uint             `gorm:"primaryKey" json:"addressee_id"`
 	Status      FriendshipStatus `json:"status"`
 	CreatedAt   time.Time        `json:"created_at"`
 

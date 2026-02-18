@@ -4,6 +4,7 @@ import {
 	For,
 	Show,
 	onMount,
+	onCleanup,
 	Switch,
 	Match,
 	createEffect,
@@ -27,29 +28,31 @@ import {
 	sendFriendRequest,
 	respondToRequest,
 	cancelFriendRequest,
-	SearchResult,
 	profileWrapper,
+	RTClient,
+	SearchResult,
 	Profile,
 	Session,
 } from '@api';
 import CarbonGraph from './CarbonGraph';
 
-const Avatar = (props: {
+const Avatar: Component<{
 	url?: string;
 	username: string;
 	size?: 'mini' | 'large';
-}) => {
-	const initial = () => props.username?.[0]?.toUpperCase() ?? '?';
+}> = (props) => {
 	const [imgError, setImgError] = createSignal(false);
-	const isLarge = props.size === 'large';
-	const sizeClass = isLarge ? 'avatar-large' : 'avatar-mini';
 
 	createEffect(() => {
 		if (props.url) setImgError(false);
 	});
 
+	const initial = () => props.username?.[0]?.toUpperCase() ?? '?';
+	const sizeClass = () =>
+		props.size === 'large' ? 'avatar-large' : 'avatar-mini';
+
 	return (
-		<div class={`avatar-component ${sizeClass}`}>
+		<div class={`avatar-component ${sizeClass()}`}>
 			<Show
 				when={!!props.url && !imgError()}
 				fallback={<span class="avatar-placeholder">{initial()}</span>}
@@ -64,34 +67,34 @@ const Avatar = (props: {
 	);
 };
 
-const PendingButton = (props: {
+const PendingButton: Component<{
 	userId: number;
 	onCancel: (id: number) => void;
-}) => {
+}> = (props) => {
 	const [hover, setHover] = createSignal(false);
 	return (
 		<button
 			class={`btn-sm ${hover() ? 'btn-danger' : 'btn-secondary'}`}
+			style={{ width: '100px', 'text-align': 'center' }}
 			onMouseEnter={() => setHover(true)}
 			onMouseLeave={() => setHover(false)}
 			onClick={(e) => {
 				e.stopPropagation();
 				props.onCancel(props.userId);
 			}}
-			style={{ width: '100px', 'text-align': 'center' }}
 		>
 			{hover() ? 'Annuler' : 'En attente'}
 		</button>
 	);
 };
 
-const InviteSection = (props: { myId: number | null }) => {
+const InviteSection: Component<{ myId: number | null }> = (props) => {
 	const [copied, setCopied] = createSignal(false);
 
-	const inviteUrl = () => {
-		if (!props.myId) return 'Chargement...';
-		return `${window.location.origin}/invite/${props.myId}`;
-	};
+	const inviteUrl = () =>
+		props.myId
+			? `${window.location.origin}/invite/${props.myId}`
+			: 'Chargement…';
 
 	const copyToClipboard = () => {
 		if (!props.myId) return;
@@ -101,71 +104,25 @@ const InviteSection = (props: { myId: number | null }) => {
 	};
 
 	return (
-		<div
-			class="glass-panel"
-			style={{
-				background: 'var(--glass-bg)',
-				border: '1px solid rgba(40, 167, 69, 0.2)',
-				padding: '20px',
-				'border-radius': '16px',
-				'margin-bottom': '25px',
-				'text-align': 'center',
-			}}
-		>
-			<div
-				style={{
-					display: 'flex',
-					'align-items': 'center',
-					'justify-content': 'center',
-					gap: '10px',
-					'margin-bottom': '10px',
-					color: 'var(--primary-green)',
-				}}
-			>
+		<div class="invite-section">
+			<div class="invite-title">
 				<FaSolidLink size={20} />
-				<h3 style={{ margin: 0, 'font-size': '1.1rem' }}>Inviter un ami</h3>
+				<h3>Inviter un ami</h3>
 			</div>
-			<p style={{ color: '#666', 'font-size': '0.9rem', margin: '0 0 15px 0' }}>
+			<p class="text-muted" style={{ 'margin-bottom': '15px' }}>
 				Partagez ce lien pour ajouter des amis directement.
 			</p>
-
-			<div
-				style={{
-					display: 'flex',
-					gap: '8px',
-					'background-color': '#fff',
-					padding: '6px',
-					'border-radius': '12px',
-					border: '1px solid #ddd',
-				}}
-			>
+			<div class="invite-url-row">
 				<input
 					type="text"
 					readOnly
 					value={inviteUrl()}
-					style={{
-						border: 'none',
-						outline: 'none',
-						'flex-grow': 1,
-						padding: '8px',
-						color: '#555',
-						'font-size': '0.9rem',
-						background: 'transparent',
-						'text-overflow': 'ellipsis',
-					}}
+					class="invite-url-input"
 				/>
 				<button
-					onClick={copyToClipboard}
 					class="btn-primary"
-					style={{
-						padding: '8px 16px',
-						display: 'flex',
-						'align-items': 'center',
-						gap: '6px',
-						'font-size': '0.85rem',
-						transition: 'all 0.2s',
-						background: copied() ? 'var(--dark-green)' : 'var(--primary-green)',
-					}}
+					onClick={copyToClipboard}
+					style={{ display: 'flex', 'align-items': 'center', gap: '6px' }}
 				>
 					<Show when={copied()} fallback={<FaSolidCopy />}>
 						<FaSolidCheck />
@@ -177,7 +134,9 @@ const InviteSection = (props: { myId: number | null }) => {
 	);
 };
 
-const FriendRow = (props: { friend: Profile; onClick: () => void }) => (
+const FriendRow: Component<{ friend: Profile; onClick: () => void }> = (
+	props,
+) => (
 	<div class="friend-item clickable" onClick={props.onClick}>
 		<div class="user-info">
 			<Avatar url={props.friend.avatar_url} username={props.friend.username} />
@@ -187,11 +146,11 @@ const FriendRow = (props: { friend: Profile; onClick: () => void }) => (
 	</div>
 );
 
-const RequestRow = (props: {
+const RequestRow: Component<{
 	req: Profile;
 	onView: () => void;
 	onRespond: (id: number, action: 'accept' | 'reject') => void;
-}) => (
+}> = (props) => (
 	<div class="friend-item request">
 		<div class="user-info clickable" onClick={props.onView}>
 			<Avatar url={props.req.avatar_url} username={props.req.username} />
@@ -199,41 +158,19 @@ const RequestRow = (props: {
 		</div>
 		<div class="actions" style={{ display: 'flex', gap: '8px' }}>
 			<button
+				class="icon-btn-success"
 				onClick={(e) => {
 					e.stopPropagation();
 					props.onRespond(props.req.user_id, 'accept');
-				}}
-				style={{
-					width: '32px',
-					height: '32px',
-					'border-radius': '50%',
-					border: 'none',
-					background: 'var(--primary-green)',
-					color: 'white',
-					display: 'flex',
-					'align-items': 'center',
-					'justify-content': 'center',
-					cursor: 'pointer',
 				}}
 			>
 				<FaSolidCheck />
 			</button>
 			<button
+				class="icon-btn-danger"
 				onClick={(e) => {
 					e.stopPropagation();
 					props.onRespond(props.req.user_id, 'reject');
-				}}
-				style={{
-					width: '32px',
-					height: '32px',
-					'border-radius': '50%',
-					border: 'none',
-					background: 'var(--danger-red)',
-					color: 'white',
-					display: 'flex',
-					'align-items': 'center',
-					'justify-content': 'center',
-					cursor: 'pointer',
 				}}
 			>
 				<FaSolidXmark />
@@ -242,87 +179,77 @@ const RequestRow = (props: {
 	</div>
 );
 
-const UserSearchRow = (props: {
+const SearchRow: Component<{
 	user: SearchResult;
 	onView: () => void;
 	onAdd: (id: number) => void;
 	onCancel: (id: number) => void;
-}) => {
-	return (
-		<div class="friend-item">
-			<div class="user-info clickable" onClick={props.onView}>
-				<Avatar url={props.user.avatar_url} username={props.user.username} />
-				<span>{props.user.username}</span>
-			</div>
-
-			<Switch>
-				<Match when={props.user.status === 'FRIEND'}>
-					<span class="badge-friend">
-						<FaSolidUserCheck /> Amis
-					</span>
-				</Match>
-				<Match when={props.user.status === 'PENDING_SENT'}>
-					<PendingButton
-						userId={props.user.user_id}
-						onCancel={props.onCancel}
-					/>
-				</Match>
-				<Match when={props.user.status === 'PENDING_RECEIVED'}>
-					<span class="badge-info">Reçue</span>
-				</Match>
-				<Match when={props.user.status === 'NONE'}>
-					<button
-						class="btn-primary-sm"
-						onClick={() => props.onAdd(props.user.user_id)}
-					>
-						<FaSolidUserPlus /> Ajouter
-					</button>
-				</Match>
-			</Switch>
+}> = (props) => (
+	<div class="friend-item">
+		<div class="user-info clickable" onClick={props.onView}>
+			<Avatar url={props.user.avatar_url} username={props.user.username} />
+			<span>{props.user.username}</span>
 		</div>
-	);
-};
+		<Switch>
+			<Match when={props.user.status === 'FRIEND'}>
+				<span class="badge-friend">
+					<FaSolidUserCheck /> Amis
+				</span>
+			</Match>
+			<Match when={props.user.status === 'PENDING_SENT'}>
+				<PendingButton userId={props.user.user_id} onCancel={props.onCancel} />
+			</Match>
+			<Match when={props.user.status === 'PENDING_RECEIVED'}>
+				<span class="badge-info">Reçue</span>
+			</Match>
+			<Match when={props.user.status === 'NONE'}>
+				<button
+					class="btn-primary-sm"
+					onClick={() => props.onAdd(props.user.user_id)}
+				>
+					<FaSolidUserPlus /> Ajouter
+				</button>
+			</Match>
+		</Switch>
+	</div>
+);
 
-const MyFriendsTab = (props: {
+const MyFriendsTab: Component<{
 	friends: Profile[];
 	requests: Profile[];
 	onViewProfile: (p: Profile) => void;
 	onRespond: (id: number, action: 'accept' | 'reject') => void;
-}) => (
+}> = (props) => (
 	<div class="tab-content fade-in">
 		<Show when={props.requests.length > 0}>
 			<div class="section-header">Demandes reçues</div>
-			<div class="requests-list">
-				<For each={props.requests}>
-					{(req) => (
-						<RequestRow
-							req={req}
-							onView={() => props.onViewProfile(req)}
-							onRespond={props.onRespond}
-						/>
-					)}
-				</For>
-			</div>
+			<For each={props.requests}>
+				{(req) => (
+					<RequestRow
+						req={req}
+						onView={() => props.onViewProfile(req)}
+						onRespond={props.onRespond}
+					/>
+				)}
+			</For>
 		</Show>
 
 		<div class="section-header">Ma liste ({props.friends.length})</div>
 		<Show when={props.friends.length === 0}>
 			<p class="empty-text">Pas encore d'amis.</p>
 		</Show>
-		<div class="friends-list-scroll">
-			<For each={props.friends}>
-				{(friend) => (
-					<FriendRow
-						friend={friend}
-						onClick={() => props.onViewProfile(friend)}
-					/>
-				)}
-			</For>
-		</div>
+		<For each={props.friends}>
+			{(friend) => (
+				<FriendRow
+					friend={friend}
+					onClick={() => props.onViewProfile(friend)}
+				/>
+			)}
+		</For>
 	</div>
 );
 
-const AddFriendsTab = (props: {
+const AddFriendsTab: Component<{
 	myId: number | null;
 	searchQuery: string;
 	onSearchInput: (e: any) => void;
@@ -333,7 +260,7 @@ const AddFriendsTab = (props: {
 	onAdd: (id: number) => void;
 	onCancel: (id: number) => void;
 	fetchFullProfile: (id: number) => Promise<Profile>;
-}) => (
+}> = (props) => (
 	<div class="tab-content fade-in">
 		<InviteSection myId={props.myId} />
 
@@ -341,7 +268,7 @@ const AddFriendsTab = (props: {
 			<FaSolidMagnifyingGlass class="search-icon" />
 			<input
 				type="text"
-				placeholder="Rechercher un pseudo..."
+				placeholder="Rechercher un pseudo…"
 				value={props.searchQuery}
 				onInput={props.onSearchInput}
 				class="search-input"
@@ -351,16 +278,15 @@ const AddFriendsTab = (props: {
 		<Show when={props.searchQuery.length > 0}>
 			<div class="search-results-list">
 				<Show when={props.isSearching}>
-					<div class="spinner-sm"></div>
+					<div class="spinner-sm" />
 				</Show>
 				<For each={props.searchResults}>
 					{(user) => (
-						<UserSearchRow
+						<SearchRow
 							user={user}
-							onView={async () => {
-								const full = await props.fetchFullProfile(user.user_id);
-								props.onViewProfile(full);
-							}}
+							onView={async () =>
+								props.onViewProfile(await props.fetchFullProfile(user.user_id))
+							}
 							onAdd={props.onAdd}
 							onCancel={props.onCancel}
 						/>
@@ -405,7 +331,9 @@ const AddFriendsTab = (props: {
 	</div>
 );
 
-const ProfileDetailView = (props: { profile: Profile; onBack: () => void }) => (
+const ProfileDetailView: Component<{ profile: Profile; onBack: () => void }> = (
+	props,
+) => (
 	<div class="friend-profile-view fade-in">
 		<div class="back-nav">
 			<button onClick={props.onBack} class="back-btn">
@@ -427,8 +355,8 @@ const ProfileDetailView = (props: { profile: Profile; onBack: () => void }) => (
 			<Show
 				when={props.profile.is_graph_public}
 				fallback={
-					<div class="private-state" style={{ padding: '20px', opacity: 0.6 }}>
-						<FaSolidClock size={24} style={{ 'margin-bottom': '10px' }} />
+					<div class="private-state">
+						<FaSolidClock size={24} />
 						<p>L'impact carbone de ce joueur est privé.</p>
 					</div>
 				}
@@ -445,9 +373,9 @@ const ProfileDetailView = (props: { profile: Profile; onBack: () => void }) => (
 );
 
 const Friends: Component = () => {
-	const [activeTab, setActiveTab] = createSignal<'friends' | 'add' | 'profile'>(
-		'friends',
-	);
+	type Tab = 'friends' | 'add' | 'profile';
+
+	const [activeTab, setActiveTab] = createSignal<Tab>('friends');
 	const [previousTab, setPreviousTab] = createSignal<'friends' | 'add'>(
 		'friends',
 	);
@@ -459,11 +387,11 @@ const Friends: Component = () => {
 	const [searchQuery, setSearchQuery] = createSignal('');
 	const [searchResults, setSearchResults] = createSignal<SearchResult[]>([]);
 	const [isSearching, setIsSearching] = createSignal(false);
-
 	const [selectedFriend, setSelectedFriend] = createSignal<Profile | null>(
 		null,
 	);
-	let searchTimeout: any;
+
+	let searchTimeout: ReturnType<typeof setTimeout>;
 
 	const refreshAll = async () => {
 		try {
@@ -472,21 +400,75 @@ const Friends: Component = () => {
 				friendRequestsWrapper.get(),
 				sentFriendRequestsWrapper.get(),
 			]);
-
-			const mappedFriends = (f || []).map((friend: any) => ({
-				...friend,
-				user_id: friend.friend_id,
-			}));
-
-			setFriends(f || []);
-			setReceivedRequests(rec || []);
-			setSentRequests(sent || []);
+			setFriends(f ?? []);
+			setReceivedRequests(rec ?? []);
+			setSentRequests(sent ?? []);
 		} catch (e) {
 			console.error(e);
 		}
 	};
 
-	onMount(refreshAll);
+	onMount(() => {
+		friendsListWrapper.invalidate(undefined);
+		friendRequestsWrapper.invalidate(undefined);
+		sentFriendRequestsWrapper.invalidate(undefined);
+		refreshAll();
+
+		RTClient.connect();
+
+		const unsubRequest = RTClient.subscribe(
+			'friend_request',
+			(payload: Profile) => {
+				friendRequestsWrapper.invalidate(undefined);
+				setReceivedRequests((prev) =>
+					prev.some((r) => r.user_id === payload.user_id)
+						? prev
+						: [...prev, payload],
+				);
+			},
+		);
+
+		const unsubCancelled = RTClient.subscribe(
+			'friend_request_cancelled',
+			(p: { user_id: number }) => {
+				friendRequestsWrapper.invalidate(undefined);
+				setReceivedRequests((prev) =>
+					prev.filter((r) => r.user_id !== p.user_id),
+				);
+			},
+		);
+
+		const unsubAccepted = RTClient.subscribe(
+			'friend_request_accepted',
+			(payload: Profile) => {
+				friendsListWrapper.invalidate(undefined);
+				sentFriendRequestsWrapper.invalidate(undefined);
+				setSentRequests((prev) =>
+					prev.filter((r) => r.user_id !== payload.user_id),
+				);
+				setFriends((prev) =>
+					prev.some((f) => f.user_id === payload.user_id)
+						? prev
+						: [...prev, payload],
+				);
+			},
+		);
+
+		const unsubRejected = RTClient.subscribe(
+			'friend_request_rejected',
+			(p: { user_id: number }) => {
+				sentFriendRequestsWrapper.invalidate(undefined);
+				setSentRequests((prev) => prev.filter((r) => r.user_id !== p.user_id));
+			},
+		);
+
+		onCleanup(() => {
+			unsubRequest();
+			unsubCancelled();
+			unsubAccepted();
+			unsubRejected();
+		});
+	});
 
 	const viewProfile = (user: Profile) => {
 		if (activeTab() !== 'profile')
@@ -512,8 +494,7 @@ const Friends: Component = () => {
 		searchTimeout = setTimeout(async () => {
 			setIsSearching(true);
 			try {
-				const res = await searchUsersApi(val);
-				setSearchResults(res || []);
+				setSearchResults((await searchUsersApi(val)) ?? []);
 			} catch (e) {
 				console.error(e);
 			}
@@ -529,6 +510,7 @@ const Friends: Component = () => {
 					u.user_id === id ? { ...u, status: 'PENDING_SENT' } : u,
 				),
 			);
+			sentFriendRequestsWrapper.invalidate(undefined);
 			refreshAll();
 		} catch (e) {
 			alert("Erreur lors de l'envoi");
@@ -542,6 +524,7 @@ const Friends: Component = () => {
 			setSearchResults((prev) =>
 				prev.map((u) => (u.user_id === id ? { ...u, status: 'NONE' } : u)),
 			);
+			sentFriendRequestsWrapper.invalidate(undefined);
 		} catch (e) {
 			alert("Erreur lors de l'annulation");
 		}
@@ -550,6 +533,8 @@ const Friends: Component = () => {
 	const handleRespond = async (id: number, action: 'accept' | 'reject') => {
 		try {
 			await respondToRequest(id, action);
+			friendsListWrapper.invalidate(undefined);
+			friendRequestsWrapper.invalidate(undefined);
 			refreshAll();
 		} catch (e) {
 			console.error(e);
@@ -565,7 +550,7 @@ const Friends: Component = () => {
 						onClick={() => setActiveTab('friends')}
 					>
 						Mes Amis
-						{receivedRequests().length > 0 && <span class="badge-dot"></span>}
+						{receivedRequests().length > 0 && <span class="badge-dot" />}
 					</button>
 					<button
 						class={`nav-tab ${activeTab() === 'add' ? 'active' : ''}`}
@@ -585,7 +570,6 @@ const Friends: Component = () => {
 						onRespond={handleRespond}
 					/>
 				</Match>
-
 				<Match when={activeTab() === 'add'}>
 					<AddFriendsTab
 						myId={Session.userId}
@@ -600,7 +584,6 @@ const Friends: Component = () => {
 						fetchFullProfile={(id) => profileWrapper.get(id)}
 					/>
 				</Match>
-
 				<Match when={activeTab() === 'profile' && selectedFriend()}>
 					<ProfileDetailView profile={selectedFriend()!} onBack={handleBack} />
 				</Match>

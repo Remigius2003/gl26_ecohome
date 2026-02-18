@@ -23,9 +23,20 @@ func SetupRoutes(router *gin.Engine) {
 		log.Printf("ERROR: Failed to load game content: %v", err)
 	}
 
+	ws.GetManager().On("chat_message", ws.HandleChatMessage)
+
 	usersAuth := router.Group("/users")
 	usersAuth.Use(middleware.JWTMiddleware)
 	{
+		usersAuth.PUT("/chat/:id/name", handlers.RenameGroupHandler)
+		usersAuth.POST("/chat/message/:id", handlers.SendMessageHandler)
+		usersAuth.POST("/chat/:id/participants", handlers.AddParticipantHandler)
+		usersAuth.DELETE("/chat/:id/participants/:user_id", handlers.RemoveParticipantHandler)
+
+		usersAuth.GET("/chat/conversations", handlers.GetConversationsHandler)
+		usersAuth.POST("/chat/create", handlers.CreateConversationHandler)
+		usersAuth.GET("/chat/history/:id", handlers.GetChatHistoryHandler)
+
 		usersAuth.GET("/profile", handlers.GetProfileHandler)
 		usersAuth.PUT("/profile", handlers.UpdateProfileHandler)
 		usersAuth.POST("/avatar", handlers.UploadAvatarHandler)

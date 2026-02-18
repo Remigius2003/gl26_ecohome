@@ -21,34 +21,34 @@ func GetDailyDefis(c *gin.Context) {
 
 	if result.Error == nil && len(userDefis) == 0 {
 		generated := cm.GetRandomDefis(3)
-
 		for _, def := range generated {
-			newAssignment := models.DailyDefi{
-				UserID:       userID,
-				DefiID:       def.ID,
+			assignment := models.DailyDefi{
+				UserId:       userID,
+				DefiId:       def.Id,
 				DateAssigned: today,
 				Status:       "PENDING",
 				RewardEarned: 0,
 			}
-			db.Create(&newAssignment)
-			userDefis = append(userDefis, newAssignment)
+			db.Create(&assignment)
+			userDefis = append(userDefis, assignment)
 		}
 	}
 
-	response := make([]gin.H, 0)
+	response := make([]gin.H, 0, len(userDefis))
 	for _, ud := range userDefis {
-		content, ok := cm.GetDefi(ud.DefiID)
-		if ok {
-			response = append(response, gin.H{
-				"id":            content.ID,
-				"defi":          content.Defi,
-				"category":      content.Category,
-				"leafReward":    content.LeafReward,
-				"overQuestions": content.OverQuestions,
-				"status":        ud.Status, // "PENDING" or "COMPLETED"
-				"earned":        ud.RewardEarned,
-			})
+		content, ok := cm.GetDefi(ud.DefiId)
+		if !ok {
+			continue
 		}
+		response = append(response, gin.H{
+			"id":            content.Id,
+			"defi":          content.Defi,
+			"category":      content.Category,
+			"leafReward":    content.LeafReward,
+			"overQuestions": content.OverQuestions,
+			"status":        ud.Status,
+			"earned":        ud.RewardEarned,
+		})
 	}
 
 	c.JSON(http.StatusOK, response)
@@ -61,7 +61,6 @@ func CompleteDefi(c *gin.Context) {
 		DefiID   string `json:"defiId"`
 		AnswerID string `json:"answerId"`
 	}
-
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
@@ -75,10 +74,11 @@ func CompleteDefi(c *gin.Context) {
 	}
 
 	db := database.GetDatabase()
-	var assignment models.DailyDefi
 	today := time.Now().Truncate(24 * time.Hour)
 
-	if err := db.Where("user_id = ? AND defi_id = ? AND date_assigned = ?", userID, req.DefiID, today).First(&assignment).Error; err != nil {
+	var assignment models.DailyDefi
+	if err := db.Where("user_id = ? AND defi_id = ? AND date_assigned = ?", userID, req.DefiID, today).
+		First(&assignment).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Challenge not assigned for today"})
 		return
 	}
@@ -90,20 +90,20 @@ func CompleteDefi(c *gin.Context) {
 
 	rewardToGrant := defiContent.LeafReward
 	if defiContent.OverQuestions != nil {
-		valid := false
+		matched := false
 		for _, ans := range defiContent.OverQuestions.Responses {
-			if ans.ID == req.AnswerID {
-				if ans.LeafReward > 0 {
-					valid = true
-					rewardToGrant = ans.LeafReward
-				} else {
-					valid = true
-					rewardToGrant = 0
-				}
-				break
+			if ans.Id != req.AnswerID {
+				continue
 			}
+			matched = true
+			if ans.LeafReward == 0 {
+				c.JSON(http.StatusOK, gin.H{"status": "WRONG", "reward": 0})
+				return
+			}
+			rewardToGrant = ans.LeafReward
+			break
 		}
-		if !valid {
+		if !matched {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid answer ID"})
 			return
 		}
@@ -113,11 +113,9 @@ func CompleteDefi(c *gin.Context) {
 	assignment.RewardEarned = rewardToGrant
 	db.Save(&assignment)
 
-	// TODO: Update the User's total Leaf Balance in the Profile table
-	// db.Model(&models.Profile{}).Where("user_id = ?", userID).Update("leaves", gorm.Expr("leaves + ?", rewardToGrant))
+	// TODO: Update the user's total leaf balance.
+	// db.Model(&models.Profile{}).Where("user_id = ?", userID).
+	//   Update("leaves", gorm.Expr("leaves + ?", rewardToGrant))
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "COMPLETED",
-		"reward": rewardToGrant,
-	})
+	c.JSON(http.StatusOK, gin.H{"status": "COMPLETED", "reward": rewardToGrant})
 }

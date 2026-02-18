@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gl26_ecohome/core/internal/database"
 	"gl26_ecohome/core/internal/models"
+	"gl26_ecohome/core/internal/ws"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -31,10 +32,11 @@ func SearchUsersHandler(c *gin.Context) {
 			userID, u.Id, u.Id, userID).First(&friendship).Error
 
 		if err == nil {
-			if friendship.Status == models.StatusAccepted {
+			switch friendship.Status {
+			case models.StatusAccepted:
 				status = "FRIEND"
-			} else if friendship.Status == models.StatusPending {
-				if friendship.RequesterID == userID {
+			case models.StatusPending:
+				if friendship.RequesterId == userID {
 					status = "PENDING_SENT"
 				} else {
 					status = "PENDING_RECEIVED"
@@ -108,6 +110,11 @@ func CancelFriendRequestHandler(c *gin.Context) {
 		return
 	}
 
+	ws.GetManager().Hub.SendToUser(input.TargetID, gin.H{
+		"type":    "friend_request_cancelled",
+		"payload": gin.H{"user_id": userID},
+	})
+
 	c.JSON(http.StatusOK, gin.H{"message": "Request cancelled"})
 }
 
@@ -145,8 +152,8 @@ func SendFriendRequestHandler(c *gin.Context) {
 	}
 
 	req := models.Friendship{
-		RequesterID: requesterID,
-		AddresseeID: input.TargetID,
+		RequesterId: requesterID,
+		AddresseeId: input.TargetID,
 		Status:      models.StatusPending,
 	}
 
@@ -154,6 +161,17 @@ func SendFriendRequestHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send request"})
 		return
 	}
+
+	var requester models.User
+	db.First(&requester, requesterID)
+	ws.GetManager().Hub.SendToUser(input.TargetID, gin.H{
+		"type": "friend_request",
+		"payload": gin.H{
+			"user_id":    requesterID,
+			"username":   requester.Username,
+			"avatar_url": fmt.Sprintf("/users/avatar/%d", requesterID),
+		},
+	})
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Request sent"})
 }
@@ -183,9 +201,24 @@ func RespondFriendRequestHandler(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
 			return
 		}
+
+		var accepter models.User
+		db.First(&accepter, userID)
+		ws.GetManager().Hub.SendToUser(input.TargetID, gin.H{
+			"type": "friend_request_accepted",
+			"payload": gin.H{
+				"user_id":    userID,
+				"username":   accepter.Username,
+				"avatar_url": fmt.Sprintf("/users/avatar/%d", userID),
+			},
+		})
 		c.JSON(http.StatusOK, gin.H{"message": "Accepted"})
 	} else {
 		db.Delete(&req)
+		ws.GetManager().Hub.SendToUser(input.TargetID, gin.H{
+			"type":    "friend_request_rejected",
+			"payload": gin.H{"user_id": userID},
+		})
 		c.JSON(http.StatusOK, gin.H{"message": "Rejected"})
 	}
 }
@@ -222,7 +255,7 @@ func ListFriendsHandler(c *gin.Context) {
 		avatarUrl := fmt.Sprintf("/users/avatar/%d", r.UserID)
 
 		response[i] = models.PublicProfile{
-			UserID:    r.UserID,
+			UserId:    r.UserID,
 			Username:  r.Username,
 			Bio:       r.Bio,
 			AvatarURL: avatarUrl,
