@@ -54,7 +54,6 @@ export function analyseFolder(files: FileAsset[]): Skin {
         | SkinConfig
         | undefined;
 
-    // Filter out only the image strings
     const imageFiles = files.filter(isImage);
 
     let frames: Frame[] = [];
@@ -63,18 +62,14 @@ export function analyseFolder(files: FileAsset[]): Skin {
         console.log("JSON Config found:", config);
 
         try {
-            // No need to fetch! 'config' is already the parsed JSON object.
             const totalFrames = config.Frame;
             const globalDefaults = config.AllFrame || {};
 
             for (let i = 1; i <= totalFrames; i++) {
                 const key = i.toString();
                 const specificParams = config[key] || {};
-
-                // Merge Logic
                 const imageName = specificParams.image ?? globalDefaults.image;
 
-                // We need to find the full URL/Path in our files list that matches this image name
                 const fullImagePath = imageFiles.find((f) =>
                     f.includes(imageName),
                 );
@@ -87,7 +82,6 @@ export function analyseFolder(files: FileAsset[]): Skin {
                     specificParams.ratio ?? globalDefaults.ratio ?? 15;
 
                 if (!fullImagePath) {
-                    // Fallback: If image is defined but file not found, we can't create the frame
                     throw new Error(
                         `Image file '${imageName}' defined in JSON not found in folder assets.`,
                     );
@@ -100,7 +94,6 @@ export function analyseFolder(files: FileAsset[]): Skin {
             throw e;
         }
     } else {
-        // --- AUTO MODE ---
         frames = imageFiles
             .filter((f) => !f.includes("icon.png"))
             .map((f) => new Frame(f));
@@ -110,7 +103,6 @@ export function analyseFolder(files: FileAsset[]): Skin {
         }
     }
 
-    // 2. Handle the Icon
     const iconFile = imageFiles.find((f) => f.includes("icon.png"));
     const iconPath = iconFile ?? (frames.length > 0 ? frames[0].image : null);
 
@@ -153,7 +145,6 @@ async function parseCategory(
     const skins: Skin[] = [];
 
     for (const folder in folders) {
-        // analyseFolder is no longer async because JSON is already loaded
         try {
             skins.push(analyseFolder(folders[folder]));
         } catch (e) {
@@ -169,14 +160,13 @@ async function parseCategory(
 }
 
 export async function parseTypes(): Promise<Types[]> {
-    // 1. Update Glob to include .json
     const images = import.meta.glob(
         "/src/assets/chara/**/*.{png,jpg,jpeg,webp,json}",
         {
             eager: true,
             import: "default",
         },
-    ) as Record<string, FileAsset>; // Cast to FileAsset
+    ) as Record<string, FileAsset>;
 
     const categoriesSet = new Set<string>();
     for (const filePath in images) {
