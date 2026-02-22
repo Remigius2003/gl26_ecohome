@@ -1,4 +1,4 @@
-// world-id-serial.ts
+// scenes/trilogique/types.ts
 // ID-first model to avoid cycles. Uses fetch to POST/GET JSON payloads.
 
 import { Entity } from "@scene/core/types";
@@ -60,28 +60,12 @@ export interface Position {
 export interface WorldPayload {
     worldSizeX: number;
     worldSizeY: number;
-    playerSpawn: Position;
-    priorities: Record<number, Entity>;
-
-    items: Item[];
-    categories: Category[];
-    receivers: Array<{ receiver: Receiver; position: Position }>;
-    transformers: Array<{ transformer: Transformer; position: Position }>;
-
-    // spawn areas expressed with item ids
-    itemsPerSpawnArea: Array<{ itemIds: string[]; positions: Position[] }>;
-}
-
-/* -------------------------
-   GameWorld runtime class
-   ------------------------- */
-
-export interface WorldPayload {
-    worldSizeX: number;
-    worldSizeY: number;
 
     initialTime: number;
     finalPoints: number;
+    
+    // ADDED: The texture path for the ground
+    groundTexture: string;
 
     playerSpawn: Position;
     priorities: Record<number, Entity>;
@@ -91,6 +75,7 @@ export interface WorldPayload {
     transformers: Array<{ transformer: Transformer; position: Position }>;
     itemsPerSpawnArea: Array<{ itemIds: string[]; positions: Position[] }>;
 }
+
 /* -------------------------
    GameWorld runtime class
    ------------------------- */
@@ -101,6 +86,7 @@ export class GameWorld {
     // CONFIGURATION
     initialTime: number;
     finalPoints: number;
+    groundTexture: string; // <--- ADDED PROPERTY
 
     playerSpawn: Position;
     priorities: Record<number, Entity>;
@@ -122,6 +108,9 @@ export class GameWorld {
         // Defaults
         this.initialTime = payload?.initialTime ?? 300000;
         this.finalPoints = payload?.finalPoints ?? 100;
+        
+        // Default to grass1 if missing in JSON
+        this.groundTexture = payload?.groundTexture ?? "/game/trilogique/images/env/grass1.png";
 
         this.playerSpawn = payload?.playerSpawn ?? { x: 0, y: 0 };
         this.priorities = payload?.priorities ?? {};
@@ -175,6 +164,7 @@ export class GameWorld {
             worldSizeY: gw.worldSizeY,
             initialTime: gw.initialTime,
             finalPoints: gw.finalPoints,
+            groundTexture: gw.groundTexture, // <--- ADDED TO SERIALIZATION
             playerSpawn: gw.playerSpawn,
             priorities: gw.priorities,
             items: gw.items,
@@ -212,10 +202,13 @@ export class GameWorld {
             );
         }
 
-        // Reconstruct the GameWorld instance (constructor will create lookups and sync edges)
+        // Reconstruct the GameWorld instance
         const gw = new GameWorld({
             worldSizeX: data.worldSizeX,
             worldSizeY: data.worldSizeY,
+            initialTime: data.initialTime,
+            finalPoints: data.finalPoints,
+            groundTexture: data.groundTexture, // <--- PASSING DATA TO CONSTRUCTOR
             playerSpawn: data.playerSpawn,
             priorities: data.priorities,
             items: data.items,
