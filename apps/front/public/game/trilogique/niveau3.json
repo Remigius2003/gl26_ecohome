@@ -1,0 +1,152 @@
+{
+    "levelName": "La Vallée Verte - Niveau 3 : Collectes Spéciales (Paris)",
+    "worldSizeX": 20,
+    "worldSizeY": 15,
+    "initialTime": 3000000,
+    "finalPoints": 300,
+    "playerSpawn": { "x": 9, "y": 10 },
+    
+    "groundTexture": "/game/trilogique/images/env/snow_texture.png",
+    "treeTexture": "/game/trilogique/images/env/tree_snow.png",
+    "borderTexture": "/game/trilogique/images/env/sand.png",
+
+    "priorities": {
+        "house_main": { "id": "house_main", "x": 7, "y": 3, "width": 5, "height": 4, "text": "/game/trilogique/images/env/house.png", "priority": 10 },
+        "path_02": { "id": "p02", "x": 9, "y": 7, "width": 1, "height": 1, "text": "/game/trilogique/images/env/background_rock.png", "priority": 0, "walkable": true },
+        "path_03": { "id": "p03", "x": 9, "y": 8, "width": 1, "height": 1, "text": "/game/trilogique/images/env/background_rock.png", "priority": 0, "walkable": true },
+        "path_04": { "id": "p04", "x": 9, "y": 9, "width": 1, "height": 1, "text": "/game/trilogique/images/env/background_rock.png", "priority": 0, "walkable": true },
+        "path_05": { "id": "p05", "x": 9, "y": 10, "width": 1, "height": 1, "text": "/game/trilogique/images/env/background_rock.png", "priority": 0, "walkable": true },
+        "path_06": { "id": "p06", "x": 9, "y": 11, "width": 1, "height": 1, "text": "/game/trilogique/images/env/background_rock.png", "priority": 0, "walkable": true },
+        "path_07": { "id": "p07", "x": 9, "y": 12, "width": 1, "height": 1, "text": "/game/trilogique/images/env/background_rock.png", "priority": 0, "walkable": true },
+
+        
+        "t01": { "id": "tree_01", "x": 2, "y": 2, "width": 2, "height": 2, "text": "/game/trilogique/images/env/tree_snow.png", "priority": 10 },
+        "t02": { "id": "tree_02", "x": 16, "y": 2, "width": 2, "height": 2, "text": "/game/trilogique/images/env/tree_snow.png", "priority": 10 },
+        "t03": { "id": "tree_03", "x": 1, "y": 6, "width": 2, "height": 2, "text": "/game/trilogique/images/env/tree_snow.png", "priority": 10 },
+        "t04": { "id": "tree_04", "x": 17, "y": 6, "width": 2, "height": 2, "text": "/game/trilogique/images/env/tree_snow.png", "priority": 10 },
+        "t05": { "id": "tree_05", "x": 2, "y": 12, "width": 2, "height": 2, "text": "/game/trilogique/images/env/tree_snow.png", "priority": 10 },
+        "t06": { "id": "tree_06", "x": 16, "y": 12, "width": 2, "height": 2, "text": "/game/trilogique/images/env/tree_snow.png", "priority": 10 }
+    },
+
+    "categories": [
+        { "id": "cat_yellow_rec", "image": "hum", "name": "Poubelle Jaune" },
+        { "id": "cat_glass_rec", "image": "hum", "name": "Poubelle Blanche/Verre" },
+        { "id": "cat_pharmacy", "image": "hum", "name": "Pharmacie" },
+        { "id": "cat_battery", "image": "hum", "name": "Bornes Piles" },
+        { "id": "cat_ecopoint", "image": "hum", "name": "Espace Tri (Déchèterie)" },
+        { "id": "cat_unseparated", "image": "hum", "name": "À Séparer" }
+    ],
+
+    "items": [
+        { "id": "medication_box", "categoryIds": ["cat_unseparated"], "weight": 1, "image": "/game/trilogique/images/items/medication_box.png", "name": "Boîte de Médicaments" },
+        { "id": "medication_blister", "categoryIds": ["cat_pharmacy"], "weight": 1, "image": "/game/trilogique/images/items/medication_blister.png", "name": "Plaquette de Pilules" },
+        
+        { "id": "toy", "categoryIds": ["cat_unseparated"], "weight": 3, "image": "/game/trilogique/images/items/toy.png", "name": "Jouet Électronique" },
+        { "id": "batteries", "categoryIds": ["cat_battery"], "weight": 1, "image": "/game/trilogique/images/items/batteries.png", "name": "Piles Usagées" },
+        
+        { "id": "light_bulb", "categoryIds": ["cat_ecopoint"], "weight": 1, "image": "/game/trilogique/images/items/light_bulb.png", "name": "Ampoule LED" },
+        { "id": "paint_can", "categoryIds": ["cat_ecopoint"], "weight": 4, "image": "/game/trilogique/images/items/paint_can.png", "name": "Pot de Peinture" }
+    ],
+
+    "receivers": [
+        {
+            "receiver": {
+                "id": "bin_yellow",
+                "image": "/game/trilogique/images/env/yellow_bin.png",
+                "process": [],
+                "rejects": [
+                    { "source": { "id": "medication_box", "type": "item" }, "message": "Attendez ! Le carton va ici, mais il faut d'abord extraire les pilules pour la pharmacie. Utilisez la table de tri !" },
+                    { "source": { "id": "paint_can", "type": "item" }, "message": "Danger ! À Paris, tous les emballages vont dans le bac jaune, SAUF s'ils contiennent des produits toxiques. La peinture va à l'Espace Tri." },
+                    { "source": { "id": "toy", "type": "item" }, "message": "Non ! Les appareils électriques contiennent des matériaux rares et polluants. Ne les jetez jamais à la poubelle." },
+                    { "source": { "id": "batteries", "type": "item" }, "message": "Ne jetez pas de piles dans les poubelles de la ville ! Cherchez une borne de collecte (souvent en supermarché)." }
+                ]
+            },
+            "position": { "x": 6, "y": 8 }
+        },
+        {
+            "receiver": {
+                "id": "bin_glass",
+                "image": "/game/trilogique/images/env/glass_bin.png",
+                "process": [],
+                "rejects": [
+                    { "source": { "id": "light_bulb", "type": "item" }, "message": "Faux ! Une ampoule LED n'est pas du verre d'emballage, elle contient de l'électronique. Déposez-la en supermarché ou Espace Tri." }
+                ]
+            },
+            "position": { "x": 7, "y": 8 }
+        },
+        {
+            "receiver": {
+                "id": "pharmacy",
+                "image": "/game/trilogique/images/env/pharmacy_counter.png",
+                "process": [
+                    { "source": { "id": "medication_blister", "type": "item" }, "effect": { "points": 30, "time": 15 } }
+                ],
+                "rejects": [
+                    { "source": { "id": "medication_box", "type": "item" }, "message": "Le pharmacien ne veut que les médicaments, pas l'emballage en carton ! Séparez-les d'abord." }
+                ]
+            },
+            "position": { "x": 11, "y": 8 }
+        },
+        {
+            "receiver": {
+                "id": "battery_tube",
+                "image": "/game/trilogique/images/env/battery_counter.png",
+                "process": [
+                    { "source": { "id": "batteries", "type": "item" }, "effect": { "points": 30, "time": 15 } }
+                ],
+                "rejects": [
+                    { "source": { "id": "toy", "type": "item" }, "message": "La borne est trop petite pour le jouet ! Vous devez d'abord extraire les piles sur l'établi." }
+                ]
+            },
+            "position": { "x": 12, "y": 8 }
+        },
+        {
+            "receiver": {
+                "id": "eco_point",
+                "image": "/game/trilogique/images/env/tri_paris.png",
+                "process": [
+                    { "source": { "id": "light_bulb", "type": "item" }, "effect": { "points": 40, "time": 15 } },
+                    { "source": { "id": "paint_can", "type": "item" }, "effect": { "points": 50, "time": 20 } }
+                ],
+                "rejects": [
+                    { "source": { "id": "toy", "type": "item" }, "message": "Même à l'Espace Tri, vous devez d'abord retirer les piles du jouet pour des raisons de sécurité ! Utilisez l'établi." }
+                ]
+            },
+            "position": { "x": 15, "y": 7 }
+        }
+    ],
+
+    "transformers": [
+        {
+            "transformer": {
+                "id": "med_station",
+                "image": "/game/trilogique/images/env/pharmacy_transformer.png",
+                "craft": [
+                    { "source": { "id": "medication_box", "type": "item" }, "resultItemId": "medication_blister", "quantity": 1 }
+                ]
+            },
+            "position": { "x": 4, "y": 10 }
+        },
+        {
+            "transformer": {
+                "id": "workbench",
+                "image": "/game/trilogique/images/env/working_table.png",
+                "craft": [
+                    { "source": { "id": "toy", "type": "item" }, "resultItemId": "batteries", "quantity": 1 }
+                ]
+            },
+            "position": { "x": 15, "y": 10 }
+        }
+    ],
+
+    "itemsPerSpawnArea": [
+        {
+            "itemIds": ["medication_box", "toy", "light_bulb", "paint_can"],
+            "positions": [ 
+                { "x": 4, "y": 5 }, { "x": 15, "y": 5 }, { "x": 5, "y": 12 },
+                { "x": 13, "y": 12 }, { "x": 3, "y": 9 }, { "x": 16, "y": 9 },
+                { "x": 8, "y": 13 }, { "x": 11, "y": 13 }, { "x": 7, "y": 10 }
+            ]
+        }
+    ]
+}
