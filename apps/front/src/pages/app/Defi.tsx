@@ -1,6 +1,7 @@
 import { createSignal, Show, For, onMount, Switch, Match } from 'solid-js';
 import { dailyDefiWrapper, completeDefi, DailyDefi, DefiAnswer } from '@api';
 import './app.css';
+import { FaSolidCheck } from 'solid-icons/fa';
 
 const defiIcons: Record<string, string> = {
 	alimentation: '🍔',
@@ -98,18 +99,37 @@ export default function Defi() {
 							>
 								{(defi) => (
 									<div
-										class="defi-card-item"
+										class={`defi-card-item ${defi.status === 'COMPLETED' ? 'completed' : ''}`}
 										onClick={() => {
 											setSelectedDefiId(defi.id);
-											if (defi.status === 'COMPLETED') setIsCompleted(true);
+											setIsCompleted(defi.status === 'COMPLETED');
 										}}
 									>
 										<div class="defi-icon">
 											{defiIcons[defi.category.toLowerCase()] || '🌱'}
 										</div>
 										<div class="defi-info">
-											<h4>{defi.defi}</h4>
-											<span class="defi-reward">+{defi.leafReward} 🍂</span>
+											<h4
+												style={{
+													'text-decoration':
+														defi.status === 'COMPLETED'
+															? 'line-through'
+															: 'none',
+													opacity: defi.status === 'COMPLETED' ? '0.7' : '1',
+												}}
+											>
+												{defi.defi}
+											</h4>
+											<Show
+												when={defi.status === 'COMPLETED'}
+												fallback={
+													<span class="defi-reward">+{defi.leafReward} 🍂</span>
+												}
+											>
+												<span class="defi-completed-badge">
+													<FaSolidCheck /> Fait
+												</span>
+											</Show>
 										</div>
 										<div class="defi-arrow">›</div>
 									</div>

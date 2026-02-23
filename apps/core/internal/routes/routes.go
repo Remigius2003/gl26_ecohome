@@ -28,8 +28,10 @@ func SetupRoutes(router *gin.Engine) {
 		usersAuth.POST("/avatar", handlers.UploadAvatarHandler)
 
 		usersAuth.GET("/friends", handlers.ListFriendsHandler)
+		usersAuth.GET("/friends/sent", handlers.ListSentRequestsHandler)
 		usersAuth.GET("/friends/requests", handlers.ListRequestsHandler)
 		usersAuth.POST("/friends/request", handlers.SendFriendRequestHandler)
+		usersAuth.POST("/friends/cancel", handlers.CancelFriendRequestHandler)
 		usersAuth.POST("/friends/respond", handlers.RespondFriendRequestHandler)
 		usersAuth.GET("/friends/search", handlers.SearchUsersHandler)
 
