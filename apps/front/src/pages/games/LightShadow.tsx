@@ -1,12 +1,17 @@
+import { createEffect } from "solid-js";
+import { useParams } from "@solidjs/router";
 import SceneCanvas from "@components/SceneCanvas";
-import type { SceneType } from "@scene";
-
-
+import { setLightShadowLevel, type SceneType } from "@scene";
 
 export default function LightShadowPage() {
-  return (
-    <div style={{ width: "100vw", height: "100vh", margin: "0", padding: "0" }}>
-      <SceneCanvas scene="lightshadow" />
-    </div>
-  );
+    const params = useParams();
+    const scene: SceneType = "lightshadow";
+    createEffect(() => {
+        if (params.gamePath) {
+            console.log("Setting Trilogique level to:", params.gamePath);
+            setLightShadowLevel(params.gamePath);
+        }
+    });
+
+    return <SceneCanvas scene={scene} />;
 }

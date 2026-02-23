@@ -1,0 +1,50 @@
+{
+    "id": "level-test-01",
+    "cellSize": 64,
+    "wallTexture": "/house/wall/R3.png",
+    "floorTexture": "/house/floor/tile.png",
+    "surgeMaxWatts": 1200,
+    "winTimeMs": 90000,
+    "ghostCount": 3,
+    "ghostSpeed": 240,
+    "devices": [
+        {
+            "char": "L",
+            "watts": 150,
+            "label": "Ceiling Light",
+            "colorOn": "rgba(255, 255, 200, 0.8)",
+            "colorOff": "rgba(50, 50, 40, 0.4)",
+            "lightRadius": 300,
+            "interactionCells": 1
+        },
+        {
+            "char": "A",
+            "watts": 300,
+            "label": "Gaming PC",
+            "colorOn": "rgba(0, 255, 100, 0.9)",
+            "colorOff": "rgba(0, 50, 20, 0.4)",
+            "lightRadius": 150,
+            "interactionCells": 1
+        },
+        {
+            "char": "H",
+            "watts": 600,
+            "label": "Space Heater",
+            "colorOn": "rgba(255, 100, 0, 0.9)",
+            "colorOff": "rgba(60, 20, 0, 0.4)",
+            "lightRadius": 100,
+            "interactionCells": 1
+        }
+    ],
+    "map": [
+        "###########################",
+        "#P.........#..............#",
+        "#..L.......#......H.......#",
+        "#..........#..............#",
+        "#####..#####......#########",
+        "#..........#......#.......#",
+        "#....A.....#..L...#...E...#",
+        "#..........#......#.......#",
+        "###########################"
+    ]
+}

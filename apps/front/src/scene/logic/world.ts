@@ -27,6 +27,9 @@ export class World {
         this.height = height;
     }
 
+    get solids() {
+        return this.collidables as (Entity & Solid)[];
+    }
     getSize(): { width: number; height: number } {
         return { width: this.width, height: this.height };
     }

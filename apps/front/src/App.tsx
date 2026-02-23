@@ -21,6 +21,7 @@ const PremiereConnexion = lazy(() => import("@pages/public/PremiereConnexion"));
 const Lobby = lazy(() => import("@pages/games/Lobby"));
 const Home = lazy(() => import("@pages/app/Home"));
 const Invite = lazy(() => import("@pages/app/Invite"));
+const LightShadow = lazy(() => import("@pages/games/LightShadow"));
 
 const IndexGate = () => {
     return (
@@ -87,6 +88,7 @@ export default function App() {
                     path="/trilogique/:gamePath"
                     component={TrilogiqueGame}
                 />
+                <Route path="/lightshadow/:gamePath" component={LightShadow} />
                 <Route path="/lobby/:gameId" component={Lobby} />
                 <Route
                     path="/PremiereConnexion"

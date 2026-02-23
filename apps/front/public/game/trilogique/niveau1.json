@@ -1,159 +1,336 @@
 {
-    "worldSizeX": 25,
-    "worldSizeY": 20,
+    "levelName": "The Green Valley - Level 1: The Basics",
+    "worldSizeX": 20,
+    "worldSizeY": 15,
     "initialTime": 3000000,
     "finalPoints": 300,
-    "playerSpawn": { "x": 2, "y": 3 },
+    "playerSpawn": { "x": 9, "y": 10 },
+
+    "groundTexture": "/game/trilogique/images/env/background_grass.png",
+    "treeTexture": "/game/trilogique/images/env/tree_new.png",
+
     "priorities": {
-        "10": {
-            "id": "tree_01",
+        "house_main": {
+            "id": "house_main",
             "x": 7,
-            "y": 4,
-            "width": 2,
-            "height": 2,
-            "text": "/game/trilogique/images/env/tree.jpg",
+            "y": 3,
+            "width": 5,
+            "height": 4,
+            "text": "/game/trilogique/images/env/house.png",
             "priority": 10
         },
-        "11": {
-            "id": "rock_01",
-            "x": 7,
+
+        "path_01": {
+            "id": "p01",
+            "x": 9,
             "y": 7,
+            "width": 1,
+            "height": 1,
+            "text": "/game/trilogique/images/env/background_rock.png",
+            "priority": 0,
+            "walkable": true
+        },
+        "path_02": {
+            "id": "p02",
+            "x": 9,
+            "y": 8,
+            "width": 1,
+            "height": 1,
+            "text": "/game/trilogique/images/env/background_rock.png",
+            "priority": 0,
+            "walkable": true
+        },
+        "path_03": {
+            "id": "p03",
+            "x": 9,
+            "y": 9,
+            "width": 1,
+            "height": 1,
+            "text": "/game/trilogique/images/env/background_rock.png",
+            "priority": 0,
+            "walkable": true
+        },
+        "path_04": {
+            "id": "p04",
+            "x": 9,
+            "y": 10,
+            "width": 1,
+            "height": 1,
+            "text": "/game/trilogique/images/env/background_rock.png",
+            "priority": 0,
+            "walkable": true
+        },
+        "path_05": {
+            "id": "p05",
+            "x": 9,
+            "y": 11,
+            "width": 1,
+            "height": 1,
+            "text": "/game/trilogique/images/env/background_rock.png",
+            "priority": 0,
+            "walkable": true
+        },
+        "path_06": {
+            "id": "p06",
+            "x": 9,
+            "y": 12,
+            "width": 1,
+            "height": 1,
+            "text": "/game/trilogique/images/env/background_rock.png",
+            "priority": 0,
+            "walkable": true
+        },
+
+        "t01": {
+            "id": "tree_01",
+            "x": 2,
+            "y": 2,
+            "width": 2,
+            "height": 2,
+            "text": "/game/trilogique/images/env/tree_new.png",
+            "priority": 10
+        },
+        "t02": {
+            "id": "tree_02",
+            "x": 15,
+            "y": 2,
+            "width": 2,
+            "height": 2,
+            "text": "/game/trilogique/images/env/tree_new.png",
+            "priority": 10
+        },
+        "t03": {
+            "id": "tree_03",
+            "x": 1,
+            "y": 6,
+            "width": 2,
+            "height": 2,
+            "text": "/game/trilogique/images/env/tree_new.png",
+            "priority": 10
+        },
+        "t04": {
+            "id": "tree_04",
+            "x": 16,
+            "y": 6,
+            "width": 2,
+            "height": 2,
+            "text": "/game/trilogique/images/env/tree_new.png",
+            "priority": 10
+        },
+        "t05": {
+            "id": "tree_05",
+            "x": 2,
+            "y": 9,
+            "width": 2,
+            "height": 2,
+            "text": "/game/trilogique/images/env/tree_new.png",
+            "priority": 10
+        },
+        "t06": {
+            "id": "tree_06",
+            "x": 17,
+            "y": 9,
+            "width": 2,
+            "height": 2,
+            "text": "/game/trilogique/images/env/tree_new.png",
+            "priority": 10
+        },
+        "t07": {
+            "id": "tree_07",
+            "x": 1,
+            "y": 12,
+            "width": 2,
+            "height": 2,
+            "text": "/game/trilogique/images/env/tree_new.png",
+            "priority": 10
+        },
+        "t08": {
+            "id": "tree_08",
+            "x": 16,
+            "y": 12,
+            "width": 2,
+            "height": 2,
+            "text": "/game/trilogique/images/env/tree_new.png",
+            "priority": 10
+        },
+
+        "11": {
+            "id": "rock_boulder_01",
+            "x": 15,
+            "y": 4,
             "width": 1,
             "height": 1,
             "text": "/game/trilogique/images/env/rock.png",
             "priority": 11
+        },
+        "12": {
+            "id": "bush_small_01",
+            "x": 5,
+            "y": 4,
+            "width": 1,
+            "height": 1,
+            "text": "/game/trilogique/images/env/bush_small.png",
+            "priority": 10
+        },
+        "13": {
+            "id": "bush_flowering_01",
+            "x": 13,
+            "y": 4,
+            "width": 1,
+            "height": 1,
+            "text": "/game/trilogique/images/env/bush_flowers.png",
+            "priority": 10
+        },
+        "14": {
+            "id": "bush_dense_01",
+            "x": 3,
+            "y": 10,
+            "width": 1,
+            "height": 1,
+            "text": "/game/trilogique/images/env/bush_dense.png",
+            "priority": 10
+        },
+        "15": {
+            "id": "pebbles_01",
+            "x": 10,
+            "y": 9,
+            "width": 1,
+            "height": 1,
+            "text": "/game/trilogique/images/env/pebbles.png",
+            "priority": 2,
+            "walkable": true
         }
     },
+
+    "categories": [
+        { "id": "cat_organic", "image": "hum", "name": "Organic Waste" },
+        { "id": "cat_yellow_rec", "image": "hum", "name": "Yellow Recycling" },
+        { "id": "cat_glass_rec", "image": "hum", "name": "Glass Recycling" },
+        { "id": "cat_general", "image": "hum", "name": "General Waste" }
+    ],
+
     "items": [
         {
-            "id": "iron_ore",
-            "categoryIds": ["raw_materials"],
-            "weight": 5,
-            "image": "/game/trilogique/images/items/ores.jpg",
-            "name": "Iron Ore"
-        },
-        {
-            "id": "iron_ingot",
-            "categoryIds": ["processed_metal"],
-            "weight": 3,
-            "image": "/game/trilogique/images/items/goldIngot.jpg",
-            "name": "Iron Ingot"
+            "id": "apple",
+            "categoryIds": ["cat_organic"],
+            "weight": 1,
+            "image": "/game/trilogique/images/items/apple.png",
+            "name": "Apple Core"
         },
         {
             "id": "plastic_bottle",
-            "categoryIds": ["plastic"],
+            "categoryIds": ["cat_yellow_rec"],
+            "weight": 2,
+            "image": "/game/trilogique/images/items/plastic_bottle.png",
+            "name": "Plastic Bottle"
+        },
+        {
+            "id": "cardboard_box",
+            "categoryIds": ["cat_yellow_rec"],
+            "weight": 3,
+            "image": "/game/trilogique/images/items/cardboard_box.png",
+            "name": "Cardboard Box"
+        },
+        {
+            "id": "glass_bottle",
+            "categoryIds": ["cat_glass_rec"],
             "weight": 4,
-            "image": "/game/trilogique/images/items/bouteilleeau.jpg",
-            "name": "bouteilleeau"
+            "image": "/game/trilogique/images/items/glass_bottle.png",
+            "name": "Glass Bottle"
         },
         {
-            "id": "apple",
-            "categoryIds": ["food"],
+            "id": "candy_wrapper",
+            "categoryIds": ["cat_general"],
             "weight": 1,
-            "image": "/game/trilogique/images/items/apple.png",
-            "name": "Apple"
+            "image": "/game/trilogique/images/items/candy_wrapper.png",
+            "name": "Candy Wrapper"
         }
     ],
-    "categories": [
-        {
-            "id": "raw_materials",
-            "image": "/chara/categories/raw.png",
-            "name": "Raw Materials"
-        },
-        {
-            "id": "processed_metal",
-            "image": "/chara/categories/metal.png",
-            "name": "Metals"
-        },
-        {
-            "id": "food",
-            "image": "/chara/categories/food.png",
-            "name": "Edibles"
-        },
-        {
-            "id": "plastic",
-            "image": "hum",
-            "name": "plastic"
-        }
-    ],
+
     "receivers": [
         {
             "receiver": {
-                "id": "shipment_bin",
-                "image": "/game/trilogique/images/other/bank.jpg",
+                "id": "bin_compost",
+                "image": "/game/trilogique/images/env/compost_bin.png",
                 "process": [
                     {
-                        "source": { "id": "iron_ingot", "type": "item" },
-                        "effect": { "points": 50, "time": 10 }
+                        "source": { "id": "apple", "type": "item" },
+                        "effect": { "points": 20, "time": 10 }
                     }
                 ]
             },
-            "position": { "x": 15, "y": 6 }
+            "position": { "x": 6, "y": 8 }
         },
         {
             "receiver": {
-                "id": "yellowbeen",
-                "image": "/game/trilogique/images/other/yellow.jpg",
+                "id": "bin_yellow",
+                "image": "/game/trilogique/images/env/yellow_bin.png",
                 "process": [
                     {
                         "source": { "id": "plastic_bottle", "type": "item" },
-                        "effect": { "points": 20 }
+                        "effect": { "points": 20, "time": 10 }
+                    },
+                    {
+                        "source": { "id": "cardboard_box", "type": "item" },
+                        "effect": { "points": 20, "time": 10 }
                     }
                 ]
             },
-            "position": { "x": 20, "y": 12 }
+            "position": { "x": 7, "y": 8 }
         },
         {
             "receiver": {
-                "id": "food_market",
-                "image": "/game/trilogique/images/other/compost.png",
+                "id": "bin_glass",
+                "image": "/game/trilogique/images/env/glass_bin.png",
                 "process": [
                     {
-                        "source": { "id": "food", "type": "category" },
-                        "effect": { "points": 20, "time": 30 }
+                        "source": { "id": "glass_bottle", "type": "item" },
+                        "effect": { "points": 20, "time": 10 }
                     }
                 ]
             },
-            "position": { "x": 10, "y": 10 }
-        }
-    ],
-    "transformers": [
+            "position": { "x": 11, "y": 8 }
+        },
         {
-            "transformer": {
-                "id": "smelter_alpha",
-                "image": "/game/trilogique/images/other/furnace.jpg",
-                "craft": [
+            "receiver": {
+                "id": "bin_black",
+                "image": "/game/trilogique/images/env/black_bin.png",
+                "process": [
                     {
-                        "source": { "id": "iron_ore", "type": "item" },
-                        "resultItemId": "iron_ingot",
-                        "quantity": 1
+                        "source": { "id": "candy_wrapper", "type": "item" },
+                        "effect": { "points": 20, "time": 10 }
                     }
                 ]
             },
-            "position": { "x": 14, "y": 5 }
+            "position": { "x": 12, "y": 8 }
         }
     ],
+
+    "transformers": [],
+
     "itemsPerSpawnArea": [
         {
-            "itemIds": ["iron_ore", "wood_log"],
+            "itemIds": ["apple", "candy_wrapper"],
             "positions": [
-                { "x": 5, "y": 5 },
-                { "x": 6, "y": 5 },
-                { "x": 8, "y": 8 }
+                { "x": 6, "y": 11 },
+                { "x": 7, "y": 11 },
+                { "x": 7, "y": 12 }
             ]
         },
         {
-            "itemIds": ["apple"],
+            "itemIds": ["plastic_bottle", "cardboard_box"],
             "positions": [
-                { "x": 6, "y": 4 },
-                { "x": 12, "y": 12 }
+                { "x": 11, "y": 11 },
+                { "x": 12, "y": 11 },
+                { "x": 11, "y": 12 }
             ]
         },
         {
-            "itemIds": ["plastic_bottle"],
+            "itemIds": ["glass_bottle"],
             "positions": [
-                { "x": 1, "y": 1 },
-                { "x": 15, "y": 15 }
+                { "x": 8, "y": 13 },
+                { "x": 9, "y": 13 },
+                { "x": 10, "y": 13 }
             ]
         }
     ]
