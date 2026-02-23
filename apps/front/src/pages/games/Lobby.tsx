@@ -8,11 +8,13 @@ import {
     GamePage,
 } from "./Lobby.types";
 
+import { getScore, saveScore } from "../../api/score";
+
 const itemsInit = [
     { id: 0, label: "THIS" },
     { id: 1, label: "DIDN'T" },
     { id: 2, label: "LOAAAD" },
-]; // fallback
+];
 
 export default function Lobby() {
     const params = useParams();
@@ -20,7 +22,7 @@ export default function Lobby() {
     const gameId = () => params.gameId || "space";
 
     const [items, setItems] = createSignal(itemsInit);
-    const [current, setCurrent] = createSignal(1);
+    const [current, setCurrent] = createSignal(0);
     const [containerWidth, setContainerWidth] = createSignal(360);
     const [direction, setDirection] = createSignal("right");
 
@@ -30,6 +32,23 @@ export default function Lobby() {
     const [loading, setLoading] = createSignal(true);
     let containerRef: HTMLDivElement | undefined;
 
+    const bestScore = () => {
+        if (!game()) return 0;
+        const levelId = String(current() + 1);
+        return getScore(gameId(), levelId);
+    };
+    const formatTime = (ms: number) => {
+        if (ms <= 0) return "Aucun";
+
+        const totalSeconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+
+        if (minutes > 0) {
+            return `${minutes} min ${seconds}s`;
+        }
+        return `${seconds} sec`;
+    };
     onMount(() => {
         const update = () => {
             if (containerRef)
@@ -39,7 +58,6 @@ export default function Lobby() {
         window.addEventListener("resize", update);
         onCleanup(() => window.removeEventListener("resize", update));
 
-        // load the game JSON for this route
         (async () => {
             try {
                 setLoading(true);
@@ -72,7 +90,6 @@ export default function Lobby() {
         setCurrent(index);
         const g = games()[index];
         if (g) setGame(g);
-        // else keep previous / show fallback
     };
 
     const translateFor = (index: number) => {
@@ -94,8 +111,7 @@ export default function Lobby() {
     const playClick = () => {
         if (loading() || error()) return;
         const idx = current() + 1;
-        navigate(`/trilogique/${encodeURIComponent(String(idx))}`);
-        return;
+        navigate(`/${gameId()}/${encodeURIComponent(String(idx))}`);
     };
 
     const continueClick = () => {
@@ -119,7 +135,6 @@ export default function Lobby() {
                                 class={`rect-wrapper ${direction()}`}
                                 style={{
                                     transform: `translateX(calc(-50% + ${translateFor(idx)}px))`,
-
                                     "z-index": idx === current() ? 10 : 1,
                                 }}
                                 onClick={() => handleClick(idx)}
@@ -141,7 +156,6 @@ export default function Lobby() {
             <div class="middle">
                 <div class="card">
                     <div class="card-title">
-                        {/* show loaded game name or fallback */}
                         {loading()
                             ? "Loading..."
                             : error()
@@ -155,7 +169,6 @@ export default function Lobby() {
                         ) : error() ? (
                             <span>{error()}</span>
                         ) : game() ? (
-                            // render static link or scene id
                             isStaticImage(game()!.image) ? (
                                 <img
                                     src={game()!.image.link}
@@ -196,7 +209,8 @@ export default function Lobby() {
                             >
                                 <img src="/game/Stats.png" alt="preview" />
                             </button>
-                            <div class="qa-text">Best Score : idk</div>
+                            <div class="qa-text">Temps restant:</div>
+                            <div class="qa-text">{formatTime(bestScore())}</div>
                         </div>
 
                         <button class="btn" onClick={playClick} type="button">
