@@ -32,7 +32,6 @@ import {
 } from "./types";
 import { createPlayer } from "../home.entities";
 import { Skins } from "@api/manageSkin";
-import { saveScore } from "@api/score";
 
 const CELL_SIZE = 100;
 
@@ -58,21 +57,20 @@ export default class TrilogiqueScene implements Scene {
 
     // GAME STATE
     private currentTime: number = 0;
-    private currentPoints: number = 0;
-    private targetPoints: number = 100;
+    private currentPoints: number = 0; 
+    private targetPoints: number = 100; 
     private isGameOver: boolean = false;
     private lastInteractPressed = false;
 
     // SPAWNING STATE
     private spawnTimer: number = 0;
-    private readonly SPAWN_INTERVAL: number = 4000;
+    private readonly SPAWN_INTERVAL: number = 4000; 
 
     // Callbacks
     private onSwitchScene?: (t: SceneType) => void;
 
     private isLoading = true;
     private debugLog: string[] = [];
-    private levelId: string = "";
 
     init(canvas: HTMLCanvasElement, onSwitchScene: (t: SceneType) => void) {
         this.camera = new Camera(canvas.width, canvas.height);
@@ -82,7 +80,6 @@ export default class TrilogiqueScene implements Scene {
     }
 
     async loadGameLevel(levelId: string) {
-        this.levelId = levelId;
         this.isLoading = true;
         this.world = new World(1000, 1000);
         this.gameWorldData = null;
@@ -106,7 +103,7 @@ export default class TrilogiqueScene implements Scene {
 
             this.setupBackground();
             this.setupBoundaries();
-            await this.setupPlayer(this.gameWorldData.playerSpawn);
+            this.setupPlayer(this.gameWorldData.playerSpawn);
             this.setupStaticMap();
             this.setupMachines();
 
@@ -119,8 +116,7 @@ export default class TrilogiqueScene implements Scene {
         }
     }
 
-    private async setupPlayer(spawn: Position) {
-        const PLAYER_SIZE = CELL_SIZE * 0.7;
+    private setupPlayer(spawn: Position) {
         this.player = createPlayer(
             spawn.x * CELL_SIZE,
             spawn.y * CELL_SIZE,
@@ -128,7 +124,6 @@ export default class TrilogiqueScene implements Scene {
         );
 
         const skinsManager = new Skins();
-        await skinsManager.init();
         const allEquippedEntries = Object.entries(skinsManager.equipped);
 
         allEquippedEntries.forEach(([typeName, skin]) => {
@@ -186,7 +181,7 @@ export default class TrilogiqueScene implements Scene {
             );
         }
     }
-
+    
     private updateWeightPenalty() {
         if (!this.heldItemData) {
             this.player.speed = this.baseSpeed;
@@ -199,9 +194,7 @@ export default class TrilogiqueScene implements Scene {
     private setupBackground() {
         if (!this.gameWorldData) return;
 
-        const texturePath =
-            (this.gameWorldData as any).groundTexture ||
-            "/game/trilogique/images/env/grass1.png";
+        const texturePath = (this.gameWorldData as any).groundTexture || "/game/trilogique/images/env/grass1.png";
 
         for (let x = 0; x < this.gameWorldData.worldSizeX; x++) {
             for (let y = 0; y < this.gameWorldData.worldSizeY; y++) {
@@ -222,32 +215,8 @@ export default class TrilogiqueScene implements Scene {
     private setupBoundaries() {
             if (!this.gameWorldData) return;
 
-<<<<<<< HEAD:apps/front/src/scene/scenes/trilogique/deprecated/trilogique.ts
-        const w = this.gameWorldData.worldSizeX;
-        const h = this.gameWorldData.worldSizeY;
-
-        const createBorderBlock = (
-            x: number,
-            y: number,
-            width: number,
-            height: number,
-            id: string,
-        ) => {
-            const block = createSolid({
-                id: `border-${id}`,
-                x: x * CELL_SIZE,
-                y: y * CELL_SIZE,
-                width: width * CELL_SIZE,
-                height: height * CELL_SIZE,
-                text: new ColorTexture("black"),
-                priority: 100,
-            });
-            this.world.addEntity(block);
-        };
-=======
             const w = this.gameWorldData.worldSizeX;
             const h = this.gameWorldData.worldSizeY;
->>>>>>> 661c661 (Trilogique fini):apps/front/src/scene/scenes/trilogique/trilogique.ts
 
             // Définir les différentes images pour chaque côté
             const borderImgTop = "/game/trilogique/images/env/mountain_top.png";
@@ -294,39 +263,39 @@ export default class TrilogiqueScene implements Scene {
         }
 
     private setupStaticMap() {
-        if (!this.gameWorldData) return;
+            if (!this.gameWorldData) return;
 
-        Object.values(this.gameWorldData.priorities).forEach(
-            (entityData: any) => {
-                const texturePath =
-                    entityData.text || entityData.image || "wall.png";
+            Object.values(this.gameWorldData.priorities).forEach(
+                (entityData: any) => {
+                    const texturePath =
+                        entityData.text || entityData.image || "wall.png";
 
-                if (entityData.walkable) {
-                    const ent = createEntity({
-                        id: entityData.id || "decor",
-                        x: entityData.x * CELL_SIZE,
-                        y: entityData.y * CELL_SIZE,
-                        width: (entityData.width || 1) * CELL_SIZE,
-                        height: (entityData.height || 1) * CELL_SIZE,
-                        text: new ImageTexture(texturePath),
-                        priority: entityData.priority || 1,
-                    });
-                    this.world.addEntity(ent);
-                } else {
-                    const ent = createSolid({
-                        id: entityData.id || "static",
-                        x: entityData.x * CELL_SIZE,
-                        y: entityData.y * CELL_SIZE,
-                        width: (entityData.width || 1) * CELL_SIZE,
-                        height: (entityData.height || 1) * CELL_SIZE,
-                        text: new ImageTexture(texturePath),
-                        priority: entityData.priority || 10,
-                    });
-                    this.world.addEntity(ent);
-                }
-            },
-        );
-    }
+                    if (entityData.walkable) {
+                        const ent = createEntity({
+                            id: entityData.id || "decor",
+                            x: entityData.x * CELL_SIZE,
+                            y: entityData.y * CELL_SIZE,
+                            width: (entityData.width || 1) * CELL_SIZE,
+                            height: (entityData.height || 1) * CELL_SIZE,
+                            text: new ImageTexture(texturePath),
+                            priority: entityData.priority || 1, 
+                        });
+                        this.world.addEntity(ent);
+                    } else {
+                        const ent = createSolid({
+                            id: entityData.id || "static",
+                            x: entityData.x * CELL_SIZE,
+                            y: entityData.y * CELL_SIZE,
+                            width: (entityData.width || 1) * CELL_SIZE,
+                            height: (entityData.height || 1) * CELL_SIZE,
+                            text: new ImageTexture(texturePath),
+                            priority: entityData.priority || 10,
+                        });
+                        this.world.addEntity(ent);
+                    }
+                },
+            );
+        }
 
     private setupMachines() {
         if (!this.gameWorldData) return;
@@ -382,9 +351,7 @@ export default class TrilogiqueScene implements Scene {
         const interactable = withInteractable(entity, {
             onInteract: () => {
                 if (this.heldItemData) {
-                    this.showPlayerMessage(
-                        "Vous ne pouvez pas porter plusieurs objets !",
-                    );
+                    this.showPlayerMessage("Vous ne pouvez pas porter plusieurs objets !");
                     return;
                 }
                 this.pickupItem(item, interactable);
@@ -433,9 +400,7 @@ export default class TrilogiqueScene implements Scene {
 
     private handleTransformerInteraction(transformer: Transformer) {
         if (!this.heldItemData) {
-            this.showPlayerMessage(
-                "Vous devez ramener un objet pour le séparer",
-            );
+            this.showPlayerMessage("Vous devez ramener un objet pour le séparer");
             return;
         }
         const recipe = transformer.craft.find((r) =>
@@ -443,9 +408,7 @@ export default class TrilogiqueScene implements Scene {
         );
 
         if (recipe) {
-            this.log(
-                `Separated ${this.heldItemData.id} -> ${recipe.resultItemId}`,
-            );
+            this.log(`Separated ${this.heldItemData.id} -> ${recipe.resultItemId}`);
             this.dropCurrentItem();
 
             const resultItemData = this.gameWorldData!.itemsById.get(
@@ -463,9 +426,7 @@ export default class TrilogiqueScene implements Scene {
                     text: new ImageTexture(resultItemData.image),
                 });
                 this.player.add(this.heldEntity);
-                this.showPlayerMessage(
-                    "Bravo ! Vous pouvez maintenant recycler correctement ",
-                );
+                this.showPlayerMessage("Bravo ! Vous pouvez maintenant recycler correctement ");
             }
         } else {
             this.showPlayerMessage("Vous ne pouvez pas utiliser cette machine");
@@ -481,15 +442,15 @@ export default class TrilogiqueScene implements Scene {
         // 1. Check if the item is explicitly rejected
         const rejectList = (receiver as any).rejects;
         if (rejectList) {
-            const rejection = rejectList.find((r: any) =>
-                this.matchesResource(this.heldItemData!, r.source),
-            );
+             const rejection = rejectList.find((r: any) => 
+                 this.matchesResource(this.heldItemData!, r.source)
+             );
 
-            if (rejection) {
-                // Trigger the educational speech bubble!
-                this.showPlayerMessage(rejection.message);
-                return;
-            }
+             if (rejection) {
+                 // Trigger the educational speech bubble!
+                 this.showPlayerMessage(rejection.message);
+                 return; 
+             }
         }
 
         // 2. If not rejected, check if it's accepted
@@ -512,27 +473,25 @@ export default class TrilogiqueScene implements Scene {
 
             this.showPlayerMessage("Bon travail !");
             this.dropCurrentItem();
-
+            
             if (this.currentPoints >= this.targetPoints) {
                 this.winGame();
             }
         } else {
-            this.showPlayerMessage(
-                "Attention, vous ne pouvez pas jeter cet objet dans cette poubelle",
-            );
+            this.showPlayerMessage("Attention, vous ne pouvez pas jeter cet objet dans cette poubelle");
         }
     }
-
+    
     private winGame() {
         if (this.isGameOver) return;
         this.isGameOver = true;
         this.log("VICTORY!");
-        saveScore("trilogique", this.levelId, this.currentTime);
+
         setTimeout(() => {
             if (this.onSwitchScene) {
                 window.location.href = "/lobby/trilogique";
             }
-        }, 11500);
+        }, 1500);
     }
 
     private loseGame() {
@@ -553,7 +512,7 @@ export default class TrilogiqueScene implements Scene {
         return false;
     }
 
-    // --- Engine ---
+    // --- Engine Boilerplate ---
 
     resizeScene(w: number, h: number) {
         this.camera.resize(w, h);
@@ -616,7 +575,7 @@ export default class TrilogiqueScene implements Scene {
             this.spawnTimer = 0;
         }
     }
-
+    
     render(ctx: CanvasRenderingContext2D) {
         ctx.fillStyle = "#1a1a1a";
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -629,10 +588,10 @@ export default class TrilogiqueScene implements Scene {
 
         this.camera.apply(ctx);
         this.world.render(ctx);
-
+        
         // Render the bubble in WORLD SPACE (so it attaches to the player)
         this.renderPlayerMessage(ctx);
-
+        
         this.camera.release(ctx);
 
         this.renderUI(ctx);
@@ -647,18 +606,18 @@ export default class TrilogiqueScene implements Scene {
         const padding = 12;
 
         ctx.font = "bold 14px Arial";
-
+        
         // 1. Calculate text lines (Word Wrapping)
-        const words = this.playerMessage.split(" ");
+        const words = this.playerMessage.split(' ');
         const lines: string[] = [];
-        let currentLine = "";
+        let currentLine = '';
 
         for (const word of words) {
-            const testLine = currentLine + word + " ";
+            const testLine = currentLine + word + ' ';
             const metrics = ctx.measureText(testLine);
-            if (metrics.width > maxWidth && currentLine !== "") {
+            if (metrics.width > maxWidth && currentLine !== '') {
                 lines.push(currentLine);
-                currentLine = word + " ";
+                currentLine = word + ' ';
             } else {
                 currentLine = testLine;
             }
@@ -671,7 +630,7 @@ export default class TrilogiqueScene implements Scene {
             const w = ctx.measureText(line.trim()).width;
             if (w > maxLineWidth) maxLineWidth = w;
         }
-
+        
         const bubbleWidth = maxLineWidth + padding * 2;
         const bubbleHeight = lines.length * lineHeight + padding * 2;
 
@@ -686,7 +645,7 @@ export default class TrilogiqueScene implements Scene {
         ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
         ctx.strokeStyle = "#333333";
         ctx.lineWidth = 2;
-
+        
         ctx.beginPath();
         // Fallback for older browsers without roundRect: just use regular rect paths
         ctx.rect(bx, by, bubbleWidth, bubbleHeight);
@@ -732,7 +691,7 @@ export default class TrilogiqueScene implements Scene {
         ctx.textBaseline = "middle";
 
         // Points (Current / Target)
-        ctx.fillStyle = "#FFD700";
+        ctx.fillStyle = "#FFD700"; 
         ctx.textAlign = "left";
         ctx.fillText(
             `GOAL: ${this.currentPoints} / ${this.targetPoints}`,
