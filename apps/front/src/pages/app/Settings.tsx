@@ -1,6 +1,6 @@
 import { createSignal, Switch, Match, Component, Show } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
-import { Session, authApiFetch } from '@api';
+import { Session, changePassword, changeUsername, deleteAccount } from '@api';
 import Profile from './Profile';
 import Friends from './Friends';
 import Defi from './Defi';
@@ -12,6 +12,8 @@ import {
 	FaSolidXmark,
 	FaSolidRightFromBracket,
 	FaSolidListCheck,
+	FaSolidKey,
+	FaSolidIdCard,
 } from 'solid-icons/fa';
 import './app.css';
 
@@ -23,8 +25,6 @@ type TabType = 'profile' | 'friends' | 'app' | 'account' | 'defi';
 const Settings: Component<SettingsProps> = (props) => {
 	const [activeTab, setActiveTab] = createSignal<TabType>('profile');
 	const navigate = useNavigate();
-	const [showDeleteModal, setShowDeleteModal] = createSignal(false);
-	const [deletePassword, setDeletePassword] = createSignal('');
 
 	const handleLogout = async () => {
 		try {
@@ -32,25 +32,6 @@ const Settings: Component<SettingsProps> = (props) => {
 			navigate('/login', { replace: true });
 		} catch (e) {
 			console.error(e);
-		}
-	};
-
-	const confirmDelete = async (e: Event) => {
-		e.preventDefault();
-		try {
-			const refreshToken =
-				localStorage.getItem('session_v1_refresh_token') || ''; // Quick hack access
-			await authApiFetch('/', {
-				method: 'DELETE',
-				body: JSON.stringify({
-					password: deletePassword(),
-					refresh_token: refreshToken,
-				}),
-			});
-			await Session.logout();
-			navigate('/login', { replace: true });
-		} catch (err: any) {
-			alert(err.message || 'Erreur suppression');
 		}
 	};
 
@@ -94,11 +75,13 @@ const Settings: Component<SettingsProps> = (props) => {
 					<div class="content-header">
 						<h2>
 							<Switch>
-								<Match when={activeTab() === 'profile'}>Mon Profil</Match>
-								<Match when={activeTab() === 'defi'}>Défis</Match>
+								<Match when={activeTab() === 'profile'}>
+									Mon Profil Public
+								</Match>
+								<Match when={activeTab() === 'defi'}>Défis & Quizz</Match>
 								<Match when={activeTab() === 'friends'}>Social</Match>
 								<Match when={activeTab() === 'app'}>Paramètres</Match>
-								<Match when={activeTab() === 'account'}>Sécurité</Match>
+								<Match when={activeTab() === 'account'}>Mon Compte</Match>
 							</Switch>
 						</h2>
 						<button class="settings-close-pill" onClick={props.onClose}>
@@ -123,54 +106,12 @@ const Settings: Component<SettingsProps> = (props) => {
 								<AppSettings />
 							</Match>
 							<Match when={activeTab() === 'account'}>
-								<AccountSettings
-									onLogout={handleLogout}
-									onDeleteRequest={() => setShowDeleteModal(true)}
-								/>
+								<AccountSettings onLogout={handleLogout} />
 							</Match>
 						</Switch>
 					</div>
 				</div>
 			</div>
-
-			{/* Delete Modal */}
-			<Show when={showDeleteModal()}>
-				<div class="modal-overlay" style={{ 'z-index': 200 }}>
-					<div
-						class="auth-card"
-						style={{ 'max-width': '400px', padding: '30px' }}
-					>
-						<h2 style={{ color: 'var(--danger-red)' }}>
-							Suppression définitive
-						</h2>
-						<p>Cette action est irréversible.</p>
-						<form onSubmit={confirmDelete}>
-							<input
-								type="password"
-								class="auth-input"
-								placeholder="Mot de passe"
-								value={deletePassword()}
-								onInput={(e) => setDeletePassword(e.currentTarget.value)}
-								required
-							/>
-							<div
-								style={{ display: 'flex', gap: '10px', 'margin-top': '20px' }}
-							>
-								<button
-									type="button"
-									class="btn-secondary"
-									onClick={() => setShowDeleteModal(false)}
-								>
-									Annuler
-								</button>
-								<button type="submit" class="btn-danger">
-									Confirmer
-								</button>
-							</div>
-						</form>
-					</div>
-				</div>
-			</Show>
 		</div>
 	);
 };
@@ -191,40 +132,156 @@ const AppSettings = () => (
 	</div>
 );
 
-const AccountSettings = (props: {
-	onLogout: () => void;
-	onDeleteRequest: () => void;
-}) => (
-	<div class="settings-list">
-		<div class="setting-group">
-			<h3>Session</h3>
-			<button
-				class="btn-danger"
-				onClick={props.onLogout}
+const AccountSettings = (props: { onLogout: () => void }) => {
+	const navigate = useNavigate();
+
+	const [oldPass, setOldPass] = createSignal('');
+	const [newPass, setNewPass] = createSignal('');
+	const [newUsername, setNewUsername] = createSignal('');
+	const [showDelete, setShowDelete] = createSignal(false);
+	const [deletePass, setDeletePass] = createSignal('');
+
+	const handleChangePassword = async (e: Event) => {
+		e.preventDefault();
+		try {
+			await changePassword(oldPass(), newPass());
+			alert('Mot de passe mis à jour !');
+			setOldPass('');
+			setNewPass('');
+		} catch (err: any) {
+			alert(err.message || 'Erreur');
+		}
+	};
+
+	const handleChangeUsername = async (e: Event) => {
+		e.preventDefault();
+		try {
+			await changeUsername(newUsername());
+		} catch (err: any) {
+			alert(err.message || 'Erreur');
+		}
+	};
+
+	const handleDeleteAccount = async (e: Event) => {
+		e.preventDefault();
+		const refreshToken = await Session.getRefreshToken();
+		try {
+			await deleteAccount(deletePass(), refreshToken?.token ?? '');
+			await Session.logout();
+			navigate('/login', { replace: true });
+		} catch (err: any) {
+			alert(err.message || 'Erreur suppression');
+		}
+	};
+
+	return (
+		<div class="settings-list fade-in">
+			<div class="setting-group">
+				<h3>
+					<FaSolidIdCard /> Identifiant
+				</h3>
+				<form onSubmit={handleChangeUsername} class="inline-form">
+					<input
+						type="text"
+						class="auth-input"
+						placeholder="Nouveau pseudo"
+						value={newUsername()}
+						onInput={(e) => setNewUsername(e.currentTarget.value)}
+					/>
+					<button type="submit" class="btn-secondary" disabled={!newUsername()}>
+						Modifier
+					</button>
+				</form>
+			</div>
+
+			<div class="setting-group">
+				<h3>
+					<FaSolidKey /> Sécurité
+				</h3>
+				<form
+					onSubmit={handleChangePassword}
+					style={{ display: 'flex', 'flex-direction': 'column', gap: '10px' }}
+				>
+					<input
+						type="password"
+						class="auth-input"
+						placeholder="Ancien mot de passe"
+						value={oldPass()}
+						onInput={(e) => setOldPass(e.currentTarget.value)}
+					/>
+					<input
+						type="password"
+						class="auth-input"
+						placeholder="Nouveau mot de passe"
+						value={newPass()}
+						onInput={(e) => setNewPass(e.currentTarget.value)}
+					/>
+					<button
+						type="submit"
+						class="auth-button"
+						disabled={!oldPass() || !newPass()}
+					>
+						Mettre à jour le mot de passe
+					</button>
+				</form>
+			</div>
+
+			<div
+				class="setting-group"
 				style={{
-					display: 'flex',
-					gap: '10px',
-					'justify-content': 'center',
-					'align-items': 'center',
+					'margin-top': '30px',
+					'border-top': '1px solid #eee',
+					'padding-top': '20px',
 				}}
 			>
-				<FaSolidRightFromBracket /> Déconnexion
-			</button>
+				<h3>Session</h3>
+				<button
+					class="btn-danger-outline"
+					onClick={props.onLogout}
+					style={{ width: '100%' }}
+				>
+					<FaSolidRightFromBracket /> Déconnexion
+				</button>
+			</div>
+
+			<div class="setting-group">
+				<h3 style={{ color: 'var(--danger-red)' }}>Zone de Danger</h3>
+				<Show
+					when={!showDelete()}
+					fallback={
+						<div class="danger-box">
+							<p>Êtes-vous sûr ? Cette action est irréversible.</p>
+							<form onSubmit={handleDeleteAccount}>
+								<input
+									type="password"
+									class="auth-input"
+									placeholder="Confirmer mot de passe"
+									value={deletePass()}
+									onInput={(e) => setDeletePass(e.currentTarget.value)}
+								/>
+								<div class="form-actions" style={{ 'margin-top': '10px' }}>
+									<button
+										type="button"
+										class="btn-secondary"
+										onClick={() => setShowDelete(false)}
+									>
+										Annuler
+									</button>
+									<button type="submit" class="btn-danger">
+										Confirmer suppression
+									</button>
+								</div>
+							</form>
+						</div>
+					}
+				>
+					<button class="btn-danger" onClick={() => setShowDelete(true)}>
+						Supprimer mon compte
+					</button>
+				</Show>
+			</div>
 		</div>
-		<div
-			class="setting-group"
-			style={{
-				'margin-top': '40px',
-				'border-top': '1px solid #eee',
-				'padding-top': '20px',
-			}}
-		>
-			<h3 style={{ color: 'var(--danger-red)' }}>Zone de Danger</h3>
-			<button class="btn-danger" onClick={props.onDeleteRequest}>
-				Supprimer mon compte
-			</button>
-		</div>
-	</div>
-);
+	);
+};
 
 export default Settings;

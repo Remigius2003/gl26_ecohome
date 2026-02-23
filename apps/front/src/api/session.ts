@@ -57,6 +57,20 @@ class SessionManager {
 		return !!this.userId;
 	}
 
+	async getRefreshToken(): Promise<TokenApi.RefreshToken | null> {
+		let refresh = Cache.getItem<TokenApi.RefreshToken>(KEYS.refresh, SESSION);
+		const userId = this.userId;
+
+		if (!userId || !refresh) return null;
+		if (this.isExpiring(refresh.expires_at, THRESHOLDS.refresh)) {
+			refresh = await TokenApi.refreshToken(userId, refresh.token);
+			this.setSession(KEYS.refresh, refresh, refresh.expires_at, true);
+			this.setSession(KEYS.userId, userId, refresh.expires_at);
+		}
+
+		return refresh;
+	}
+
 	async getAccessToken(): Promise<string> {
 		const access = Cache.getItem<TokenApi.JWTToken>(KEYS.access, SESSION);
 		if (access && !this.isExpiring(access.expires_at, THRESHOLDS.jwt))
