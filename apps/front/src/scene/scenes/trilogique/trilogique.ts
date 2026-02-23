@@ -32,6 +32,7 @@ import {
 } from "./types";
 import { createPlayer } from "../home.entities";
 import { Skins } from "@api/manageSkin";
+import { saveScore } from "@api/score";
 
 const CELL_SIZE = 100;
 
@@ -71,6 +72,7 @@ export default class TrilogiqueScene implements Scene {
 
     private isLoading = true;
     private debugLog: string[] = [];
+    private levelId: string = "";
 
     init(canvas: HTMLCanvasElement, onSwitchScene: (t: SceneType) => void) {
         this.camera = new Camera(canvas.width, canvas.height);
@@ -80,6 +82,7 @@ export default class TrilogiqueScene implements Scene {
     }
 
     async loadGameLevel(levelId: string) {
+        this.levelId = levelId;
         this.isLoading = true;
         this.world = new World(1000, 1000);
         this.gameWorldData = null;
@@ -481,12 +484,12 @@ export default class TrilogiqueScene implements Scene {
         if (this.isGameOver) return;
         this.isGameOver = true;
         this.log("VICTORY!");
-
+        saveScore("trilogique", this.levelId, this.currentTime);
         setTimeout(() => {
             if (this.onSwitchScene) {
                 window.location.href = "/lobby/trilogique";
             }
-        }, 1500);
+        }, 11500);
     }
 
     private loseGame() {
@@ -507,7 +510,7 @@ export default class TrilogiqueScene implements Scene {
         return false;
     }
 
-    // --- Engine Boilerplate ---
+    // --- Engine ---
 
     resizeScene(w: number, h: number) {
         this.camera.resize(w, h);
