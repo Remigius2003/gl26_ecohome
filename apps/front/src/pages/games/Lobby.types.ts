@@ -58,7 +58,7 @@ export async function loadGames(path: string): Promise<AllGame> {
  */
 export async function loadGamesById(Id: string): Promise<AllGame> {
     const tryPaths = [
-        `/test/instance/${encodeURIComponent(Id)}.json`,
+        `/gameLists/${encodeURIComponent(Id)}.json`,
         `/games.json`,
     ];
 

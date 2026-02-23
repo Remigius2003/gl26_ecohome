@@ -63,7 +63,7 @@ export interface WorldPayload {
 
     initialTime: number;
     finalPoints: number;
-    
+
     // ADDED: The texture path for the ground
     groundTexture: string;
 
@@ -108,9 +108,10 @@ export class GameWorld {
         // Defaults
         this.initialTime = payload?.initialTime ?? 300000;
         this.finalPoints = payload?.finalPoints ?? 100;
-        
+
         // Default to grass1 if missing in JSON
-        this.groundTexture = payload?.groundTexture ?? "/game/trilogique/images/env/grass1.png";
+        this.groundTexture =
+            payload?.groundTexture ?? "/game/trilogique/images/env/grass1.png";
 
         this.playerSpawn = payload?.playerSpawn ?? { x: 0, y: 0 };
         this.priorities = payload?.priorities ?? {};
@@ -164,7 +165,7 @@ export class GameWorld {
             worldSizeY: gw.worldSizeY,
             initialTime: gw.initialTime,
             finalPoints: gw.finalPoints,
-            groundTexture: gw.groundTexture, // <--- ADDED TO SERIALIZATION
+            groundTexture: gw.groundTexture,
             playerSpawn: gw.playerSpawn,
             priorities: gw.priorities,
             items: gw.items,

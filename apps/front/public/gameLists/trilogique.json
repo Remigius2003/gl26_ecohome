@@ -1,0 +1,31 @@
+{
+    "games": [
+        {
+            "name": "Trilogique - niveau 1 - Un tri logique? ",
+            "id": "niveau 1",
+            "image": {
+                "type": "static",
+                "link": "/game/trilogique/icone1.png"
+            },
+            "description": "Une initiation à trilogique, un minijeu qui necessitera logique, vitesse et connaissance en matière de tri pour triompher!"
+        },
+        {
+            "name": "trilogique - niveau 2 - Une épreuve de logique et de tri!",
+            "id": "niveau 2",
+            "image": { "type": "scene", "sceneId": "towerSceneX" },
+            "description": "Trier peux sembler simple au début mais il faut parfois une analyse plus profonde pour y parvenir."
+        },
+        {
+            "name": "trilogique - level 3",
+            "id": "niveau 3",
+            "image": { "type": "static", "sceneId": "icone2.png" },
+            "description": "When someone does the json we will have a level 3"
+        },
+        {
+            "name": "Bientôt disponnible",
+            "id": "niveau 4 - Bientôt disponnible",
+            "image": { "type": "scene", "sceneId": "towerSceneX" },
+            "description": "Ce niveau n'est pas encore disponible"
+        }
+    ]
+}

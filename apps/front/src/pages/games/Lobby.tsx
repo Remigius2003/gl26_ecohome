@@ -63,9 +63,7 @@ export default function Lobby() {
                 setLoading(true);
                 const g = await loadGamesById(gameId());
                 setGames(g.games);
-                setItems(
-                    g.games.map((gp, idx) => ({ id: idx, label: gp.name })),
-                );
+                setItems(g.games.map((gp, idx) => ({ id: idx, label: gp.id })));
                 const idx = Math.max(
                     0,
                     Math.min(current(), g.games.length - 1),
