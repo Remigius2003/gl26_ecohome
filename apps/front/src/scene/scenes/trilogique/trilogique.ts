@@ -33,12 +33,6 @@ import {
 import { createPlayer } from "../home.entities";
 import { Skins } from "@api/manageSkin";
 
-const BG_OPTIONS = [
-    { src: "/game/trilogique/images/env/grass1.png", weight: 0.1 }, // Rare
-    { src: "/game/trilogique/images/env/grass2.png", weight: 0.2 },
-    { src: "/game/trilogique/images/env/grass3.png", weight: 0.01 },
-    { src: "/game/trilogique/images/env/grass4.png", weight: 0.5 }, // Common
-];
 const CELL_SIZE = 100;
 
 export default class TrilogiqueScene implements Scene {
@@ -49,6 +43,12 @@ export default class TrilogiqueScene implements Scene {
     private player!: Group & Dynamic;
     private playerController!: PlayerController;
     private baseSpeed: number = 1000;
+    private playerSize: number = CELL_SIZE * 0.7;
+
+    // Speech Bubble State
+    private playerMessage: string | null = null;
+    private playerMessageTimer: number = 0;
+    private readonly MESSAGE_DURATION: number = 5000; // Shows for 5 seconds
 
     // Trilogique State
     private gameWorldData: GameWorld | null = null;
@@ -57,14 +57,14 @@ export default class TrilogiqueScene implements Scene {
 
     // GAME STATE
     private currentTime: number = 0;
-    private currentPoints: number = 0; // Starts at 0
-    private targetPoints: number = 100; // Goal from JSON
+    private currentPoints: number = 0; 
+    private targetPoints: number = 100; 
     private isGameOver: boolean = false;
     private lastInteractPressed = false;
 
     // SPAWNING STATE
     private spawnTimer: number = 0;
-    private readonly SPAWN_INTERVAL: number = 4000; // Spawn every 4 seconds
+    private readonly SPAWN_INTERVAL: number = 4000; 
 
     // Callbacks
     private onSwitchScene?: (t: SceneType) => void;
@@ -75,14 +75,21 @@ export default class TrilogiqueScene implements Scene {
     init(canvas: HTMLCanvasElement, onSwitchScene: (t: SceneType) => void) {
         this.camera = new Camera(canvas.width, canvas.height);
         this.world = new World(1000, 1000);
-        this.onSwitchScene = onSwitchScene; // Save callback for redirection
-        this.loadLevel(canvas);
+        this.onSwitchScene = onSwitchScene;
+        this.isLoading = true;
     }
 
-    async loadLevel(canvas: HTMLCanvasElement) {
+    async loadGameLevel(levelId: string) {
+        this.isLoading = true;
+        this.world = new World(1000, 1000);
+        this.gameWorldData = null;
+        this.heldItemData = null;
+        this.playerMessage = null;
+
         try {
+            console.log(`Loading level: ${levelId}`);
             this.gameWorldData = await GameWorld.unserialise(
-                "/game/trilogique/niveau1.json",
+                `/game/trilogique/niveau${levelId}.json`,
             );
 
             this.world = new World(
@@ -100,21 +107,20 @@ export default class TrilogiqueScene implements Scene {
             this.setupStaticMap();
             this.setupMachines();
 
-            // Initial items
             for (let i = 0; i < 3; i++) this.spawnRandomItemFromData();
 
             this.isLoading = false;
         } catch (e) {
-            console.error(e);
+            console.error(`Failed to load level ${levelId}`, e);
+            this.log("Error loading level");
         }
     }
 
     private setupPlayer(spawn: Position) {
-        const PLAYER_SIZE = CELL_SIZE * 0.7;
         this.player = createPlayer(
             spawn.x * CELL_SIZE,
             spawn.y * CELL_SIZE,
-            PLAYER_SIZE,
+            this.playerSize,
         );
 
         const skinsManager = new Skins();
@@ -131,8 +137,8 @@ export default class TrilogiqueScene implements Scene {
                     id: typeName,
                     x: 0,
                     y: 0,
-                    width: 2 * PLAYER_SIZE,
-                    height: 2 * PLAYER_SIZE,
+                    width: 2 * this.playerSize,
+                    height: 2 * this.playerSize,
                     priority: frames.length > 1 ? 4 : 3,
                     text: new Sprite(frames),
                 }),
@@ -151,7 +157,6 @@ export default class TrilogiqueScene implements Scene {
         )
             return;
 
-        // Pick a random spawn area
         const area =
             this.gameWorldData.itemsPerSpawnArea[
                 Math.floor(
@@ -161,7 +166,6 @@ export default class TrilogiqueScene implements Scene {
 
         if (area.itemIds.length === 0 || area.positions.length === 0) return;
 
-        // Pick a random item from that area and a random position within it
         const itemId =
             area.itemIds[Math.floor(Math.random() * area.itemIds.length)];
         const pos =
@@ -177,39 +181,20 @@ export default class TrilogiqueScene implements Scene {
             );
         }
     }
+    
     private updateWeightPenalty() {
         if (!this.heldItemData) {
             this.player.speed = this.baseSpeed;
             return;
         }
-        /**
-         * Logic: Reduce speed based on weight.
-         * Weight 1 = 90% speed, Weight 5 = 50% speed.
-         */
         const penaltyMultiplier = 1 - this.heldItemData.weight * 0.1;
         this.player.speed = this.baseSpeed * Math.max(0.2, penaltyMultiplier);
-
-        this.log(
-            `Speed: ${Math.round(this.player.speed)} (Weight: ${this.heldItemData.weight})`,
-        );
     }
 
     private setupBackground() {
         if (!this.gameWorldData) return;
 
-        const totalWeight = BG_OPTIONS.reduce(
-            (sum, opt) => sum + opt.weight,
-            0,
-        );
-
-        const getRandomBgTexture = () => {
-            let random = Math.random() * totalWeight;
-            for (const option of BG_OPTIONS) {
-                if (random < option.weight) return option.src;
-                random -= option.weight;
-            }
-            return BG_OPTIONS[0].src;
-        };
+        const texturePath = (this.gameWorldData as any).groundTexture || "/game/trilogique/images/env/grass1.png";
 
         for (let x = 0; x < this.gameWorldData.worldSizeX; x++) {
             for (let y = 0; y < this.gameWorldData.worldSizeY; y++) {
@@ -219,70 +204,100 @@ export default class TrilogiqueScene implements Scene {
                     y: y * CELL_SIZE,
                     width: CELL_SIZE,
                     height: CELL_SIZE,
-                    text: new ImageTexture(getRandomBgTexture()),
+                    text: new ImageTexture(texturePath),
                     priority: 1,
                 });
                 this.world.addEntity(floor);
             }
         }
     }
+
     private setupBoundaries() {
-        if (!this.gameWorldData) return;
+            if (!this.gameWorldData) return;
 
-        const w = this.gameWorldData.worldSizeX;
-        const h = this.gameWorldData.worldSizeY;
-        const borderThickness = CELL_SIZE;
+            const w = this.gameWorldData.worldSizeX;
+            const h = this.gameWorldData.worldSizeY;
 
-        // Helper to create a black block
-        const createBorderBlock = (
-            x: number,
-            y: number,
-            width: number,
-            height: number,
-            id: string,
-        ) => {
-            const block = createSolid({
-                id: `border-${id}`,
-                x: x * CELL_SIZE,
-                y: y * CELL_SIZE,
-                width: width * CELL_SIZE,
-                height: height * CELL_SIZE,
-                text: new ColorTexture("black"),
-                priority: 100,
-            });
-            this.world.addEntity(block);
-        };
+            // Définir les différentes images pour chaque côté
+            const borderImgTop = "/game/trilogique/images/env/mountain_top.png";
+            const borderImgBottom = "/game/trilogique/images/env/moutain.png";
+            const borderImgLeft = "/game/trilogique/images/env/mountain_left.png";
+            const borderImgRight = "/game/trilogique/images/env/mountain_right.png";
 
-        createBorderBlock(0, 0, w + 2, 1, "top");
-        createBorderBlock(0, h - 1, w + 2, 1, "bottom");
-        createBorderBlock(0, 0, 1, h, "left");
-        createBorderBlock(w, 0, 1, h, "right");
-    }
+            // Définir les différentes images pour les 4 COINS
+            const borderImgTopLeft = "/game/trilogique/images/env/corner_top.png";
+            const borderImgTopRight = "/game/trilogique/images/env/corner_top.png";
+            const borderImgBottomLeft = "/game/trilogique/images/env/corner.png";
+            const borderImgBottomRight = "/game/trilogique/images/env/corner.png";
+            
+            const createBorderTile = (x: number, y: number, imgPath: string, id: string) => {
+                const block = createSolid({
+                    id: `border-${id}`,
+                    x: x * CELL_SIZE,
+                    y: y * CELL_SIZE,
+                    width: CELL_SIZE,
+                    height: CELL_SIZE,
+                    text: new ImageTexture(imgPath),
+                    priority: 100,
+                });
+                this.world.addEntity(block);
+            };
+
+            // 1. Dessiner les 4 coins individuellement
+            createBorderTile(0, 0, borderImgTopLeft, "top-left");
+            createBorderTile(w - 1, 0, borderImgTopRight, "top-right");
+            createBorderTile(0, h - 1, borderImgBottomLeft, "bottom-left");
+            createBorderTile(w - 1, h - 1, borderImgBottomRight, "bottom-right");
+
+            // 2. Dessiner le HAUT et le BAS (sans recouvrir les coins : on commence à 1 et on s'arrête à w - 2)
+            for (let x = 1; x < w - 1; x++) {
+                createBorderTile(x, 0, borderImgTop, `top-${x}`);
+                createBorderTile(x, h - 1, borderImgBottom, `bottom-${x}`);
+            }
+
+            // 3. Dessiner la GAUCHE et la DROITE (sans recouvrir les coins : on commence à 1 et on s'arrête à h - 2)
+            for (let y = 1; y < h - 1; y++) {
+                createBorderTile(0, y, borderImgLeft, `left-${y}`);
+                createBorderTile(w - 1, y, borderImgRight, `right-${y}`);
+            }
+        }
 
     private setupStaticMap() {
-        if (!this.gameWorldData) return;
+            if (!this.gameWorldData) return;
 
-        Object.values(this.gameWorldData.priorities).forEach(
-            (entityData: any) => {
-                const texturePath =
-                    entityData.text || entityData.image || "wall.png";
+            Object.values(this.gameWorldData.priorities).forEach(
+                (entityData: any) => {
+                    const texturePath =
+                        entityData.text || entityData.image || "wall.png";
 
-                const ent = createSolid({
-                    id: entityData.id || "static",
-                    x: entityData.x * CELL_SIZE,
-                    y: entityData.y * CELL_SIZE,
-                    width: (entityData.width || 1) * CELL_SIZE,
-                    height: (entityData.height || 1) * CELL_SIZE,
-                    text: new ImageTexture(texturePath),
-                    priority: entityData.priority || 1,
-                });
-                this.world.addEntity(ent);
-            },
-        );
-    }
+                    if (entityData.walkable) {
+                        const ent = createEntity({
+                            id: entityData.id || "decor",
+                            x: entityData.x * CELL_SIZE,
+                            y: entityData.y * CELL_SIZE,
+                            width: (entityData.width || 1) * CELL_SIZE,
+                            height: (entityData.height || 1) * CELL_SIZE,
+                            text: new ImageTexture(texturePath),
+                            priority: entityData.priority || 1, 
+                        });
+                        this.world.addEntity(ent);
+                    } else {
+                        const ent = createSolid({
+                            id: entityData.id || "static",
+                            x: entityData.x * CELL_SIZE,
+                            y: entityData.y * CELL_SIZE,
+                            width: (entityData.width || 1) * CELL_SIZE,
+                            height: (entityData.height || 1) * CELL_SIZE,
+                            text: new ImageTexture(texturePath),
+                            priority: entityData.priority || 10,
+                        });
+                        this.world.addEntity(ent);
+                    }
+                },
+            );
+        }
 
     private setupMachines() {
-        console.log("start setup Machines");
         if (!this.gameWorldData) return;
 
         // Transformers
@@ -323,9 +338,6 @@ export default class TrilogiqueScene implements Scene {
         });
     }
 
-    /**
-     * Creates an item sitting on the ground that can be picked up.
-     */
     private createWorldItem(item: Item, x: number, y: number) {
         const entity = createEntity({
             id: `item-${item.id}-${Math.random().toString(36).substr(2, 5)}`,
@@ -339,7 +351,7 @@ export default class TrilogiqueScene implements Scene {
         const interactable = withInteractable(entity, {
             onInteract: () => {
                 if (this.heldItemData) {
-                    this.log("Hands full!");
+                    this.showPlayerMessage("Vous ne pouvez pas porter plusieurs objets !");
                     return;
                 }
                 this.pickupItem(item, interactable);
@@ -350,6 +362,13 @@ export default class TrilogiqueScene implements Scene {
     }
 
     // --- Interaction Logic ---
+
+    // Triggers a speech bubble above the player
+    private showPlayerMessage(msg: string) {
+        this.playerMessage = msg;
+        this.playerMessageTimer = this.MESSAGE_DURATION;
+        this.log(msg); // Also log it just in case
+    }
 
     private pickupItem(itemData: Item, worldEntity: Entity) {
         this.world.removeEntity(worldEntity.id);
@@ -381,7 +400,7 @@ export default class TrilogiqueScene implements Scene {
 
     private handleTransformerInteraction(transformer: Transformer) {
         if (!this.heldItemData) {
-            this.log("Transformer: You need an item.");
+            this.showPlayerMessage("Vous devez ramener un objet pour le séparer");
             return;
         }
         const recipe = transformer.craft.find((r) =>
@@ -389,20 +408,13 @@ export default class TrilogiqueScene implements Scene {
         );
 
         if (recipe) {
-            this.log(
-                `Transforming ${this.heldItemData.id} -> ${recipe.resultItemId}`,
-            );
-
+            this.log(`Separated ${this.heldItemData.id} -> ${recipe.resultItemId}`);
             this.dropCurrentItem();
 
             const resultItemData = this.gameWorldData!.itemsById.get(
                 recipe.resultItemId,
             );
             if (resultItemData) {
-                // Immediately pick up the result
-                // (Note: we pass a dummy entity here because pickupItem usually expects a world entity
-                // to remove, but since we are just generating it, we handle the visuals manually)
-
                 this.heldItemData = resultItemData;
                 this.heldEntity = createEntity({
                     id: `held-${resultItemData.id}`,
@@ -413,20 +425,35 @@ export default class TrilogiqueScene implements Scene {
                     priority: 5,
                     text: new ImageTexture(resultItemData.image),
                 });
-
                 this.player.add(this.heldEntity);
+                this.showPlayerMessage("Bravo ! Vous pouvez maintenant recycler correctement ");
             }
         } else {
-            this.log("Transformer: This item doesn't fit.");
+            this.showPlayerMessage("Vous ne pouvez pas utiliser cette machine");
         }
     }
 
     private handleReceiverInteraction(receiver: Receiver) {
         if (!this.heldItemData) {
-            this.log("Receiver: Feed me.");
+            this.showPlayerMessage("Vous devez ramener un objet");
             return;
         }
 
+        // 1. Check if the item is explicitly rejected
+        const rejectList = (receiver as any).rejects;
+        if (rejectList) {
+             const rejection = rejectList.find((r: any) => 
+                 this.matchesResource(this.heldItemData!, r.source)
+             );
+
+             if (rejection) {
+                 // Trigger the educational speech bubble!
+                 this.showPlayerMessage(rejection.message);
+                 return; 
+             }
+        }
+
+        // 2. If not rejected, check if it's accepted
         const rule = receiver.process.find((r) =>
             this.matchesResource(this.heldItemData!, r.source),
         );
@@ -444,14 +471,17 @@ export default class TrilogiqueScene implements Scene {
                 this.log(`+${effect.time}s Time`);
             }
 
+            this.showPlayerMessage("Bon travail !");
             this.dropCurrentItem();
+            
             if (this.currentPoints >= this.targetPoints) {
                 this.winGame();
             }
         } else {
-            this.log("Receiver: Invalid input.");
+            this.showPlayerMessage("Attention, vous ne pouvez pas jeter cet objet dans cette poubelle");
         }
     }
+    
     private winGame() {
         if (this.isGameOver) return;
         this.isGameOver = true;
@@ -525,6 +555,14 @@ export default class TrilogiqueScene implements Scene {
         );
         this.camera.follow(this.player, this.world);
 
+        // Update speech bubble timer
+        if (this.playerMessageTimer > 0) {
+            this.playerMessageTimer -= dt;
+            if (this.playerMessageTimer <= 0) {
+                this.playerMessage = null;
+            }
+        }
+
         this.currentTime -= dt;
         if (this.currentTime <= 0) {
             this.currentTime = 0;
@@ -537,6 +575,7 @@ export default class TrilogiqueScene implements Scene {
             this.spawnTimer = 0;
         }
     }
+    
     render(ctx: CanvasRenderingContext2D) {
         ctx.fillStyle = "#1a1a1a";
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -549,9 +588,93 @@ export default class TrilogiqueScene implements Scene {
 
         this.camera.apply(ctx);
         this.world.render(ctx);
+        
+        // Render the bubble in WORLD SPACE (so it attaches to the player)
+        this.renderPlayerMessage(ctx);
+        
         this.camera.release(ctx);
 
         this.renderUI(ctx);
+    }
+
+    // --- SPEECH BUBBLE RENDERER ---
+    private renderPlayerMessage(ctx: CanvasRenderingContext2D) {
+        if (!this.playerMessage || this.playerMessageTimer <= 0) return;
+
+        const maxWidth = 250;
+        const lineHeight = 18;
+        const padding = 12;
+
+        ctx.font = "bold 14px Arial";
+        
+        // 1. Calculate text lines (Word Wrapping)
+        const words = this.playerMessage.split(' ');
+        const lines: string[] = [];
+        let currentLine = '';
+
+        for (const word of words) {
+            const testLine = currentLine + word + ' ';
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > maxWidth && currentLine !== '') {
+                lines.push(currentLine);
+                currentLine = word + ' ';
+            } else {
+                currentLine = testLine;
+            }
+        }
+        lines.push(currentLine);
+
+        // 2. Calculate Box Dimensions
+        let maxLineWidth = 0;
+        for (const line of lines) {
+            const w = ctx.measureText(line.trim()).width;
+            if (w > maxLineWidth) maxLineWidth = w;
+        }
+        
+        const bubbleWidth = maxLineWidth + padding * 2;
+        const bubbleHeight = lines.length * lineHeight + padding * 2;
+
+        // Position above player (Centered)
+        const px = this.player.x + this.playerSize / 2;
+        const py = this.player.y - 15; // Gap above player head
+
+        const bx = px - bubbleWidth / 2;
+        const by = py - bubbleHeight;
+
+        // 3. Draw Bubble Background (White Box with border)
+        ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+        ctx.strokeStyle = "#333333";
+        ctx.lineWidth = 2;
+        
+        ctx.beginPath();
+        // Fallback for older browsers without roundRect: just use regular rect paths
+        ctx.rect(bx, by, bubbleWidth, bubbleHeight);
+        ctx.fill();
+        ctx.stroke();
+
+        // 4. Draw Pointer (Little triangle pointing to player)
+        ctx.beginPath();
+        ctx.moveTo(px - 10, by + bubbleHeight);
+        ctx.lineTo(px + 10, by + bubbleHeight);
+        ctx.lineTo(px, by + bubbleHeight + 15);
+        ctx.fill();
+        ctx.stroke();
+
+        // Remove the stroke line that crosses the base of the triangle
+        ctx.beginPath();
+        ctx.moveTo(px - 9, by + bubbleHeight);
+        ctx.lineTo(px + 9, by + bubbleHeight);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.95)";
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // 5. Draw Text
+        ctx.fillStyle = "#000000";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        lines.forEach((line, i) => {
+            ctx.fillText(line.trim(), px, by + padding + i * lineHeight);
+        });
     }
 
     private renderUI(ctx: CanvasRenderingContext2D) {
@@ -568,7 +691,7 @@ export default class TrilogiqueScene implements Scene {
         ctx.textBaseline = "middle";
 
         // Points (Current / Target)
-        ctx.fillStyle = "#FFD700"; // Gold
+        ctx.fillStyle = "#FFD700"; 
         ctx.textAlign = "left";
         ctx.fillText(
             `GOAL: ${this.currentPoints} / ${this.targetPoints}`,
@@ -577,7 +700,6 @@ export default class TrilogiqueScene implements Scene {
         );
 
         // Time (Counting Down)
-        // Color changes to Red if time is low (< 30s)
         ctx.fillStyle = this.currentTime < 30 ? "#FF4444" : "#00FFFF";
         ctx.textAlign = "right";
         ctx.fillText(
@@ -586,13 +708,7 @@ export default class TrilogiqueScene implements Scene {
             barHeight / 2,
         );
 
-        // Debug Log
-        ctx.font = "12px Arial";
-        ctx.fillStyle = "lime";
-        ctx.textAlign = "left";
-        this.debugLog.forEach((msg, i) =>
-            ctx.fillText(msg, 10, barHeight + 30 + i * 15),
-        );
+        // Removed the messy debugLog from the screen since we have speech bubbles now!
 
         // Victory/Loss Overlay
         if (this.isGameOver) {

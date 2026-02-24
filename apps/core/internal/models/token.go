@@ -15,6 +15,6 @@ type SecretKeysResponse struct {
 }
 
 type CustomClaims struct {
-	UserID uint `json:"user_id"`
+	UserId uint `json:"user_id"`
 	jwt.RegisteredClaims
 }

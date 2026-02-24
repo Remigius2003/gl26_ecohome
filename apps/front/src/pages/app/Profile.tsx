@@ -6,7 +6,7 @@ import {
 	Switch,
 	Match,
 } from 'solid-js';
-import { FaSolidPen, FaSolidCamera } from 'solid-icons/fa';
+import { FaSolidPen, FaSolidCamera, FaSolidCheck } from 'solid-icons/fa';
 import {
 	profileWrapper,
 	updateProfile,
@@ -50,7 +50,7 @@ const Profile: Component = () => {
 			}
 		} catch (e: any) {
 			console.error('Failed to load profile', e);
-			setError('Impossible de charger le profil. Session expirée ?');
+			setError('Impossible de charger le profil.');
 		} finally {
 			setIsLoading(false);
 		}
@@ -70,7 +70,6 @@ const Profile: Component = () => {
 				alert('Format non supporté. Utilisez PNG ou JPEG.');
 				return;
 			}
-
 			setAvatarPreview(URL.createObjectURL(file));
 			setFileToUpload(file);
 		}
@@ -80,14 +79,8 @@ const Profile: Component = () => {
 		e.preventDefault();
 		try {
 			if (fileToUpload()) {
-				try {
-					const res = await uploadAvatar(fileToUpload()!);
-					setAvatarPreview(res.url);
-				} catch (uploadErr) {
-					console.error('Avatar upload failed', uploadErr);
-					alert("Erreur lors de l'upload de l'image. Vérifiez le format.");
-					return;
-				}
+				const res = await uploadAvatar(fileToUpload()!);
+				setAvatarPreview(res.url);
 			}
 
 			const updatedParts = await updateProfile({
@@ -111,7 +104,7 @@ const Profile: Component = () => {
 			setIsEditing(false);
 			setFileToUpload(null);
 		} catch (err: any) {
-			alert(err.message || 'Erreur sauvegarde');
+			alert(err.message || 'Erreur lors de la sauvegarde');
 		}
 	};
 
@@ -144,13 +137,18 @@ const Profile: Component = () => {
 								style={{
 									'background-image': avatarPreview()
 										? `url(${avatarPreview()})`
-										: 'none',
+										: undefined,
+									'background-color': avatarPreview()
+										? 'transparent'
+										: 'var(--primary-green)',
 									'background-size': 'cover',
+									'background-position': 'center',
+									'background-repeat': 'no-repeat',
 								}}
 							>
-								{!avatarPreview() && profile()!.username
-									? profile()!.username.charAt(0).toUpperCase()
-									: '?'}
+								<Show when={!avatarPreview()}>
+									{profile()?.username?.charAt(0).toUpperCase() ?? '?'}
+								</Show>
 							</div>
 
 							<Show when={isEditing()}>
@@ -184,10 +182,13 @@ const Profile: Component = () => {
 							<div class="profile-details">
 								<h2>{profile()!.username}</h2>
 								<p class="bio">{profile()!.bio || 'Aucune bio renseignée.'}</p>
+
 								<div class="stats-section" style={{ 'margin-top': '20px' }}>
 									<h4>Mon Impact Carbone</h4>
 									<p style={{ 'font-size': '0.8rem', color: '#666' }}>
-										{profile()!.is_graph_public ? 'Visible par tous' : 'Privé'}
+										{profile()!.is_graph_public
+											? 'Visible par mes amis'
+											: 'Privé'}
 									</p>
 									<div class="graph-card">
 										<CarbonGraph emissions={emissions as any} />
@@ -204,32 +205,31 @@ const Profile: Component = () => {
 									value={editBio()}
 									onInput={(e) => setEditBio(e.currentTarget.value)}
 									placeholder="Parlez-nous de vous..."
+									rows={4}
 								/>
 							</div>
-							<div
-								class="form-group checkbox-group"
-								style={{ margin: '15px 0' }}
-							>
-								<label
-									style={{
-										display: 'flex',
-										gap: '10px',
-										'align-items': 'center',
-									}}
-								>
-									<input
-										type="checkbox"
-										checked={editPublic()}
-										onChange={(e) => setEditPublic(e.currentTarget.checked)}
-									/>
-									Rendre mon graphique carbone public
+
+							<div class="toggle-group">
+								<label class="toggle-label">
+									<span>Rendre mon graphique public</span>
+									<div class="toggle-switch">
+										<input
+											type="checkbox"
+											checked={editPublic()}
+											onChange={(e) => setEditPublic(e.currentTarget.checked)}
+										/>
+										<span class="slider round"></span>
+									</div>
 								</label>
+								<p class="input-help">
+									Si désactivé, vos amis ne verront pas votre impact CO2.
+								</p>
 							</div>
+
 							<div class="form-actions">
 								<button
 									type="button"
 									class="btn-secondary"
-									style={{ flex: 1 }}
 									onClick={() => {
 										setIsEditing(false);
 										setFileToUpload(null);
@@ -238,8 +238,8 @@ const Profile: Component = () => {
 								>
 									Annuler
 								</button>
-								<button type="submit" class="auth-button" style={{ flex: 1 }}>
-									Enregistrer
+								<button type="submit" class="auth-button">
+									<FaSolidCheck /> Enregistrer
 								</button>
 							</div>
 						</form>

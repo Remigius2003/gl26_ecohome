@@ -2,10 +2,17 @@ import { setGlobalNavigate, setGlobalSceneSwitch } from '../../App';
 import { FaSolidGear } from 'solid-icons/fa';
 import SceneCanvas from '@components/SceneCanvas';
 import { useNavigate } from '@solidjs/router';
-import { createSignal, Show } from 'solid-js';
+import { createSignal, Show, onMount, onCleanup } from 'solid-js';
 import { switchScene } from '@scene';
 import type { SceneType } from '@scene';
 import Settings from './Settings';
+import Chat from './Chat';
+import {
+	friendsListWrapper,
+	friendRequestsWrapper,
+	sentFriendRequestsWrapper,
+	RTClient,
+} from '@api';
 import './app.css';
 
 export default function Home() {
@@ -15,6 +22,25 @@ export default function Home() {
 
 	const scene: SceneType = 'home';
 	const [showSettings, setShowSettings] = createSignal(false);
+
+	onMount(() => {
+		RTClient.connect();
+
+		const invalidateFriendCaches = () => {
+			friendsListWrapper.invalidate(undefined);
+			friendRequestsWrapper.invalidate(undefined);
+			sentFriendRequestsWrapper.invalidate(undefined);
+		};
+
+		const unsubs = [
+			RTClient.subscribe('friend_request', invalidateFriendCaches),
+			RTClient.subscribe('friend_request_cancelled', invalidateFriendCaches),
+			RTClient.subscribe('friend_request_accepted', invalidateFriendCaches),
+			RTClient.subscribe('friend_request_rejected', invalidateFriendCaches),
+		];
+
+		onCleanup(() => unsubs.forEach((fn) => fn()));
+	});
 
 	return (
 		<>
@@ -30,6 +56,8 @@ export default function Home() {
 					</div>
 				</div>
 			</div>
+
+			<Chat />
 
 			<Show when={showSettings()}>
 				<Settings onClose={() => setShowSettings(false)} />

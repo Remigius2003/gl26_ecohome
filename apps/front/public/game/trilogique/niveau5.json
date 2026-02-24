@@ -1,0 +1,160 @@
+{
+    "worldSizeX": 25,
+    "worldSizeY": 20,
+    "initialTime": 3000000,
+    "finalPoints": 300,
+    "playerSpawn": { "x": 2, "y": 3 },
+    "priorities": {
+        "10": {
+            "id": "tree_01",
+            "x": 7,
+            "y": 4,
+            "width": 2,
+            "height": 2,
+            "text": "/game/trilogique/images/env/tree.jpg",
+            "priority": 10
+        },
+        "11": {
+            "id": "rock_01",
+            "x": 7,
+            "y": 7,
+            "width": 1,
+            "height": 1,
+            "text": "/game/trilogique/images/env/rock.png",
+            "priority": 11
+        }
+    },
+    "items": [
+        {
+            "id": "iron_ore",
+            "categoryIds": ["raw_materials"],
+            "weight": 5,
+            "image": "/game/trilogique/images/items/ores.jpg",
+            "name": "Iron Ore"
+        },
+        {
+            "id": "iron_ingot",
+            "categoryIds": ["processed_metal"],
+            "weight": 3,
+            "image": "/game/trilogique/images/items/goldIngot.jpg",
+            "name": "Iron Ingot"
+        },
+        {
+            "id": "plastic_bottle",
+            "categoryIds": ["plastic"],
+            "weight": 4,
+            "image": "/game/trilogique/images/items/bouteilleeau.jpg",
+            "name": "bouteilleeau"
+        },
+        {
+            "id": "apple",
+            "categoryIds": ["food"],
+            "weight": 1,
+            "image": "/game/trilogique/images/items/apple.png",
+            "name": "Apple"
+        }
+    ],
+    "categories": [
+        {
+            "id": "raw_materials",
+            "image": "/chara/categories/raw.png",
+            "name": "Raw Materials"
+        },
+        {
+            "id": "processed_metal",
+            "image": "/chara/categories/metal.png",
+            "name": "Metals"
+        },
+        {
+            "id": "food",
+            "image": "/chara/categories/food.png",
+            "name": "Edibles"
+        },
+        {
+            "id": "plastic",
+            "image": "hum",
+            "name": "plastic"
+        }
+    ],
+    "receivers": [
+        {
+            "receiver": {
+                "id": "shipment_bin",
+                "image": "/game/trilogique/images/other/bank.jpg",
+                "process": [
+                    {
+                        "source": { "id": "iron_ingot", "type": "item" },
+                        "effect": { "points": 50, "time": 10 }
+                    }
+                ]
+            },
+            "position": { "x": 15, "y": 6 }
+        },
+        {
+            "receiver": {
+                "id": "yellowbeen",
+                "image": "/game/trilogique/images/other/yellow.jpg",
+                "process": [
+                    {
+                        "source": { "id": "plastic_bottle", "type": "item" },
+                        "effect": { "points": 20 }
+                    }
+                ]
+            },
+            "position": { "x": 20, "y": 12 }
+        },
+        {
+            "receiver": {
+                "id": "food_market",
+                "image": "/game/trilogique/images/other/compost.png",
+                "process": [
+                    {
+                        "source": { "id": "food", "type": "category" },
+                        "effect": { "points": 20, "time": 30 }
+                    }
+                ]
+            },
+            "position": { "x": 10, "y": 10 }
+        }
+    ],
+    "transformers": [
+        {
+            "transformer": {
+                "id": "smelter_alpha",
+                "image": "/game/trilogique/images/other/furnace.jpg",
+                "craft": [
+                    {
+                        "source": { "id": "iron_ore", "type": "item" },
+                        "resultItemId": "iron_ingot",
+                        "quantity": 1
+                    }
+                ]
+            },
+            "position": { "x": 14, "y": 5 }
+        }
+    ],
+    "itemsPerSpawnArea": [
+        {
+            "itemIds": ["iron_ore", "wood_log"],
+            "positions": [
+                { "x": 5, "y": 5 },
+                { "x": 6, "y": 5 },
+                { "x": 8, "y": 8 }
+            ]
+        },
+        {
+            "itemIds": ["apple"],
+            "positions": [
+                { "x": 6, "y": 4 },
+                { "x": 12, "y": 12 }
+            ]
+        },
+        {
+            "itemIds": ["plastic_bottle"],
+            "positions": [
+                { "x": 1, "y": 1 },
+                { "x": 15, "y": 15 }
+            ]
+        }
+    ]
+}

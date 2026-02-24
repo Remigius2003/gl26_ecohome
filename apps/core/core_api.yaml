@@ -309,6 +309,67 @@ paths:
                 items:
                   $ref: '#/components/schemas/PublicProfile'
 
+  /users/friends/search:
+    get:
+      summary: Search Users
+      description: Search for users by username (requires at least 1 character).
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Search results with status
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/PublicProfile'
+                    - type: object
+                      properties:
+                        status:
+                          type: string
+                          enum: [NONE, FRIEND, PENDING_SENT, PENDING_RECEIVED]
+
+  /users/friends/sent:
+    get:
+      summary: List Sent Requests
+      description: Get a list of pending friend requests sent BY the user.
+      responses:
+        '200':
+          description: List of sent requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicProfile'
+
+  /users/friends/cancel:
+    post:
+      summary: Cancel Friend Request
+      description: Cancel a pending request sent by the user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [target_id]
+              properties:
+                target_id:
+                  type: integer
+                  format: uint
+      responses:
+        '200':
+          description: Request cancelled
+        '404':
+          description: Request not found
+
   /users/friends/requests:
     get:
       summary: List Friend Requests

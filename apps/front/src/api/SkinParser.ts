@@ -1,10 +1,9 @@
-// SkinParser.ts
 export class Frame {
     constructor(
         public readonly image: string,
         public readonly offsetX: number = 0,
         public readonly offsetY: number = 0,
-        public readonly ratio: number = 1,
+        public readonly ratio: number = 15,
     ) {}
 }
 
@@ -22,94 +21,155 @@ export class Types {
     ) {}
 }
 
-const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp"];
-
-function isImage(file: string) {
-    const ext = file.slice(file.lastIndexOf(".")).toLowerCase();
-    return IMAGE_EXTENSIONS.includes(ext);
-}
-
 // Analyse a single image
 function analyseImage(imagePath: string): Skin {
     const frame = new Frame(imagePath);
     return new Skin([frame], frame);
 }
 
-// Analyse a folder with multiple images
-function analyseFolder(files: string[]): Skin {
-    const frames = files
-        .filter((f) => isImage(f) && !f.endsWith("icon.png"))
-        .map((f) => new Frame(f));
+type FileAsset = string | SkinConfig;
 
-    if (frames.length === 0) {
-        throw new Error(`No valid images in folder`);
-    }
-
-    const iconPath =
-        files.find((f) => f.endsWith("icon.png")) ?? frames[0].image;
-    const icon = new Frame(iconPath);
-
-    return new Skin(frames, icon);
+interface FrameConfig {
+    image?: string;
+    offsetX?: number;
+    offsetY?: number;
+    ratio?: number;
 }
 
-// Parse a category folder
-function parseCategory(
+interface SkinConfig {
+    Frame: number;
+    AllFrame?: FrameConfig;
+    [key: string]: any;
+}
+
+function isImage(file: any): file is string {
+    if (typeof file !== "string") return false;
+    const ext = file.slice(file.lastIndexOf(".")).toLowerCase();
+    return [".png", ".jpg", ".jpeg", ".webp"].some((e) => ext.includes(e));
+}
+
+export function analyseFolder(files: FileAsset[]): Skin {
+    // 1. Find the Config Object (Vite imports JSON as objects automatically)
+    const config = files.find((f) => typeof f === "object" && f !== null) as
+        | SkinConfig
+        | undefined;
+
+    const imageFiles = files.filter(isImage);
+
+    let frames: Frame[] = [];
+
+    if (config) {
+        console.log("JSON Config found:", config);
+
+        try {
+            const totalFrames = config.Frame;
+            const globalDefaults = config.AllFrame || {};
+
+            for (let i = 1; i <= totalFrames; i++) {
+                const key = i.toString();
+                const specificParams = config[key] || {};
+                const imageName = specificParams.image ?? globalDefaults.image;
+
+                const fullImagePath = imageFiles.find((f) =>
+                    f.includes(imageName),
+                );
+
+                const offsetX =
+                    specificParams.offsetX ?? globalDefaults.offsetX ?? 0;
+                const offsetY =
+                    specificParams.offsetY ?? globalDefaults.offsetY ?? 0;
+                const ratio =
+                    specificParams.ratio ?? globalDefaults.ratio ?? 15;
+
+                if (!fullImagePath) {
+                    throw new Error(
+                        `Image file '${imageName}' defined in JSON not found in folder assets.`,
+                    );
+                }
+
+                frames.push(new Frame(fullImagePath, offsetX, offsetY, ratio));
+            }
+        } catch (e) {
+            console.error("Error processing Skin Config:", e);
+            throw e;
+        }
+    } else {
+        frames = imageFiles
+            .filter((f) => !f.includes("icon.png"))
+            .map((f) => new Frame(f));
+
+        if (frames.length === 0) {
+            throw new Error(`No valid images in folder`);
+        }
+    }
+
+    const iconFile = imageFiles.find((f) => f.includes("icon.png"));
+    const iconPath = iconFile ?? (frames.length > 0 ? frames[0].image : null);
+
+    if (!iconPath) {
+        throw new Error("Could not determine an icon for this skin.");
+    }
+
+    return new Skin(frames, new Frame(iconPath));
+}
+
+async function parseCategory(
     categoryName: string,
-    images: Record<string, string>,
-): Skin[] {
-    // 1. Updated prefix to match the src path
+    images: Record<string, FileAsset>,
+): Promise<Skin[]> {
     const prefix = `/src/assets/chara/${categoryName}/`;
-    const categoryFiles = Object.keys(images).filter((p) =>
+
+    const categoryKeys = Object.keys(images).filter((p) =>
         p.startsWith(prefix),
     );
 
-    const folders: Record<string, string[]> = {};
+    const folders: Record<string, FileAsset[]> = {};
     const standaloneImages: string[] = [];
 
-    for (const filePath of categoryFiles) {
-        // Use the resolved URL (the value), not the file path (the key)
-        const assetUrl = images[filePath];
+    for (const filePath of categoryKeys) {
+        const asset = images[filePath]; // Can be URL string OR Config Object
         const relativePath = filePath.replace(prefix, "");
         const parts = relativePath.split("/");
 
         if (parts.length === 1) {
-            if (isImage(parts[0]) && parts[0] !== "icon.png") {
-                standaloneImages.push(assetUrl); // Store the URL
+            if (typeof asset === "string" && parts[0] !== "icon.png") {
+                standaloneImages.push(asset);
             }
         } else if (parts.length >= 2) {
             const folderName = parts[0];
             if (!folders[folderName]) folders[folderName] = [];
-            folders[folderName].push(assetUrl); // Store the URL
+            folders[folderName].push(asset);
         }
     }
 
     const skins: Skin[] = [];
 
-    // Create skins from subfolders
     for (const folder in folders) {
-        skins.push(analyseFolder(folders[folder]));
+        try {
+            skins.push(analyseFolder(folders[folder]));
+        } catch (e) {
+            console.warn(`Skipping folder ${folder}:`, e);
+        }
     }
 
-    // Create skins from standalone images
     for (const img of standaloneImages) {
         skins.push(analyseImage(img));
     }
 
     return skins;
 }
-export function parseTypes(): Types[] {
+
+export async function parseTypes(): Promise<Types[]> {
     const images = import.meta.glob(
-        "/src/assets/chara/**/*.{png,jpg,jpeg,webp}",
+        "/src/assets/chara/**/*.{png,jpg,jpeg,webp,json}",
         {
             eager: true,
             import: "default",
         },
-    ) as Record<string, string>;
+    ) as Record<string, FileAsset>;
 
     const categoriesSet = new Set<string>();
     for (const filePath in images) {
-        // Updated slice to handle /src/assets/chara/category/file.png
-        // Split results: ["", "src", "assets", "chara", "category", "file.png"]
         const parts = filePath.split("/");
         const charaIndex = parts.indexOf("chara");
         if (charaIndex !== -1 && parts[charaIndex + 1]) {
@@ -119,7 +179,7 @@ export function parseTypes(): Types[] {
 
     const types: Types[] = [];
     for (const category of categoriesSet) {
-        const skins = parseCategory(category, images);
+        const skins = await parseCategory(category, images);
         if (skins.length > 0) types.push(new Types(category, skins));
     }
 

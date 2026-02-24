@@ -123,8 +123,8 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
     },
 
     B: {
-        width: 6,
-        height: 6,
+        width: 4,
+        height: 4,
         texture: "house/furniture/lit.png",
         solid: true,
     },
@@ -148,6 +148,10 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         height: 2,
         texture: "house/furniture/armoire.png",
         solid: true,
+        areaOfInteraction: 1,
+        onInteract: () => {
+            globalNavigate("/customisation");
+        },
     },
 
     G: {
@@ -184,7 +188,6 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         areaOfInteraction: 1,
         priority: 1,
         onInteract: () => {
-            alert("2eme etage");
             globalNavigate("/home2");
         },
     },
@@ -198,5 +201,62 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         onInteract: () => {
             globalNavigate("/PreQuizz?type=transport");
         },
+    },
+    
+    
+    // New objects //
+    //pour connecter avec les mini jeux après //
+
+
+    p: {
+        width: 2,
+        height: 2,
+        texture: "house/furniture/home_phone.png",
+        solid: false,
+    },
+    d: {
+        width: 2,
+        height: 2,
+        texture: "house/furniture/disjoncteur.png",
+        solid: false,
+    },
+    g: {
+        width: 2,
+        height: 2,
+        texture: "house/furniture/thermostat_eco.png",
+        solid: false,
+    },
+    x: {
+        width: 2,
+        height: 2,
+        texture: "house/furniture/thermostat.png",
+        solid: false,
+    }, 
+    l: {
+        width: 2,
+        height: 4,
+        texture: "house/furniture/lampe_for_light&shadow.png",
+        solid: false,
+    },
+
+    i: {
+        width: 2,
+        height: 4,
+        texture: "house/furniture/lampe2_for_light&shadow.png",
+        solid: false,
+    },
+
+    o: {
+        width: 4,
+        height: 3,
+        texture: "house/furniture/panneau_solaire_pour_minijeu.png",
+        solid: false,
+    },
+
+    b: {
+        width: 6,
+        height: 3,
+        texture: "house/furniture/ordi_pour_defi_social_freind.png",
+        solid: true,
     },
 };
