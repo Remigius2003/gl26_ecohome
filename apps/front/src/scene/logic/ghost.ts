@@ -8,21 +8,24 @@ export type DeviceLike = Entity & {
     toggle: (force?: boolean) => void;
 };
 export class GhostController implements Controller<Entity & Dynamic> {
-    private target: DeviceLike | null = null;
+    private _target: DeviceLike | null = null;
     private retargetT = 0;
     private interactT = 0;
-    private sulkT = 0; // New: prevents camping the same spot
+    private sulkT = 0; // Prevents camping the same spot
     private lastTargetId: string | null = null;
+    private wanderAngle = Math.random() * Math.PI * 2; // For smooth wandering
 
     constructor(
         public readonly entity: Entity & Dynamic,
         private readonly world: World,
         private readonly getDevices: () => DeviceLike[],
+        private readonly getOtherGhosts: () => GhostController[] = () => [],
         private readonly opts: {
             retargetEveryMs?: number;
             arriveDist?: number;
             interactMs?: number;
             speed?: number;
+            wanderSpeed?: number;
         } = {},
     ) {
         if (this.opts.speed) this.entity.speed = this.opts.speed;
@@ -39,16 +42,16 @@ export class GhostController implements Controller<Entity & Dynamic> {
         // 1. Logic for switching targets
         // We retarget if: no target, target is already ON, or we are "sulking"
         if (
-            this.target == null ||
-            this.target.isOn ||
+            this._target == null ||
+            this._target.isOn ||
             this.retargetT <= 0 ||
             this.sulkT > 0
         ) {
-            const prevTarget = this.target;
-            this.target = this.pickSmartTarget();
+            const prevTarget = this._target;
+            this._target = this.pickSmartTarget();
 
             // If our target was just turned OFF while we were on it, start sulking
-            if (prevTarget && !prevTarget.isOn && this.target !== prevTarget) {
+            if (prevTarget && !prevTarget.isOn && this._target !== prevTarget) {
                 this.sulkT = 1500; // Don't come back to this area for 1.5s
             }
 
@@ -56,18 +59,20 @@ export class GhostController implements Controller<Entity & Dynamic> {
             this.interactT = 0;
         }
 
-        if (!this.target || this.sulkT > 0) {
-            // Wander aimlessly or slow down if no target
-            this.entity.vx *= 0.9;
-            this.entity.vy *= 0.9;
+        if (!this._target || this.sulkT > 0) {
+            // Wander aimlessly with smooth steering
+            const wanderSpeed = this.opts.wanderSpeed ?? 0.8;
+            this.wanderAngle += (Math.random() - 0.5) * 0.3; // Smooth random steering
+            this.entity.vx = Math.cos(this.wanderAngle) * wanderSpeed;
+            this.entity.vy = Math.sin(this.wanderAngle) * wanderSpeed;
             PhysicsSystem.move(this.entity, dt, this.world);
             return;
         }
 
         const ex = this.entity.x + this.entity.width / 2;
         const ey = this.entity.y + this.entity.height / 2;
-        const tx = this.target.x + this.target.width / 2;
-        const ty = this.target.y + this.target.height / 2;
+        const tx = this._target.x + this._target.width / 2;
+        const ty = this._target.y + this._target.height / 2;
 
         let dx = tx - ex;
         let dy = ty - ey;
@@ -100,10 +105,14 @@ export class GhostController implements Controller<Entity & Dynamic> {
         // 3. Hacking logic
         this.interactT += dt;
         if (this.interactT >= interactMs) {
-            this.target.toggle(true);
+            this._target.toggle(true);
             this.interactT = 0;
             this.retargetT = 0;
         }
+    }
+
+    get target(): DeviceLike | null {
+        return this._target;
     }
 
     private pickSmartTarget(): DeviceLike | null {
@@ -113,12 +122,24 @@ export class GhostController implements Controller<Entity & Dynamic> {
         const ex = this.entity.x + this.entity.width / 2;
         const ey = this.entity.y + this.entity.height / 2;
 
+        // Get what other ghosts are targeting
+        const otherTargets = new Set<DeviceLike>();
+        for (const ghost of this.getOtherGhosts()) {
+            if (ghost !== this && ghost.target) {
+                otherTargets.add(ghost.target);
+            }
+        }
+
         const weightedDevs = devs.map((d) => {
             const dx = d.x + d.width / 2 - ex;
             const dy = d.y + d.height / 2 - ey;
             const dist = Math.hypot(dx, dy);
             const chaos = Math.random() * 200;
-            return { device: d, score: dist + chaos };
+
+            // Heavily penalize targets other ghosts are already pursuing
+            const targetConflict = otherTargets.has(d) ? 5000 : 0;
+
+            return { device: d, score: dist + chaos + targetConflict };
         });
 
         weightedDevs.sort((a, b) => a.score - b.score);

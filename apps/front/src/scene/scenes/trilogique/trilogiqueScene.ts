@@ -386,7 +386,7 @@ export default class TrilogiqueScene implements Scene {
         saveScore("trilogique", this.levelId, this.currentTime);
         setTimeout(() => {
             if (this.onSwitchScene) window.location.href = "/lobby/trilogique";
-        }, 11500);
+        }, 2500);
     }
 
     private loseGame() {

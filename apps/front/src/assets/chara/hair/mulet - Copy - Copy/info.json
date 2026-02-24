@@ -1,0 +1,9 @@
+{
+    "Frame": 4,
+    "AllFrame": {
+        "image": "punk.png"
+    },
+    "2": {
+        "offsetY": 3
+    }
+}

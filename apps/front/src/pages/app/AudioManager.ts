@@ -11,6 +11,8 @@ type StateStorage = {
     currentTime?: number;
     playing?: boolean;
     src?: string;
+    musicVolume?: number;
+    sfxVolume?: number;
 };
 
 export class AudioManager extends EventTarget {
@@ -18,6 +20,8 @@ export class AudioManager extends EventTarget {
     public audio: HTMLAudioElement;
     public currentTrack: Track | null = null;
     public playing = false;
+    public musicVolume = 0.7;
+    public sfxVolume = 0.7;
 
     private STORAGE_KEY = "app_audio_state";
 
@@ -26,6 +30,7 @@ export class AudioManager extends EventTarget {
         this.audio = new Audio();
         this.audio.preload = "auto";
         this.audio.loop = true; // Enable looping
+        this.audio.volume = this.musicVolume;
 
         this.audio.addEventListener("play", () => {
             this.playing = true;
@@ -67,6 +72,27 @@ export class AudioManager extends EventTarget {
         const mins = Math.floor(seconds / 60);
         const secs = Math.floor(seconds % 60);
         return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    }
+
+    public setMusicVolume(volume: number) {
+        this.musicVolume = Math.max(0, Math.min(1, volume));
+        this.audio.volume = this.musicVolume;
+        this.saveState();
+        this.dispatchEvent(new Event("volumechange"));
+    }
+
+    public setSfxVolume(volume: number) {
+        this.sfxVolume = Math.max(0, Math.min(1, volume));
+        this.saveState();
+        this.dispatchEvent(new Event("volumechange"));
+    }
+
+    public getMusicVolume(): number {
+        return this.musicVolume;
+    }
+
+    public getSfxVolume(): number {
+        return this.sfxVolume;
     }
 
     public async playTrack(track: Track, startTime?: number) {
@@ -124,6 +150,8 @@ export class AudioManager extends EventTarget {
             src: this.audio.src || undefined,
             currentTime: this.audio.currentTime || 0,
             playing: !!this.playing,
+            musicVolume: this.musicVolume,
+            sfxVolume: this.sfxVolume,
         };
         try {
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(s));
@@ -135,6 +163,14 @@ export class AudioManager extends EventTarget {
             const raw = localStorage.getItem(this.STORAGE_KEY);
             if (!raw) return;
             const parsed: StateStorage = JSON.parse(raw);
+
+            if (typeof parsed.musicVolume === "number") {
+                this.setMusicVolume(parsed.musicVolume);
+            }
+            if (typeof parsed.sfxVolume === "number") {
+                this.sfxVolume = parsed.sfxVolume;
+            }
+
             if (parsed?.src) {
                 this.audio.src = parsed.src;
                 this.audio.addEventListener(
