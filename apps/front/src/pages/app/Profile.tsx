@@ -11,9 +11,86 @@ import {
     profileWrapper,
     updateProfile,
     uploadAvatar,
-    Profile as ProfileModel,
+    quizzHistoryWrapper,
+    type Profile as ProfileModel,
+    type QuizzHistoryItem,
 } from "@api";
-import CarbonGraph from "./CarbonGraph";
+import CarbonGraphMulti, { type CategorySeries } from "./CarbonGraphMulti";
+
+// ── Visual config per category ───────────────────────────────────────────────
+const CATEGORY_CONFIG: Record<string, { label: string; color: string }> = {
+    alimentation:  { label: 'Alimentation', color: '#2e7d32' },
+    transport:     { label: 'Transport',     color: '#1565c0' },
+    logement:      { label: 'Logement',      color: '#e65100' },
+    consommation:  { label: 'Consommation',  color: '#6a1b9a' },
+};
+
+const ALL_CATEGORIES = Object.keys(CATEGORY_CONFIG);
+
+// ── Seed data for Feb 22 / 23 / 24 (×10 scale) ──────────────────────────────
+const SEED_DATA: QuizzHistoryItem[] = [
+    { date: '2026-02-22', emission: 130, category: 'alimentation' },
+    { date: '2026-02-22', emission: 90,  category: 'transport'    },
+    { date: '2026-02-22', emission: 60,  category: 'logement'     },
+    { date: '2026-02-22', emission: 30,  category: 'consommation' },
+    { date: '2026-02-23', emission: 110, category: 'alimentation' },
+    { date: '2026-02-23', emission: 220, category: 'transport'    },
+    { date: '2026-02-23', emission: 60,  category: 'logement'     },
+    { date: '2026-02-23', emission: 0,   category: 'consommation' },
+    { date: '2026-02-24', emission: 140, category: 'alimentation' },
+    { date: '2026-02-24', emission: 50,  category: 'transport'    },
+    { date: '2026-02-24', emission: 60,  category: 'logement'     },
+    { date: '2026-02-24', emission: 80,  category: 'consommation' },
+];
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+const todayKey = () => new Date().toISOString().slice(0, 10);
+
+/** True if the user has submitted all 4 quizzes for today */
+function allQuizzDoneToday(apiItems: QuizzHistoryItem[]): boolean {
+    const today = todayKey();
+    const doneToday = new Set(
+        apiItems
+            .filter((i) => new Date(i.date).toISOString().slice(0, 10) === today)
+            .map((i) => i.category),
+    );
+    return ALL_CATEGORIES.every((cat) => doneToday.has(cat));
+}
+
+/** True if the API returned at least one real entry (any date, any category) */
+function hasAnyRealData(apiItems: QuizzHistoryItem[]): boolean {
+    return apiItems.length > 0;
+}
+
+/** Build series: seed only shown when there is real API data (passed as flag) */
+function buildSeries(
+    apiItems: QuizzHistoryItem[],
+    includeSeed: boolean,
+): CategorySeries[] {
+    const base = includeSeed ? [...SEED_DATA, ...apiItems] : [...apiItems];
+
+    return ALL_CATEGORIES.map((cat) => ({
+        label: CATEGORY_CONFIG[cat].label,
+        color: CATEGORY_CONFIG[cat].color,
+        data: base
+            .filter((item) => item.category === cat)
+            .map((item) => ({ date: new Date(item.date), emission: item.emission }))
+            // Dedup by date: API (appended last) wins over seed
+            .reduce<{ date: Date; emission: number }[]>((acc, pt) => {
+                const key = pt.date.toISOString().slice(0, 10);
+                const idx = acc.findIndex(
+                    (p) => p.date.toISOString().slice(0, 10) === key,
+                );
+                if (idx >= 0) acc[idx] = pt;
+                else acc.push(pt);
+                return acc;
+            }, [])
+            .sort((a, b) => a.date.getTime() - b.date.getTime()),
+    }));
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 
 const Profile: Component = () => {
     const [isLoading, setIsLoading] = createSignal(true);
@@ -27,11 +104,10 @@ const Profile: Component = () => {
     const [avatarPreview, setAvatarPreview] = createSignal<string | null>(null);
     const [fileToUpload, setFileToUpload] = createSignal<File | null>(null);
 
-    const emissions = [
-        { date: new Date(2023, 5, 1), emission: [140, 160] },
-        { date: new Date(2023, 5, 8), emission: 120 },
-        { date: new Date(2023, 5, 29), emission: 95 },
-    ];
+    // null = still loading, [] = loaded but empty
+    const [series, setSeries] = createSignal<CategorySeries[] | null>(null);
+    const [todayComplete, setTodayComplete] = createSignal(true);
+    const [hasData, setHasData] = createSignal(false);
 
     let fileInputRef: HTMLInputElement | undefined;
 
@@ -39,7 +115,11 @@ const Profile: Component = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const data = await profileWrapper.get(undefined);
+            const [data, historyRaw] = await Promise.all([
+                profileWrapper.get(undefined),
+                quizzHistoryWrapper.get(undefined),
+            ]);
+
             if (data) {
                 setProfile(data);
                 setEditBio(data.bio || "");
@@ -47,6 +127,20 @@ const Profile: Component = () => {
                 setAvatarPreview(data.avatar_url || null);
             } else {
                 setError("Profil introuvable.");
+            }
+
+            const apiItems = historyRaw as QuizzHistoryItem[];
+            const realData = hasAnyRealData(apiItems);
+            const allDone = allQuizzDoneToday(apiItems);
+
+            setHasData(realData);
+            setTodayComplete(allDone);
+
+            // Show graph (with seed) only if at least one real entry exists
+            if (realData) {
+                setSeries(buildSeries(apiItems, true));
+            } else {
+                setSeries([]);
             }
         } catch (e: any) {
             console.error("Failed to load profile", e);
@@ -147,17 +241,12 @@ const Profile: Component = () => {
                                 }}
                             >
                                 <Show when={!avatarPreview()}>
-                                    {profile()
-                                        ?.username?.charAt(0)
-                                        .toUpperCase() ?? "?"}
+                                    {profile()?.username?.charAt(0).toUpperCase() ?? "?"}
                                 </Show>
                             </div>
 
                             <Show when={isEditing()}>
-                                <button
-                                    class="avatar-edit-btn"
-                                    onClick={triggerFileSelect}
-                                >
+                                <button class="avatar-edit-btn" onClick={triggerFileSelect}>
                                     <FaSolidCamera />
                                 </button>
                             </Show>
@@ -172,10 +261,7 @@ const Profile: Component = () => {
                         </div>
 
                         <Show when={!isEditing()}>
-                            <button
-                                class="edit-toggle-btn"
-                                onClick={() => setIsEditing(true)}
-                            >
+                            <button class="edit-toggle-btn" onClick={() => setIsEditing(true)}>
                                 Modifier <FaSolidPen size={12} />
                             </button>
                         </Show>
@@ -190,26 +276,56 @@ const Profile: Component = () => {
                                     {profile()!.bio || "Aucune bio renseignée."}
                                 </p>
 
-                                <div
-                                    class="stats-section"
-                                    style={{ "margin-top": "20px" }}
-                                >
+                                <div class="stats-section" style={{ "margin-top": "20px" }}>
                                     <h4>Mon Impact Carbone</h4>
-                                    <p
-                                        style={{
-                                            "font-size": "0.8rem",
-                                            color: "#666",
-                                        }}
-                                    >
+                                    <p style={{ "font-size": "0.8rem", color: "#666" }}>
                                         {profile()!.is_graph_public
                                             ? "Visible par mes amis"
                                             : "Privé"}
                                     </p>
-                                    <div class="graph-card">
-                                        <CarbonGraph
-                                            emissions={emissions as any}
-                                        />
-                                    </div>
+
+                                    {/* Warning banner: shown when today is incomplete */}
+                                    <Show when={!todayComplete()}>
+                                        <div
+                                            style={{
+                                                display: "flex",
+                                                "align-items": "center",
+                                                gap: "8px",
+                                                background: "#fff8e1",
+                                                border: "1px solid #ffe082",
+                                                "border-radius": "10px",
+                                                padding: "10px 14px",
+                                                margin: "10px 0",
+                                                "font-size": "0.85rem",
+                                                color: "#7a5800",
+                                            }}
+                                        >
+                                            <span style={{ "font-size": "1.1rem" }}>⚠️</span>
+                                            Veuillez répondre à tous les quizz pour obtenir votre impact du jour.
+                                        </div>
+                                    </Show>
+
+                                    {/* Graph: only rendered when there is at least one real entry */}
+                                    <Show
+                                        when={hasData()}
+                                        fallback={
+                                            <div
+                                                style={{
+                                                    "text-align": "center",
+                                                    padding: "32px 0",
+                                                    color: "#aaa",
+                                                    "font-size": "0.9rem",
+                                                }}
+                                            >
+                                                Aucune donnée pour l'instant.<br />
+                                                Complétez vos premiers quizz pour voir votre évolution.
+                                            </div>
+                                        }
+                                    >
+                                        <div class="graph-card">
+                                            <CarbonGraphMulti series={series()!} />
+                                        </div>
+                                    </Show>
                                 </div>
                             </div>
                         }
@@ -220,9 +336,7 @@ const Profile: Component = () => {
                                 <textarea
                                     class="auth-input"
                                     value={editBio()}
-                                    onInput={(e) =>
-                                        setEditBio(e.currentTarget.value)
-                                    }
+                                    onInput={(e) => setEditBio(e.currentTarget.value)}
                                     placeholder="Parlez-nous de vous..."
                                     rows={4}
                                 />
@@ -236,17 +350,14 @@ const Profile: Component = () => {
                                             type="checkbox"
                                             checked={editPublic()}
                                             onChange={(e) =>
-                                                setEditPublic(
-                                                    e.currentTarget.checked,
-                                                )
+                                                setEditPublic(e.currentTarget.checked)
                                             }
                                         />
                                         <span class="slider round"></span>
                                     </div>
                                 </label>
                                 <p class="input-help">
-                                    Si désactivé, vos amis ne verront pas votre
-                                    impact CO2.
+                                    Si désactivé, vos amis ne verront pas votre impact CO2.
                                 </p>
                             </div>
 
@@ -257,9 +368,7 @@ const Profile: Component = () => {
                                     onClick={() => {
                                         setIsEditing(false);
                                         setFileToUpload(null);
-                                        setAvatarPreview(
-                                            profile()?.avatar_url || null,
-                                        );
+                                        setAvatarPreview(profile()?.avatar_url || null);
                                     }}
                                 >
                                     Annuler

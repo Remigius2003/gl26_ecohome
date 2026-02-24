@@ -61,7 +61,7 @@ func SubmitQuizzResult(c *gin.Context) {
 }
 
 func GetQuizzHistory(c *gin.Context) {
-	userID := c.GetString("user_id")
+	userID := c.MustGet("user_id").(uint)
 	category := c.Query("category")
 
 	db := database.GetDatabase()

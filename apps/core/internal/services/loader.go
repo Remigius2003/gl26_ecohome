@@ -47,8 +47,8 @@ func (cm *ContentManager) LoadContent(rootPath string) error {
 			return err
 		}
 		if !info.IsDir() && strings.HasSuffix(info.Name(), ".json") {
-			dir := filepath.Dir(path)
-			category := filepath.Base(dir)
+			category := strings.TrimSuffix(info.Name(), ".json")
+			log.Printf("Loaded %s into %s !\n", info.Name(), category)
 
 			data, err := os.ReadFile(path)
 			if err != nil {

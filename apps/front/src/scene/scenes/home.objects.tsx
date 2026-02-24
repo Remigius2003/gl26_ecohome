@@ -1,70 +1,11 @@
-import { globalNavigate, globalShowMusic } from "../../App";
+import {
+    setShowPlayerCustomisation,
+    setShowHomeCustomisation,
+    setShowFriends,
+    openQuizz,
+    setShowMusic,
+} from "../../store/gameStore";
 
-/* list of disponnible objects:
-[
-  "armoire.png",
-  "bath.png",
-  "bed2.png",
-  "bedFace.png",
-  "BlueFlower.png",
-  "chair1\\back.png",
-  "chair1\\face.png",
-  "chair1\\left.png",
-  "chair1\\right.png",
-  "chair2\\back.png",
-  "chair2\\front.png",
-  "chair2\\left.png",
-  "chair2\\right.png",
-  "chair_conf.png",
-  "chairFace.png",
-  "chairtoleft.png",
-  "chaise_salon.png",
-  "chemine.png",
-  "curtain.png",
-  "decorativePlant.png",
-  "disjoncteur.png",
-  "esc.png",
-  "flower.png",
-  "fontaine.png",
-  "four.png",
-  "frigo.png",
-  "home_phone.png",
-  "horloge\\horloge1.png",
-  "horloge\\horloge2.png",
-  "horloge\\horloge3.png",
-  "horloge.png",
-  "kitchen.png",
-  "lampe.png",
-  "lampe2_for_light&shadow.png",
-  "lampe_for_light&shadow.png",
-  "lit.png",
-  "littleTree.png",
-  "ordi_pour_defi_social_freind.png",
-  "painting.png",
-  "panneau_solaire_pour_minijeu.png",
-  "PcOnTable.png",
-  "poubelle.png",
-  "roundTable.png",
-  "Sofa\\SofaBack.png",
-  "Sofa\\SofaFront.png",
-  "sources\\dark-wood.png",
-  "sources\\house_inside.png",
-  "sources\\lpc-victorian-decoration\\lpc-victorian-decoration\\victorian-garden.png",
-  "sources\\lpc-victorian-decoration\\lpc-victorian-decoration\\victorian-market.png",
-  "sources\\lpc-victorian-decoration\\lpc-victorian-decoration\\victorian-streets.png",
-  "sources\\lpc-walls\\lpc-walls\\walls.png",
-  "tab_basse.png",
-  "table.png",
-  "tableSimple.png",
-  "tapi.png",
-  "thermostat.png",
-  "thermostat_eco.png",
-  "trilogique.png",
-  "tv.png",
-  "TvOnTable.png",
-  "Window.png",
-  "WoodTable.png"
-]*/
 export type AsciiThingDef = {
     width: number;
     height: number;
@@ -83,9 +24,8 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         solid: true,
         areaOfInteraction: 1,
         priority: 0,
-        onInteract: () => globalShowMusic(true),
+        onInteract: () => setShowMusic(true),
     },
-
     K: {
         width: 6,
         height: 2,
@@ -99,7 +39,7 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         solid: true,
         areaOfInteraction: 1,
         priority: 0,
-        onInteract: () => globalNavigate("/PreQuizz?type=alimentation"),
+        onInteract: () => openQuizz("alimentation"),
     },
     O: {
         width: 2,
@@ -107,6 +47,7 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         texture: "house/furniture/four.png",
         solid: true,
     },
+
     T: {
         width: 3,
         height: 3,
@@ -114,7 +55,7 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         solid: true,
         areaOfInteraction: 1,
         priority: 0,
-        onInteract: () => globalNavigate("/social"),
+        onInteract: () => setShowFriends(true),
     },
     C: {
         width: 1,
@@ -129,7 +70,6 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         solid: false,
     },
 
-    // --- LIVING ROOM ---
     S: {
         width: 4,
         height: 2,
@@ -149,7 +89,7 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         solid: true,
     },
     p: {
-        width: 1,
+        width: 2,
         height: 2,
         texture: "house/furniture/decorativePlant.png",
         solid: true,
@@ -161,26 +101,22 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         solid: true,
     },
 
-    // --- BEDROOM / OFFICE ---
-    B: {
-        width: 4,
-        height: 4,
-        texture: "house/furniture/lit.png",
-        solid: true,
-    },
+    B: { width: 4, height: 4, texture: "house/furniture/lit.png", solid: true },
     D: {
         width: 2,
         height: 2,
         texture: "house/furniture/armoire.png",
         solid: true,
         areaOfInteraction: 1,
-        onInteract: () => globalNavigate("/customisation"),
+        onInteract: () => setShowPlayerCustomisation(true),
     },
     J: {
         width: 3,
         height: 2,
         texture: "house/furniture/chemine.png",
         solid: true,
+        areaOfInteraction: 1,
+        onInteract: () => openQuizz("logement"),
     },
     b: {
         width: 3,
@@ -189,7 +125,6 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         solid: true,
     },
 
-    // --- BATHROOM ---
     U: {
         width: 2,
         height: 3,
@@ -197,7 +132,6 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         solid: true,
     },
 
-    // --- HALLWAY / UTILITY ---
     E: {
         width: 8,
         height: 2,
@@ -205,7 +139,9 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         solid: false,
         areaOfInteraction: 1,
         priority: 1,
-        onInteract: () => globalNavigate("/home2"),
+        onInteract: () => {
+            import("@scene").then((s) => s.switchScene("home2"));
+        },
     },
     R: {
         width: 2,
@@ -214,7 +150,7 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         solid: false,
         areaOfInteraction: 0,
         priority: 1,
-        onInteract: () => globalNavigate("/PreQuizz?type=transport"),
+        onInteract: () => openQuizz("transport"),
     },
     t: {
         width: 2,
@@ -223,14 +159,10 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         solid: false,
     },
     d: {
-        width: 1,
-        height: 1,
+        width: 2,
+        height: 2,
         texture: "house/furniture/disjoncteur.png",
-        solid: true,
-        areaOfInteraction: 1,
-        onInteract: () => {
-            globalNavigate("/lobby/lightshadow");
-        },
+        solid: false,
     },
     g: {
         width: 2,
@@ -240,8 +172,28 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
     },
     l: {
         width: 1,
-        height: 1,
+        height: 2,
         texture: "house/furniture/lampe.png",
-        solid: true,
+        solid: false,
+    },
+
+    I: {
+        width: 2,
+        height: 2,
+        texture: "house/furniture/painting.png",
+        solid: false,
+        areaOfInteraction: 1,
+        priority: 0,
+        onInteract: () => setShowHomeCustomisation(true),
+    },
+
+    A: {
+        width: 2,
+        height: 2,
+        texture: "house/furniture/chair_conf.png",
+        solid: false,
+        areaOfInteraction: 1,
+        priority: 0,
+        onInteract: () => openQuizz("consommation"),
     },
 };

@@ -15,7 +15,6 @@ const Login = lazy(() => import('@pages/public/Login'));
 
 // App
 const Home = lazy(() => import('@pages/app/Home'));
-const Home2 = lazy(() => import('@pages/app/Home2'));
 const Invite = lazy(() => import('@pages/app/Invite'));
 const Quizz = lazy(() => import('@pages/carbonEvaluation/Quizz'));
 const PreQuizz = lazy(() => import('@pages/carbonEvaluation/PreQuizz'));
@@ -32,29 +31,6 @@ const IndexGate = () => {
 		</Show>
 	);
 };
-
-let navigateFn: ((path: string) => void) | null = null;
-export function setGlobalNavigate(fn: (path: string) => void) {
-	navigateFn = fn;
-}
-
-export function globalNavigate(path: string) {
-	if (!navigateFn) throw new Error('Navigate function not set yet!');
-	navigateFn(path);
-}
-
-let showMusicFn: ((show: boolean) => void) | null = null;
-export function setGlobalShowMusic(fn: (show: boolean) => void) {
-	showMusicFn = fn;
-}
-
-export function globalShowMusic(show: boolean) {
-	if (!showMusicFn) {
-		console.warn('Music show function not set yet!');
-		return;
-	}
-	showMusicFn(show);
-}
 
 const Layout = (props: any) => <>{props.children}</>;
 export default function App() {
@@ -75,7 +51,6 @@ export default function App() {
 				<Route component={ProtectedLayout}>
 					{/* App */}
 					<Route path="/home" component={Home} />
-					<Route path="/home2" component={Home2} />
 					<Route path="/invite/:id" component={Invite} />
 					<Route path="/PreQuizz" component={PreQuizz} />
 					<Route path="/Quizz" component={Quizz} />
