@@ -8,7 +8,7 @@ import {
     GamePage,
 } from "./Lobby.types";
 
-import { getScore, saveScore } from "../../api/score";
+import { getScore, saveScore } from "@api/score";
 
 const itemsInit = [
     { id: 0, label: "THIS" },

@@ -83,8 +83,8 @@ func CompleteDefi(c *gin.Context) {
 		return
 	}
 
-	if assignment.Status == "COMPLETED" {
-		c.JSON(http.StatusConflict, gin.H{"error": "Already completed"})
+	if assignment.Status == "COMPLETED" || assignment.Status == "FAILED" {
+		c.JSON(http.StatusConflict, gin.H{"error": "Already resolved"})
 		return
 	}
 
@@ -96,10 +96,16 @@ func CompleteDefi(c *gin.Context) {
 				continue
 			}
 			matched = true
+
 			if ans.LeafReward == 0 {
+				assignment.Status = "FAILED"
+				assignment.RewardEarned = 0
+				db.Save(&assignment)
+
 				c.JSON(http.StatusOK, gin.H{"status": "WRONG", "reward": 0})
 				return
 			}
+
 			rewardToGrant = ans.LeafReward
 			break
 		}

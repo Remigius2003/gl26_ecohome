@@ -1,6 +1,7 @@
 import * as TokenApi from './token';
 import * as UserApi from './user';
 import * as Cache from './cache';
+import { createSignal } from 'solid-js';
 
 // -------------------
 //  CONFIGURATION
@@ -27,7 +28,13 @@ class SessionManager {
 	private static instance: SessionManager;
 	private refreshPromise: Promise<string> | null = null;
 
-	private constructor() {}
+	private _isAuthenticated = createSignal<boolean>(false);
+	public isAuthenticated = this._isAuthenticated[0];
+
+	private constructor() {
+		this._isAuthenticated[1](!!this.userId);
+	}
+
 	static getInstance() {
 		return (this.instance ??= new SessionManager());
 	}
@@ -53,7 +60,7 @@ class SessionManager {
 		return Cache.getItem<number>(KEYS.userId, SESSION);
 	}
 
-	get isAuthenticated(): boolean {
+	public get isAuthenticatedSync(): boolean {
 		return !!this.userId;
 	}
 
@@ -106,15 +113,25 @@ class SessionManager {
 
 	async login(credentials: Parameters<typeof UserApi.login>[0]): Promise<void> {
 		const { token, user_id } = await UserApi.login(credentials);
+
+		const previousUserId = this.userId;
+		if (previousUserId !== null && previousUserId !== user_id) {
+			Cache.clear();
+		}
+
 		this.setSession(KEYS.refresh, token, token.expires_at, true);
 		this.setSession(KEYS.userId, user_id, token.expires_at);
+
+		this._isAuthenticated[1](true);
 	}
 
 	async logout(): Promise<void> {
 		const refresh = Cache.getItem<TokenApi.RefreshToken>(KEYS.refresh, SESSION);
 		if (this.userId && refresh)
 			UserApi.logout(refresh.token).catch(console.warn);
-		Cache.clear(SESSION);
+
+		this._isAuthenticated[1](false);
+		Cache.clear();
 	}
 }
 

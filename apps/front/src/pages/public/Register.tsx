@@ -12,7 +12,7 @@ export default function Register() {
 
 	const navigate = useNavigate();
 	createEffect(() => {
-		if (Session.isAuthenticated) navigate('/', { replace: true });
+		if (Session.isAuthenticated()) navigate('/', { replace: true });
 	});
 
 	const handleSubmit = async (e: SubmitEvent) => {
