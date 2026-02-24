@@ -7,8 +7,8 @@ export const CELL_SIZE = 96;
 // A cohesive 32x32 floor plan
 export const ASCII_MAP = [
     "################################",
-    "#UU....MM..#EEEEEEEE#KKKKKKFFOO#",
-    "#UU....MM..#EEEEEEEE#KKKKKKFFOO#",
+    "#UU....MM..#.........EEEEEEEEOO#",
+    "#UU....MM..#.........EEEEEEEEOO#",
     "#UU........#........#..........#",
     "#..........#........#..........#",
     "#..........#........#..........#",

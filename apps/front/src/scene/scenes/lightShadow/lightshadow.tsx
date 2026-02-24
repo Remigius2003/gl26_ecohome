@@ -1,4 +1,11 @@
-import { Scene, SceneType, Character, Entity, Solid, Dynamic } from "../../core/types";
+import {
+    Scene,
+    SceneType,
+    Character,
+    Entity,
+    Solid,
+    Dynamic,
+} from "../../core/types";
 import { ColorTexture, ImageTexture, Sprite } from "../../core/texture";
 import { Camera } from "../../logic/camera";
 import { World } from "../../logic/world";
@@ -373,7 +380,7 @@ export default class LightShadowScene implements Scene {
     private world!: World;
     private camera!: Camera;
 
-    private player!: Character;
+    private player!: Group & Entity;
     private playerController!: PlayerController;
 
     private levelIndex = 0;
@@ -390,35 +397,6 @@ export default class LightShadowScene implements Scene {
     private win = false;
     private isLoading = true; // Added a loading state
 
-    private async setupPlayer(spawn: Position) {
-        this.player = createPlayer(
-            spawn.x * CELL_SIZE,
-            spawn.y * CELL_SIZE,
-            this.playerSize,
-        );
-
-        const skinsManager = new Skins();
-        await skinsManager.init();
-
-        Object.entries(skinsManager.equipped).forEach(([typeName, skin]) => {
-            if (!skin || skin.frames.length === 0) return;
-            this.player.add(
-                createEntity({
-                    id: typeName,
-                    x: 0,
-                    y: 0,
-                    width: 2 * this.playerSize,
-                    height: 2 * this.playerSize,
-                    priority: skin.frames.length > 1 ? 4 : 3,
-                    text: new Sprite(skin.frames),
-                }),
-            );
-        });
-
-        this.world.addEntity(this.player);
-        this.player.speed = 1000;
-        this.playerController = new PlayerController(this.player);
-    }
     init(
         canvas: HTMLCanvasElement,
         onSwitchScene: (t: SceneType) => void,

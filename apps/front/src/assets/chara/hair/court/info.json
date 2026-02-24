@@ -1,0 +1,9 @@
+{
+    "Frame": 4,
+    "AllFrame": {
+        "image": "court.png"
+    },
+    "2": {
+        "offsetY": 3
+    }
+}

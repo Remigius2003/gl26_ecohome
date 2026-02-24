@@ -89,9 +89,9 @@ export function createPlayer(x: number, y: number, size: number) {
         childrens: {
             hitbox: {
                 x: size / 2,
-                y: 0,
+                y: 1 * size,
                 w: size,
-                h: 2 * size,
+                h: 1 * size,
                 solid: true,
                 priority: 0,
             },

@@ -1,55 +1,55 @@
 {
-	"id": "level-01",
-	"cellSize": 96,
-	"wallTexture": "/house/wall/wood.png",
-	"floorTexture": "/house/floor/wood.png",
-	"surgeMaxWatts": 900,
-	"winTimeMs": 60000,
-	"ghostCount": 2,
-	"ghostSpeed": 220,
+    "id": "level-01",
+    "cellSize": 96,
+    "wallTexture": "/house/wall/wood.png",
+    "floorTexture": "/house/floor/wood.png",
+    "surgeMaxWatts": 900,
+    "winTimeMs": 60000,
+    "ghostCount": 2,
+    "ghostSpeed": 220,
 
-	"devices": [
-		{
-			"char": "L",
-			"watts": 220,
-			"label": "Lampe de Bureau",
-			"image": "/house/furniture/lampe.png",
-			"imageSize": 0.6,
-			"lightRadius": 280,
-			"interactionCells": 1
-		},
-		{
-			"char": "V",
-			"watts": 320,
-			"label": "Ventilateur",
-			"image": "/house/furniture/ventilateur.png",
-			"imageSize": 0.8,
-			"lightRadius": 220,
-			"interactionCells": 1
-		},
-		{
-			"char": "T",
-			"watts": 150,
-			"label": "Télévision",
-			"image": "/house/furniture/tv.png",
-			"imageSize": 0.75,
-			"lightRadius": 200,
-			"interactionCells": 1
-		}
-	],
+    "devices": [
+        {
+            "char": "L",
+            "watts": 220,
+            "label": "Lampe de Bureau",
+            "image": "/house/furniture/lampe.png",
+            "imageSize": 0.6,
+            "lightRadius": 280,
+            "interactionCells": 1
+        },
+        {
+            "char": "V",
+            "watts": 320,
+            "label": "Ventilateur",
+            "image": "/house/furniture/ventilateur.png",
+            "imageSize": 0.8,
+            "lightRadius": 220,
+            "interactionCells": 1
+        },
+        {
+            "char": "T",
+            "watts": 150,
+            "label": "Télévision",
+            "image": "/house/furniture/tv.png",
+            "imageSize": 0.75,
+            "lightRadius": 200,
+            "interactionCells": 1
+        }
+    ],
 
-	"map": [
-		"################################",
-		"#..P...............L......E....#",
-		"#..............................#",
-		"#..............................#",
-		"#..............................#",
-		"#..............................#",
-		"#..............................#",
-		"#..............................#",
-		"#..............................#",
-		"#...........#..#...............#",
-		"#.....V.....#..#.....T.........#",
-		"################################"
-	]
+    "map": [
+        "################################",
+        "#..P...............L......E....#",
+        "#..............................#",
+        "#..............................#",
+        "#.....V........................#",
+        "#..............................#",
+        "#........................V.....#",
+        "#..............................#",
+        "#..............................#",
+        "#...........#..#...............#",
+        "#.....V.....#..#.....T.........#",
+        "################################"
+    ]
 }

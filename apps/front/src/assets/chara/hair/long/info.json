@@ -4,15 +4,15 @@
         "image": "long.png"
     },
     "1": {
-        "offsetY": -10
+        "offsetY": 0
     },
     "2": {
-        "offsetY": -7
+        "offsetY": 3
     },
     "3": {
-        "offsetY": -10
+        "offsetY": 0
     },
     "4": {
-        "offsetY": -10
+        "offsetY": 0
     }
 }
