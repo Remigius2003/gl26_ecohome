@@ -1,5 +1,5 @@
-import { Scene, SceneType, Character, Entity, Solid } from "../../core/types";
-import { ColorTexture, ImageTexture } from "../../core/texture";
+import { Scene, SceneType, Character, Entity, Solid, Dynamic } from "../../core/types";
+import { ColorTexture, ImageTexture, Sprite } from "../../core/texture";
 import { Camera } from "../../logic/camera";
 import { World } from "../../logic/world";
 import {
@@ -11,15 +11,44 @@ import {
 } from "../../logic/factory";
 import { PhysicsSystem, PlayerController } from "../../logic/movement";
 import { drawDarknessWithLights } from "../../logic/lighting";
-import {
-    GhostControllerNamed as GhostController,
-    type DeviceLike,
-} from "../../logic/ghost";
+import { GhostController, type DeviceLike } from "../../logic/ghost";
+import { Group } from "@scene/core/group";
 import { LightShadowLevel } from "./types";
+import { createPlayer } from "../home.entities";
+import { Skins } from "@api/manageSkin";
 
 type Device = (Entity & Solid) &
     DeviceLike & { lightRadius: number; label: string };
 
+function drawTimerBar(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    currentTime: number,
+    maxTime: number,
+) {
+    // 1. Calculate progress (0 to 1)
+    const progress = Math.max(0, currentTime / maxTime);
+
+    // 2. Determine color based on time left
+    // Green at start, Yellow at half, Red at the end
+    let color = "#4ade80"; // Green
+    if (progress < 0.25)
+        color = "#ef4444"; // Red (Critical)
+    else if (progress < 0.6) color = "#facc15"; // Yellow (Warning)
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+    ctx.fillRect(x, y, width, height);
+
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, width * progress, height);
+
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, y, width, height);
+}
 function findSpawn(map: string[]) {
     for (let y = 0; y < map.length; y++)
         for (let x = 0; x < map[y].length; x++)
@@ -83,20 +112,25 @@ function makeDevice(
     y: number,
     watts: number,
     label: string,
-    colorOn: string,
-    colorOff: string,
+    image: string,
+    imageSize: number,
     lightRadius: number,
     interactionCells: number,
-    cellSize: number, // <-- Added this
+    cellSize: number,
 ): Device {
+    const deviceWidth = cellSize * imageSize;
+    const deviceHeight = cellSize * imageSize;
+    const offsetX = (cellSize - deviceWidth) / 2;
+    const offsetY = (cellSize - deviceHeight) / 2;
+
     const base = createSolid({
         id,
-        x,
-        y,
-        width: cellSize * 0.65,
-        height: cellSize * 0.65,
+        x: x + offsetX,
+        y: y + offsetY,
+        width: deviceWidth,
+        height: deviceHeight,
         priority: 3,
-        text: new ColorTexture(colorOff, "rgba(255,255,255,0.6)"),
+        text: new ImageTexture(image),
     }) as any as Device;
 
     base.isOn = false;
@@ -107,10 +141,6 @@ function makeDevice(
     base.toggle = (force?: boolean) => {
         const next = typeof force === "boolean" ? force : !base.isOn;
         base.isOn = next;
-        base.text = new ColorTexture(
-            next ? colorOn : colorOff,
-            "rgba(255,255,255,0.6)",
-        );
     };
 
     const pad = interactionCells * cellSize;
@@ -118,8 +148,8 @@ function makeDevice(
         id: `${id}-interaction`,
         x: x - pad,
         y: y - pad,
-        width: base.width + pad * 2,
-        height: base.height + pad * 2,
+        width: cellSize + pad * 2,
+        height: cellSize + pad * 2,
         priority: -1,
         text: new ColorTexture("rgba(0,0,0,0)"),
     });
@@ -360,6 +390,35 @@ export default class LightShadowScene implements Scene {
     private win = false;
     private isLoading = true; // Added a loading state
 
+    private async setupPlayer(spawn: Position) {
+        this.player = createPlayer(
+            spawn.x * CELL_SIZE,
+            spawn.y * CELL_SIZE,
+            this.playerSize,
+        );
+
+        const skinsManager = new Skins();
+        await skinsManager.init();
+
+        Object.entries(skinsManager.equipped).forEach(([typeName, skin]) => {
+            if (!skin || skin.frames.length === 0) return;
+            this.player.add(
+                createEntity({
+                    id: typeName,
+                    x: 0,
+                    y: 0,
+                    width: 2 * this.playerSize,
+                    height: 2 * this.playerSize,
+                    priority: skin.frames.length > 1 ? 4 : 3,
+                    text: new Sprite(skin.frames),
+                }),
+            );
+        });
+
+        this.world.addEntity(this.player);
+        this.player.speed = 1000;
+        this.playerController = new PlayerController(this.player);
+    }
     init(
         canvas: HTMLCanvasElement,
         onSwitchScene: (t: SceneType) => void,
@@ -404,14 +463,30 @@ export default class LightShadowScene implements Scene {
         generateWalls(map, this.world, cellSize, wallTexture);
 
         const spawn = findSpawn(map);
-        this.player = createCharacter({
-            id: "player",
-            x: spawn.x * cellSize + cellSize * 0.2,
-            y: spawn.y * cellSize + cellSize * 0.2,
-            width: cellSize * 0.45,
-            height: cellSize * 0.45,
-            speed: 600,
-            text: new ColorTexture("#4fc3f7", "white"),
+        const playerSize = cellSize * 0.6;
+        this.player = createPlayer(
+            spawn.x * cellSize,
+            spawn.y * cellSize,
+            playerSize,
+        );
+
+        // Load and apply player skins
+        const skinsManager = new Skins();
+        await skinsManager.init();
+
+        Object.entries(skinsManager.equipped).forEach(([typeName, skin]) => {
+            if (!skin || skin.frames.length === 0) return;
+            this.player.add(
+                createEntity({
+                    id: typeName,
+                    x: 0,
+                    y: 0,
+                    width: 2 * playerSize,
+                    height: 2 * playerSize,
+                    priority: skin.frames.length > 1 ? 4 : 3,
+                    text: new Sprite(skin.frames),
+                }),
+            );
         });
 
         this.playerController = new PlayerController(this.player);
@@ -428,12 +503,12 @@ export default class LightShadowScene implements Scene {
                         makeDevice(
                             this.world,
                             `device-${did++}`,
-                            x * cellSize + cellSize * 0.18,
-                            y * cellSize + cellSize * 0.18,
+                            x * cellSize,
+                            y * cellSize,
                             devConfig.watts,
                             devConfig.label,
-                            devConfig.colorOn,
-                            devConfig.colorOff,
+                            devConfig.image,
+                            devConfig.imageSize,
                             devConfig.lightRadius,
                             devConfig.interactionCells,
                             cellSize,
@@ -468,8 +543,8 @@ export default class LightShadowScene implements Scene {
                     id: `ghost-${i}`,
                     x: (cols - 2 - i) * cellSize + cellSize * 0.25,
                     y: (rows - 2) * cellSize + cellSize * 0.25,
-                    width: cellSize * 0.38,
-                    height: cellSize * 0.38,
+                    width: cellSize * 0.7,
+                    height: cellSize * 0.7,
                     priority: 3,
                     //text: new ColorTexture("black"),
                     text: new ImageTexture("/game/lightShadow/ghost1.png"),
@@ -619,9 +694,6 @@ export default class LightShadowScene implements Scene {
         const pad = 18;
         const top = 14;
 
-        // Back arrow (visuel)
-        drawBackArrow(ctx, pad, top + 2, 44);
-
         // Right pill "LEVEL / SCORE"
         const pillW = 210;
         const pillH = 34;
@@ -702,27 +774,36 @@ export default class LightShadowScene implements Scene {
             "rgba(0,220,220,0.95)",
             "rgba(0,220,220,0.25)",
         );
-
-        // --- Secondary bar (grey) with red ring (bulb)
-        const bar2X = bar1X + bar1W + 50;
+        // --- Timer / Survival Bar (Yellow/Gold) ---
+        const bar2X = bar1X + bar1W + 70; // Adjusted spacing for the text
         const bar2Y = bar1Y;
-        const bar2W = 240;
+        const bar2W = 200;
         const bar2H = bar1H;
 
-        const redRingCx = bar2X - 26;
-        const redRingCy = ringCy;
+        const timeRingCx = bar2X - 26;
+        const timeRingCy = ringCy;
 
+        // Draw a "Clock" icon instead of a bulb
         drawRingIcon(
             ctx,
-            redRingCx,
-            redRingCy,
+            timeRingCx,
+            timeRingCy,
             ringR,
-            "rgba(255,70,70,0.95)",
+            "rgba(255, 200, 50, 0.95)", // Gold/Yellow ring
             () => {
-                drawBulb(ctx, redRingCx, redRingCy, ringR * 1.2);
+                // Draw simple clock hands
+                ctx.strokeStyle = "rgba(0,0,0,0.8)";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(timeRingCx, timeRingCy);
+                ctx.lineTo(timeRingCx, timeRingCy - 7); // Hour
+                ctx.moveTo(timeRingCx, timeRingCy);
+                ctx.lineTo(timeRingCx + 5, timeRingCy); // Minute
+                ctx.stroke();
             },
         );
 
+        // Background of the timer bar
         fillRoundRect(
             ctx,
             bar2X,
@@ -730,34 +811,43 @@ export default class LightShadowScene implements Scene {
             bar2W,
             bar2H,
             8,
-            "rgba(220,220,220,0.65)",
+            "rgba(255, 255, 255, 0.15)",
         );
 
-        // Small numeric W info
+        // Progress toward winTimeMs
+        const winRatio = Math.max(
+            0,
+            Math.min(1, this.elapsed / this.currentLevelData.winTimeMs),
+        );
+
+        drawSegmentBar(
+            ctx,
+            bar2X + 4,
+            bar2Y + 3,
+            bar2W - 8,
+            bar2H - 6,
+            10, // Fewer segments for a different look
+            winRatio,
+            "rgba(255, 210, 50, 0.95)", // Gold fill
+            "rgba(255, 210, 50, 0.2)", // Faded gold background
+        );
+
+        // Update the text to show time remaining
         ctx.save();
         ctx.fillStyle = "rgba(255,255,255,0.85)";
-        ctx.font = "14px Arial";
+        ctx.font = "600 13px Arial";
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
+
+        const secondsLeft = Math.ceil(
+            (this.currentLevelData.winTimeMs - this.elapsed) / 1000,
+        );
         ctx.fillText(
-            `W ${Math.floor(this.surgeWatts)}/${this.currentLevelData.surgeMaxWatts}`,
-            bar1X + bar1W + 10,
-            bar1Y + bar1H / 2,
+            `${secondsLeft}s SURVIVAL`,
+            bar2X + bar2W + 10,
+            bar2Y + bar2H / 2,
         );
         ctx.restore();
-
-        // Bottom hint
-        const interaction = this.world.getInteraction(this.player);
-        if (interaction && !this.gameOver && !this.win) {
-            ctx.save();
-            ctx.fillStyle = "rgba(255,255,255,0.9)";
-            ctx.font = "16px Arial";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText("SPACE: éteindre", W / 2, H - 20);
-            ctx.restore();
-        }
-
         // Game Over / Win overlay
         if (this.gameOver || this.win) {
             ctx.fillStyle = "rgba(0,0,0,0.6)";

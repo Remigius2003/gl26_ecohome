@@ -21,6 +21,7 @@ const PremiereConnexion = lazy(() => import("@pages/public/PremiereConnexion"));
 const Lobby = lazy(() => import("@pages/games/Lobby"));
 const Home = lazy(() => import("@pages/app/Home"));
 const Invite = lazy(() => import("@pages/app/Invite"));
+const Music = lazy(() => import("@pages/app/Music"));
 const LightShadow = lazy(() => import("@pages/games/LightShadow"));
 
 const IndexGate = () => {
@@ -59,6 +60,21 @@ export function globalSwitchScene(scene: SceneType) {
     }
     sceneChangeFn(scene);
 }
+
+// global music overlay
+let showMusicFn: ((show: boolean) => void) | null = null;
+export function setGlobalShowMusic(fn: (show: boolean) => void) {
+    showMusicFn = fn;
+}
+
+export function globalShowMusic(show: boolean) {
+    if (!showMusicFn) {
+        console.warn("Music show function not set yet!");
+        return;
+    }
+    showMusicFn(show);
+}
+
 const Customisation = lazy(() => import("@pages/old/Customisation"));
 
 const Layout = (props: any) => <>{props.children}</>;
@@ -75,6 +91,7 @@ export default function App() {
                 <Route path="*" component={NotFound} />
                 <Route path="/" component={IndexGate} />
                 <Route path="/login" component={Login} />
+                {/*<Route path="/music" component={Music} />*/}
                 <Route path="/register" component={Register} />
 
                 {/* App */}

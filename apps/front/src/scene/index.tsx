@@ -1,7 +1,7 @@
 import { SceneType } from "./core/types";
 import { Engine } from "./core/engine";
 
-import HomeScene from "./scenes/home";
+import HomeScene from "./scenes/Home";
 import Home2Scene from "./scenes/home2";
 import EcoGrid from "./scenes/ecogrid";
 import TrilogiqueScene from "./scenes/trilogique/trilogiqueScene";
