@@ -31,6 +31,7 @@ import {
 	Session,
 } from '@api';
 import Avatar from '@components/Avatar';
+import { showChat, setShowChat } from '@store';
 
 const TENOR_KEY = 'LIVDSRZULELA';
 
@@ -181,7 +182,6 @@ function ConvItem(props: {
 }
 
 export default function ChatWidget() {
-	const [isOpen, setIsOpen] = createSignal(false);
 	const [conversations, setConversations] = createSignal<Conversation[]>([]);
 	const [activeConv, setActiveConv] = createSignal<Conversation | null>(null);
 	const [messages, setMessages] = createSignal<Message[]>([]);
@@ -193,7 +193,7 @@ export default function ChatWidget() {
 	let messagesEndRef: HTMLDivElement | undefined;
 
 	const [friends, { refetch: refetchFriends }] = createResource(() =>
-		isOpen() ? friendsListWrapper.get() : null,
+		showChat() ? friendsListWrapper.get() : null,
 	);
 
 	const loadConversations = async () => {
@@ -366,12 +366,12 @@ export default function ChatWidget() {
 
 	return (
 		<>
-			<Show when={!isOpen()}>
+			<Show when={!showChat()}>
 				<div class="chat-widget">
 					<button
 						class="chat-toggle-btn"
 						onClick={() => {
-							setIsOpen(true);
+							setShowChat(true);
 							loadConversations();
 						}}
 					>
@@ -380,7 +380,7 @@ export default function ChatWidget() {
 				</div>
 			</Show>
 
-			<Show when={isOpen()}>
+			<Show when={showChat()}>
 				<div class="chat-overlay" onClick={() => setShowGifPicker(false)}>
 					<div class="chat-container">
 						<div class="chat-sidebar">
@@ -400,7 +400,7 @@ export default function ChatWidget() {
 									<button
 										class="icon-btn"
 										title="Fermer"
-										onClick={() => setIsOpen(false)}
+										onClick={() => setShowChat(false)}
 									>
 										<FaSolidXmark />
 									</button>
@@ -519,7 +519,7 @@ export default function ChatWidget() {
 				</div>
 			</Show>
 
-			<Show when={isOpen() && showCreateModal()}>
+			<Show when={showChat() && showCreateModal()}>
 				<CreateGroupModal
 					friends={friends() ?? []}
 					onClose={() => {
@@ -529,7 +529,7 @@ export default function ChatWidget() {
 				/>
 			</Show>
 
-			<Show when={isOpen() && showManageModal() && activeConv()}>
+			<Show when={showChat() && showManageModal() && activeConv()}>
 				<ManageGroupModal
 					conv={activeConv()!}
 					friends={friends() ?? []}

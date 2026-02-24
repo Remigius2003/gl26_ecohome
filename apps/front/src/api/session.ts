@@ -2,6 +2,7 @@ import * as TokenApi from './token';
 import * as UserApi from './user';
 import * as Cache from './cache';
 import { createSignal } from 'solid-js';
+import { resetMenuState } from '@store/gameStore';
 
 // -------------------
 //  CONFIGURATION
@@ -122,6 +123,7 @@ class SessionManager {
 		this.setSession(KEYS.refresh, token, token.expires_at, true);
 		this.setSession(KEYS.userId, user_id, token.expires_at);
 
+		resetMenuState();
 		this._isAuthenticated[1](true);
 	}
 
@@ -131,6 +133,7 @@ class SessionManager {
 			UserApi.logout(refresh.token).catch(console.warn);
 
 		this._isAuthenticated[1](false);
+		resetMenuState();
 		Cache.clear();
 	}
 }

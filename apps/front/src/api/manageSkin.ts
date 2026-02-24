@@ -1,64 +1,81 @@
-import { Types, Skin, parseTypes } from "./SkinParser"; // import your parsing helpers
+import { createStore, SetStoreFunction } from 'solid-js/store';
+import { Types, Skin, parseTypes } from './SkinParser';
 
 export class Skins {
-    types: Types[] = [];
-    equipped: Record<string, Skin> = {};
-    constructor() {}
+	types: Types[] = [];
+	equipped: Record<string, Skin>;
+	private setEquipped: SetStoreFunction<Record<string, Skin>>;
 
-    async init() {
-        this.types = await parseTypes();
+	constructor() {
+		const [equipped, setEquipped] = createStore<Record<string, Skin>>({});
+		this.equipped = equipped;
+		this.setEquipped = setEquipped;
+	}
 
-        const stored = localStorage.getItem("equippedSkins");
-        if (stored) {
-            try {
-                const parsed = JSON.parse(stored);
-                for (const typeName in parsed) {
-                    const type = this.types.find((t) => t.name === typeName);
-                    if (!type) continue;
+	async init() {
+		if (this.types.length > 0) return;
+		this.types = await parseTypes();
 
-                    const skinIndex = parsed[typeName] as number;
-                    if (type.skins[skinIndex]) {
-                        this.equipped[typeName] = type.skins[skinIndex];
-                    }
-                }
-            } catch (e) {
-                console.warn("Failed to parse equippedSkins", e);
-            }
-        }
+		const initialEquipped: Record<string, Skin> = {};
+		const stored = localStorage.getItem('equippedSkins');
 
-        for (const type of this.types) {
-            if (!this.equipped[type.name]) {
-                const randomSkin =
-                    type.skins[Math.floor(Math.random() * type.skins.length)];
-                this.equipped[type.name] = randomSkin;
-            }
-        }
+		if (stored) {
+			try {
+				const parsed = JSON.parse(stored);
+				for (const typeName in parsed) {
+					const type = this.types.find((t) => t.name === typeName);
+					if (!type) continue;
 
-        this.save();
-    }
+					const skinIndex = parsed[typeName] as number;
+					if (type.skins[skinIndex]) {
+						initialEquipped[typeName] = type.skins[skinIndex];
+					}
+				}
+			} catch (e) {
+				console.warn('Failed to parse equippedSkins', e);
+			}
+		}
 
-    getSkin(typeName: string): Skin | null {
-        return this.equipped[typeName] ?? null;
-    }
+		for (const type of this.types) {
+			if (!initialEquipped[type.name]) {
+				const randomSkin =
+					type.skins[Math.floor(Math.random() * type.skins.length)];
+				initialEquipped[type.name] = randomSkin;
+			}
+		}
 
-    getSkins(): Skin[] {
-        return Object.values(this.equipped);
-    }
+		this.setEquipped(initialEquipped);
+		this.save();
+	}
 
-    changeSkin(typeName: string, skin: Skin) {
-        this.equipped[typeName] = skin;
-        this.save();
-    }
+	getSkin(typeName: string): Skin | null {
+		return this.equipped[typeName] ?? null;
+	}
 
-    private save() {
-        // Save as indexes instead of objects to simplify storage
-        const toStore: Record<string, number> = {};
-        for (const type of this.types) {
-            const skin = this.equipped[type.name];
-            if (skin) {
-                toStore[type.name] = type.skins.indexOf(skin);
-            }
-        }
-        localStorage.setItem("equippedSkins", JSON.stringify(toStore));
-    }
+	getSkins(): Skin[] {
+		return Object.values(this.equipped);
+	}
+
+	changeSkin(typeName: string, skin: Skin) {
+		this.setEquipped(typeName, skin);
+		this.save();
+	}
+
+	private save() {
+		const toStore: Record<string, number> = {};
+		for (const type of this.types) {
+			const skin = this.equipped[type.name];
+			if (skin) toStore[type.name] = type.skins.indexOf(skin);
+		}
+		localStorage.setItem('equippedSkins', JSON.stringify(toStore));
+	}
+}
+
+export const sharedSkins = new Skins();
+
+let _initPromise: Promise<void> | null = null;
+export async function ensureSkinsInitialized() {
+	if (_initPromise) return _initPromise;
+	_initPromise = sharedSkins.init();
+	return _initPromise;
 }

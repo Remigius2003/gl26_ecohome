@@ -31,7 +31,7 @@ const WELCOME_SECTIONS = [
 	},
 ] as const;
 
-const WelcomeModal: Component<{ onClose: () => void }> = (props) => {
+const Welcome: Component<{ onClose: () => void }> = (props) => {
 	const [page, setPage] = createSignal(0);
 	const total = WELCOME_SECTIONS.length;
 	const section = () => WELCOME_SECTIONS[page()];
@@ -141,4 +141,4 @@ const WelcomeModal: Component<{ onClose: () => void }> = (props) => {
 	);
 };
 
-export default WelcomeModal;
+export default Welcome;

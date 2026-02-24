@@ -1,27 +1,25 @@
 import { Component, createSignal, onMount, Show, For } from 'solid-js';
-import { Skins, Skin, Types } from '@api';
+import {
+	ensureSkinsInitialized,
+	sharedSkins,
+	type Skin,
+	type Types,
+} from '@api';
 import './app.css';
 
-const CustomisationModal: Component<{ onClose: () => void }> = (props) => {
-	const skinsManager = new Skins();
-
+const Customisation: Component<{ onClose: () => void }> = (props) => {
 	const [loading, setLoading] = createSignal(true);
 	const [types, setTypes] = createSignal<Types[]>([]);
 	const [selectedCategory, setSelectedCategory] = createSignal<string | null>(
 		null,
 	);
-	const [equippedItems, setEquippedItems] = createSignal<Record<string, Skin>>(
-		{},
-	);
 
 	onMount(async () => {
 		try {
-			await skinsManager.init();
-			setTypes([...skinsManager.types]);
-			setEquippedItems({ ...skinsManager.equipped });
-			if (skinsManager.types.length > 0) {
-				setSelectedCategory(skinsManager.types[0].name);
-			}
+			await ensureSkinsInitialized();
+			setTypes([...sharedSkins.types]);
+			if (sharedSkins.types.length > 0)
+				setSelectedCategory(sharedSkins.types[0].name);
 		} catch (err) {
 			console.error('Failed to load skins:', err);
 		} finally {
@@ -30,8 +28,7 @@ const CustomisationModal: Component<{ onClose: () => void }> = (props) => {
 	});
 
 	const selectSkin = (typeName: string, skin: Skin) => {
-		skinsManager.changeSkin(typeName, skin);
-		setEquippedItems({ ...skinsManager.equipped });
+		sharedSkins.changeSkin(typeName, skin);
 	};
 
 	const currentSkins = () => {
@@ -43,17 +40,11 @@ const CustomisationModal: Component<{ onClose: () => void }> = (props) => {
 	return (
 		<div class="modal-overlay" style={{ 'z-index': 300 }}>
 			<div
-				class="fade-in"
+				class="fade-in settings-modal"
 				style={{
-					background: '#fff',
-					width: '92vw',
 					'max-width': '1000px',
 					height: '88vh',
-					'border-radius': '20px',
-					display: 'flex',
 					'flex-direction': 'column',
-					overflow: 'hidden',
-					'box-shadow': '0 20px 60px rgba(0,0,0,0.28)',
 				}}
 			>
 				<div class="content-header">
@@ -65,7 +56,7 @@ const CustomisationModal: Component<{ onClose: () => void }> = (props) => {
 							margin: 0,
 						}}
 					>
-						🎨 Personnalisation
+						🎨 Personnalisation du personnage
 					</h2>
 					<button
 						class="settings-close-pill"
@@ -77,7 +68,7 @@ const CustomisationModal: Component<{ onClose: () => void }> = (props) => {
 				</div>
 
 				<Show when={loading()}>
-					<div class="loading-state">
+					<div class="loading-state" style={{ flex: 1 }}>
 						<div class="spinner" />
 						<p class="text-muted">Chargement des skins…</p>
 					</div>
@@ -88,32 +79,29 @@ const CustomisationModal: Component<{ onClose: () => void }> = (props) => {
 						style={{
 							flex: 1,
 							display: 'flex',
+							'flex-direction': 'row',
 							overflow: 'hidden',
 						}}
 					>
 						<div
+							class="settings-sidebar"
 							style={{
-								width: '240px',
-								'flex-shrink': '0',
-								background: 'var(--light-bg)',
-								'border-right': '1px solid #eee',
-								display: 'flex',
-								'flex-direction': 'column',
+								width: '220px',
 								'align-items': 'center',
-								padding: '24px 16px',
-								'overflow-y': 'auto',
+								padding: '20px 12px',
 								gap: '12px',
 							}}
 						>
 							<div
 								style={{
 									position: 'relative',
-									width: '160px',
-									height: '270px',
+									width: '140px',
+									height: '240px',
 									'flex-shrink': '0',
-									background: 'rgba(255,255,255,0.6)',
-									'border-radius': '16px',
+									background: 'white',
+									'border-radius': '14px',
 									'box-shadow': '0 4px 16px rgba(0,0,0,0.06)',
+									border: '1px solid #eee',
 								}}
 							>
 								<img
@@ -129,9 +117,9 @@ const CustomisationModal: Component<{ onClose: () => void }> = (props) => {
 										'user-select': 'none',
 									}}
 								/>
-								<For each={Object.values(equippedItems())}>
+								<For each={Object.values(sharedSkins.equipped)}>
 									{(skin) => {
-										const frame = skin.frames[0];
+										const frame = (skin as any).frames?.[0];
 										return frame ? (
 											<img
 												src={frame.image}
@@ -154,8 +142,8 @@ const CustomisationModal: Component<{ onClose: () => void }> = (props) => {
 
 							<p
 								style={{
-									margin: '0',
-									'font-size': '0.72rem',
+									margin: 0,
+									'font-size': '0.7rem',
 									color: 'var(--text-light)',
 									'text-transform': 'uppercase',
 									'letter-spacing': '0.6px',
@@ -165,102 +153,63 @@ const CustomisationModal: Component<{ onClose: () => void }> = (props) => {
 								Aperçu
 							</p>
 
-							<Show when={types().length > 0}>
-								<div
-									style={{
-										width: '100%',
-										display: 'flex',
-										'flex-direction': 'column',
-										gap: '6px',
-									}}
-								>
-									<For each={types()}>
-										{(type) => {
-											const equipped = () => equippedItems()[type.name];
-											return (
-												<button
-													onClick={() => setSelectedCategory(type.name)}
-													style={{
-														display: 'flex',
-														'align-items': 'center',
-														gap: '10px',
-														padding: '8px 10px',
-														'border-radius': '10px',
-														border:
-															selectedCategory() === type.name
-																? '2px solid var(--primary-green)'
-																: '2px solid transparent',
-														background:
-															selectedCategory() === type.name
-																? '#e8f5e9'
-																: 'rgba(255,255,255,0.7)',
-														cursor: 'pointer',
-														width: '100%',
-														'text-align': 'left',
-														transition: 'all 0.15s',
-														'font-family': 'inherit',
-													}}
-												>
-													<Show when={equipped()?.icon?.image}>
-														<img
-															src={equipped()!.icon.image}
-															alt={type.name}
-															style={{
-																width: '28px',
-																height: '28px',
-																'border-radius': '6px',
-																'object-fit': 'contain',
-																'flex-shrink': '0',
-															}}
-														/>
-													</Show>
-													<Show when={!equipped()?.icon?.image}>
-														<div
-															style={{
-																width: '28px',
-																height: '28px',
-																'border-radius': '6px',
-																background: '#eee',
-																'flex-shrink': '0',
-															}}
-														/>
-													</Show>
-													<span
-														style={{
-															'font-size': '0.82rem',
-															'font-weight': '600',
-															color:
-																selectedCategory() === type.name
-																	? 'var(--primary-green)'
-																	: 'var(--text-main)',
-															'text-transform': 'capitalize',
-															'white-space': 'nowrap',
-															overflow: 'hidden',
-															'text-overflow': 'ellipsis',
-														}}
-													>
-														{type.name}
-													</span>
-												</button>
-											);
-										}}
-									</For>
-								</div>
-							</Show>
-						</div>
-
-						<div
-							style={{
-								flex: 1,
-								display: 'flex',
-								'flex-direction': 'column',
-								overflow: 'hidden',
-								background: '#fff',
-							}}
-						>
 							<div
 								style={{
-									padding: '14px 20px',
+									width: '100%',
+									display: 'flex',
+									'flex-direction': 'column',
+									gap: '4px',
+								}}
+							>
+								<For each={types()}>
+									{(type) => {
+										const equipped = () => sharedSkins.equipped[type.name];
+										const isActive = () => selectedCategory() === type.name;
+
+										return (
+											<button
+												class={`tab-btn${isActive() ? ' active' : ''}`}
+												onClick={() => setSelectedCategory(type.name)}
+												style={{ 'text-transform': 'capitalize' }}
+											>
+												<Show
+													when={(equipped() as any)?.icon?.image}
+													fallback={
+														<div
+															style={{
+																width: '22px',
+																height: '22px',
+																'border-radius': '4px',
+																background: 'rgba(255,255,255,0.3)',
+																'flex-shrink': '0',
+															}}
+														/>
+													}
+												>
+													<img
+														src={(equipped() as any)!.icon.image}
+														alt={type.name}
+														style={{
+															width: '22px',
+															height: '22px',
+															'border-radius': '4px',
+															'object-fit': 'contain',
+															'flex-shrink': '0',
+														}}
+													/>
+												</Show>
+												<span>{type.name}</span>
+											</button>
+										);
+									}}
+								</For>
+							</div>
+						</div>
+
+						<div class="settings-content">
+							<div
+								style={{
+									padding: '12px 20px',
 									'border-bottom': '1px solid #f0f0f0',
 									'flex-shrink': '0',
 								}}
@@ -282,47 +231,41 @@ const CustomisationModal: Component<{ onClose: () => void }> = (props) => {
 										color: 'var(--text-light)',
 									}}
 								>
-									({currentSkins().length} skins disponibles)
+									({currentSkins().length} skins)
 								</span>
 							</div>
 
-							<Show
-								when={currentSkins().length > 0}
-								fallback={
-									<div
-										style={{
-											flex: 1,
-											display: 'flex',
-											'align-items': 'center',
-											'justify-content': 'center',
-											color: 'var(--text-light)',
-											'font-size': '0.95rem',
-										}}
-									>
-										Aucun skin dans cette catégorie
-									</div>
-								}
-							>
-								<div
-									style={{
-										flex: 1,
-										'overflow-y': 'auto',
-										padding: '16px 20px',
-									}}
+							<div class="content-scroll">
+								<Show
+									when={currentSkins().length > 0}
+									fallback={
+										<div
+											class="loading-state"
+											style={{ 'min-height': '120px' }}
+										>
+											<p class="text-muted">Aucun skin dans cette catégorie</p>
+										</div>
+									}
 								>
 									<div
 										style={{
 											display: 'grid',
 											'grid-template-columns':
 												'repeat(auto-fill, minmax(110px, 1fr))',
-											gap: '12px',
+											gap: '10px',
 										}}
 									>
 										<For each={currentSkins()}>
 											{(skin) => {
-												const isActive = () =>
-													equippedItems()[selectedCategory()!]?.icon?.image ===
-													skin.icon.image;
+												const isActive = () => {
+													const cat = selectedCategory();
+													if (!cat) return false;
+													const equipped = sharedSkins.equipped[cat];
+													return (
+														(equipped as any)?.icon?.image ===
+														(skin as any).icon?.image
+													);
+												};
 
 												return (
 													<button
@@ -351,7 +294,7 @@ const CustomisationModal: Component<{ onClose: () => void }> = (props) => {
 														}}
 													>
 														<img
-															src={skin.icon.image}
+															src={(skin as any).icon.image}
 															alt="skin"
 															style={{
 																width: '72px',
@@ -375,8 +318,8 @@ const CustomisationModal: Component<{ onClose: () => void }> = (props) => {
 											}}
 										</For>
 									</div>
-								</div>
-							</Show>
+								</Show>
+							</div>
 						</div>
 					</div>
 				</Show>
@@ -385,4 +328,4 @@ const CustomisationModal: Component<{ onClose: () => void }> = (props) => {
 	);
 };
 
-export default CustomisationModal;
+export default Customisation;
