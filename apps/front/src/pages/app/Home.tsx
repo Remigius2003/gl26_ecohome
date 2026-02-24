@@ -1,5 +1,10 @@
-import { setGlobalNavigate, setGlobalShowMusic } from '../../App';
-import { FaSolidGear, FaSolidCircleInfo, FaSolidPalette } from 'solid-icons/fa';
+import { setGlobalNavigate } from '../../App';
+import {
+	FaSolidGear,
+	FaSolidCircleInfo,
+	FaSolidPalette,
+	FaSolidLeaf,
+} from 'solid-icons/fa';
 import SceneCanvas from '@components/SceneCanvas';
 import { useNavigate } from '@solidjs/router';
 import { createSignal, Show, onMount, onCleanup } from 'solid-js';
@@ -7,7 +12,7 @@ import type { SceneType } from '@scene';
 import CustomisationModal from './Customisation';
 import WelcomeModal from './Welcome';
 import Settings from './Settings';
-import Music from './Music';
+import Quizz from './Quizz';
 import Chat from './Chat';
 import {
 	friendsListWrapper,
@@ -24,15 +29,12 @@ export default function Home() {
 	setGlobalNavigate(navigate);
 
 	const scene: SceneType = 'home';
-	const [showMusic, setShowMusic] = createSignal(false);
 	const [showSettings, setShowSettings] = createSignal(false);
 	const [showWelcome, setShowWelcome] = createSignal(false);
 	const [showCustomisation, setShowCustomisation] = createSignal(false);
+	const [showQuizz, setShowQuizz] = createSignal(false);
 
 	onMount(() => {
-		// Make setShowMusic available globall y for piano interaction (inside onMount to avoid recursion)
-		setGlobalShowMusic(setShowMusic);
-
 		RTClient.connect();
 
 		if (!localStorage.getItem(WELCOME_KEY)) {
@@ -58,6 +60,8 @@ export default function Home() {
 	return (
 		<>
 			<SceneCanvas scene={scene} />
+
+			{/* ── HUD ── */}
 			<div class="game-overlay">
 				<div
 					class="hud-top"
@@ -73,6 +77,14 @@ export default function Home() {
 						onClick={() => setShowWelcome(true)}
 					>
 						<FaSolidCircleInfo />
+					</div>
+
+					<div
+						class="settings-btn"
+						title="Bilan Carbone"
+						onClick={() => setShowQuizz(true)}
+					>
+						<FaSolidLeaf />
 					</div>
 
 					<div
@@ -95,12 +107,12 @@ export default function Home() {
 
 			<Chat />
 
-			<Show when={showMusic()}>
-				<Music onClose={() => setShowMusic(false)} />
-			</Show>
-
 			<Show when={showWelcome()}>
 				<WelcomeModal onClose={() => setShowWelcome(false)} />
+			</Show>
+
+			<Show when={showQuizz()}>
+				<Quizz onClose={() => setShowQuizz(false)} />
 			</Show>
 
 			<Show when={showCustomisation()}>
