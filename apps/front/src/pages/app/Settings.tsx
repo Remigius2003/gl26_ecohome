@@ -29,7 +29,7 @@ import {
     deleteAccount,
     profileWrapper,
 } from "@api";
-import { AudioManager } from "./AudioManager";
+import { AudioManager } from "../../api/AudioManager";
 
 interface SettingsProps {
     onClose: () => void;

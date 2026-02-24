@@ -10,3 +10,4 @@ export * from "./user";
 export * from "./defi";
 export * from "./RTClient";
 export * from "./chat";
+export * from "./AudioManager";
