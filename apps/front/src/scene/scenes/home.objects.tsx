@@ -204,6 +204,7 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
     
     
     // New objects //
+    //pour connecter avec les mini jeux après //
 
 
     p: {
