@@ -3,20 +3,20 @@
 		{
 			"name": "Light & Shadow - niveau 1 - Des problèmes électriques?",
 			"id": "f1-home-01",
-			"image": { "type": "static", "link": "/images/f1-home.jpg" },
+			"image": { "type": "static", "link": "/game/lightShadow/lvl1_img.jpg" },
 			"description": "A cozy corner owned by Friend 1."
 		},
 		{
-			"name": "Friend1 — Park",
-			"id": "f1-park-01",
-			"image": { "type": "static", "link": "/images/f1-park.jpg" },
-			"description": "A pleasant park where Friend 1 plays."
+			"name": "Light & Shadow - niveau 2 - Cauchemar en cuisine",
+			"id": "f1-home-02",
+			"image": { "type": "static", "link": "/game/lightShadow/lvl2_img.jpg" },
+			"description": "A cozy corner owned by Friend 1."
 		},
 		{
-			"name": "Friend1 — Park 2",
-			"id": "f1-park-02",
-			"image": { "type": "static", "link": "/images/f1-park.jpg" },
-			"description": "A pleasant park where Friend 1 plays."
+			"name": "Light & Shadow - niveau 3 - Cauchemar tout court",
+			"id": "f1-home-03",
+			"image": { "type": "static", "link": "/game/lightShadow/lvl3_img.png" },
+			"description": "A cozy corner owned by Friend 1."
 		}
 	]
 }
