@@ -1,25 +1,25 @@
 // scenes/trilogique/TrilogiqueScene.ts
 
-import { Scene, SceneType, Dynamic, Entity } from "../../core/types";
+import { Scene, SceneType, Dynamic, Entity } from "../../../core/types";
 import {
     ColorTexture,
     ImageTexture,
     Sprite,
     TransparentTexture,
-} from "../../core/texture";
-import { Camera } from "../../logic/camera";
-import { World } from "../../logic/world";
+} from "../../../core/texture";
+import { Camera } from "../../../logic/camera";
+import { World } from "../../../logic/world";
 import {
     createEntity,
     createSolid,
     withInteractable,
     withDynamic,
-} from "../../logic/factory";
+} from "../../../logic/factory";
 import {
     PhysicsSystem,
     PlayerController,
     NPCController,
-} from "../../logic/movement";
+} from "../../../logic/movement";
 import { Group } from "@scene/core/group";
 
 import {
@@ -29,10 +29,9 @@ import {
     Transformer,
     Receiver,
     Position,
-} from "./types";
-import { createPlayer } from "../home.entities";
+} from "../types";
+import { createPlayer } from "../../home.entities";
 import { Skins } from "@api/manageSkin";
-import { saveScore } from "@api/score";
 
 const CELL_SIZE = 100;
 
@@ -72,7 +71,6 @@ export default class TrilogiqueScene implements Scene {
 
     private isLoading = true;
     private debugLog: string[] = [];
-    private levelId: string = "";
 
     init(canvas: HTMLCanvasElement, onSwitchScene: (t: SceneType) => void) {
         this.camera = new Camera(canvas.width, canvas.height);
@@ -82,7 +80,6 @@ export default class TrilogiqueScene implements Scene {
     }
 
     async loadGameLevel(levelId: string) {
-        this.levelId = levelId;
         this.isLoading = true;
         this.world = new World(1000, 1000);
         this.gameWorldData = null;
@@ -106,7 +103,7 @@ export default class TrilogiqueScene implements Scene {
 
             this.setupBackground();
             this.setupBoundaries();
-            await this.setupPlayer(this.gameWorldData.playerSpawn);
+            this.setupPlayer(this.gameWorldData.playerSpawn);
             this.setupStaticMap();
             this.setupMachines();
 
@@ -119,8 +116,7 @@ export default class TrilogiqueScene implements Scene {
         }
     }
 
-    private async setupPlayer(spawn: Position) {
-        const PLAYER_SIZE = CELL_SIZE * 0.7;
+    private setupPlayer(spawn: Position) {
         this.player = createPlayer(
             spawn.x * CELL_SIZE,
             spawn.y * CELL_SIZE,
@@ -128,7 +124,6 @@ export default class TrilogiqueScene implements Scene {
         );
 
         const skinsManager = new Skins();
-        await skinsManager.init();
         const allEquippedEntries = Object.entries(skinsManager.equipped);
 
         allEquippedEntries.forEach(([typeName, skin]) => {
@@ -220,78 +215,59 @@ export default class TrilogiqueScene implements Scene {
     }
 
     private setupBoundaries() {
-            if (!this.gameWorldData) return;
+        if (!this.gameWorldData) return;
 
-<<<<<<< HEAD:apps/front/src/scene/scenes/trilogique/deprecated/trilogique.ts
         const w = this.gameWorldData.worldSizeX;
         const h = this.gameWorldData.worldSizeY;
 
-        const createBorderBlock = (
+        // Définir les différentes images pour chaque côté
+        const borderImgTop = "/game/trilogique/images/env/mountain_top.png";
+        const borderImgBottom = "/game/trilogique/images/env/moutain.png";
+        const borderImgLeft = "/game/trilogique/images/env/mountain_left.png";
+        const borderImgRight = "/game/trilogique/images/env/mountain_right.png";
+
+        // Définir les différentes images pour les 4 COINS
+        const borderImgTopLeft = "/game/trilogique/images/env/corner_top.png";
+        const borderImgTopRight = "/game/trilogique/images/env/corner_top.png";
+        const borderImgBottomLeft = "/game/trilogique/images/env/corner.png";
+        const borderImgBottomRight = "/game/trilogique/images/env/corner.png";
+
+        const createBorderTile = (
             x: number,
             y: number,
-            width: number,
-            height: number,
+            imgPath: string,
             id: string,
         ) => {
             const block = createSolid({
                 id: `border-${id}`,
                 x: x * CELL_SIZE,
                 y: y * CELL_SIZE,
-                width: width * CELL_SIZE,
-                height: height * CELL_SIZE,
-                text: new ColorTexture("black"),
+                width: CELL_SIZE,
+                height: CELL_SIZE,
+                text: new ImageTexture(imgPath),
                 priority: 100,
             });
             this.world.addEntity(block);
         };
-=======
-            const w = this.gameWorldData.worldSizeX;
-            const h = this.gameWorldData.worldSizeY;
->>>>>>> 661c661 (Trilogique fini):apps/front/src/scene/scenes/trilogique/trilogique.ts
 
-            // Définir les différentes images pour chaque côté
-            const borderImgTop = "/game/trilogique/images/env/mountain_top.png";
-            const borderImgBottom = "/game/trilogique/images/env/moutain.png";
-            const borderImgLeft = "/game/trilogique/images/env/mountain_left.png";
-            const borderImgRight = "/game/trilogique/images/env/mountain_right.png";
+        // 1. Dessiner les 4 coins individuellement
+        createBorderTile(0, 0, borderImgTopLeft, "top-left");
+        createBorderTile(w - 1, 0, borderImgTopRight, "top-right");
+        createBorderTile(0, h - 1, borderImgBottomLeft, "bottom-left");
+        createBorderTile(w - 1, h - 1, borderImgBottomRight, "bottom-right");
 
-            // Définir les différentes images pour les 4 COINS
-            const borderImgTopLeft = "/game/trilogique/images/env/corner_top.png";
-            const borderImgTopRight = "/game/trilogique/images/env/corner_top.png";
-            const borderImgBottomLeft = "/game/trilogique/images/env/corner.png";
-            const borderImgBottomRight = "/game/trilogique/images/env/corner.png";
-            
-            const createBorderTile = (x: number, y: number, imgPath: string, id: string) => {
-                const block = createSolid({
-                    id: `border-${id}`,
-                    x: x * CELL_SIZE,
-                    y: y * CELL_SIZE,
-                    width: CELL_SIZE,
-                    height: CELL_SIZE,
-                    text: new ImageTexture(imgPath),
-                    priority: 100,
-                });
-                this.world.addEntity(block);
-            };
-
-            // 1. Dessiner les 4 coins individuellement
-            createBorderTile(0, 0, borderImgTopLeft, "top-left");
-            createBorderTile(w - 1, 0, borderImgTopRight, "top-right");
-            createBorderTile(0, h - 1, borderImgBottomLeft, "bottom-left");
-            createBorderTile(w - 1, h - 1, borderImgBottomRight, "bottom-right");
-
-            // 2. Dessiner le HAUT et le BAS (sans recouvrir les coins : on commence à 1 et on s'arrête à w - 2)
-            for (let x = 1; x < w - 1; x++) {
-                createBorderTile(x, 0, borderImgTop, `top-${x}`);
-                createBorderTile(x, h - 1, borderImgBottom, `bottom-${x}`);
-            }
-
-            // 3. Dessiner la GAUCHE et la DROITE (sans recouvrir les coins : on commence à 1 et on s'arrête à h - 2)
-            for (let y = 1; y < h - 1; y++) {
-                createBorderTile(0, y, borderImgLeft, `left-${y}`);
-                createBorderTile(w - 1, y, borderImgRight, `right-${y}`);
-            }
+        // 2. Dessiner le HAUT et le BAS (sans recouvrir les coins : on commence à 1 et on s'arrête à w - 2)
+        for (let x = 1; x < w - 1; x++) {
+            createBorderTile(x, 0, borderImgTop, `top-${x}`);
+            createBorderTile(x, h - 1, borderImgBottom, `bottom-${x}`);
         }
+
+        // 3. Dessiner la GAUCHE et la DROITE (sans recouvrir les coins : on commence à 1 et on s'arrête à h - 2)
+        for (let y = 1; y < h - 1; y++) {
+            createBorderTile(0, y, borderImgLeft, `left-${y}`);
+            createBorderTile(w - 1, y, borderImgRight, `right-${y}`);
+        }
+    }
 
     private setupStaticMap() {
         if (!this.gameWorldData) return;
@@ -527,12 +503,12 @@ export default class TrilogiqueScene implements Scene {
         if (this.isGameOver) return;
         this.isGameOver = true;
         this.log("VICTORY!");
-        saveScore("trilogique", this.levelId, this.currentTime);
+
         setTimeout(() => {
             if (this.onSwitchScene) {
                 window.location.href = "/lobby/trilogique";
             }
-        }, 11500);
+        }, 1500);
     }
 
     private loseGame() {
@@ -553,7 +529,7 @@ export default class TrilogiqueScene implements Scene {
         return false;
     }
 
-    // --- Engine ---
+    // --- Engine Boilerplate ---
 
     resizeScene(w: number, h: number) {
         this.camera.resize(w, h);

@@ -1,133 +1,127 @@
-import { globalNavigate } from "../../App";
+import { globalNavigate, globalShowMusic } from "../../App";
 
+/* list of disponnible objects:
+[
+  "armoire.png",
+  "bath.png",
+  "bed2.png",
+  "bedFace.png",
+  "BlueFlower.png",
+  "chair1\\back.png",
+  "chair1\\face.png",
+  "chair1\\left.png",
+  "chair1\\right.png",
+  "chair2\\back.png",
+  "chair2\\front.png",
+  "chair2\\left.png",
+  "chair2\\right.png",
+  "chair_conf.png",
+  "chairFace.png",
+  "chairtoleft.png",
+  "chaise_salon.png",
+  "chemine.png",
+  "curtain.png",
+  "decorativePlant.png",
+  "disjoncteur.png",
+  "esc.png",
+  "flower.png",
+  "fontaine.png",
+  "four.png",
+  "frigo.png",
+  "home_phone.png",
+  "horloge\\horloge1.png",
+  "horloge\\horloge2.png",
+  "horloge\\horloge3.png",
+  "horloge.png",
+  "kitchen.png",
+  "lampe.png",
+  "lampe2_for_light&shadow.png",
+  "lampe_for_light&shadow.png",
+  "lit.png",
+  "littleTree.png",
+  "ordi_pour_defi_social_freind.png",
+  "painting.png",
+  "panneau_solaire_pour_minijeu.png",
+  "PcOnTable.png",
+  "poubelle.png",
+  "roundTable.png",
+  "Sofa\\SofaBack.png",
+  "Sofa\\SofaFront.png",
+  "sources\\dark-wood.png",
+  "sources\\house_inside.png",
+  "sources\\lpc-victorian-decoration\\lpc-victorian-decoration\\victorian-garden.png",
+  "sources\\lpc-victorian-decoration\\lpc-victorian-decoration\\victorian-market.png",
+  "sources\\lpc-victorian-decoration\\lpc-victorian-decoration\\victorian-streets.png",
+  "sources\\lpc-walls\\lpc-walls\\walls.png",
+  "tab_basse.png",
+  "table.png",
+  "tableSimple.png",
+  "tapi.png",
+  "thermostat.png",
+  "thermostat_eco.png",
+  "trilogique.png",
+  "tv.png",
+  "TvOnTable.png",
+  "Window.png",
+  "WoodTable.png"
+]*/
 export type AsciiThingDef = {
     width: number;
     height: number;
-
-    // rendering
     texture?: string;
     solid?: boolean;
-
-    // interaction (optional)
-    areaOfInteraction?: number; // default -1
-    priority?: number; // default 0
+    areaOfInteraction?: number;
+    priority?: number;
     onInteract?: () => void;
 };
+
 export const THING_DEFS: Record<string, AsciiThingDef> = {
-    T: {
-        width: 3,
-        height: 3,
-        texture: "house/furniture/table.png",
+    M: {
+        width: 2,
+        height: 2,
+        texture: "house/furniture/piano1.png",
         solid: true,
         areaOfInteraction: 1,
         priority: 0,
-        onInteract: () => {
-            globalNavigate("/social");
-        },
+        onInteract: () => globalShowMusic(true),
     },
-    S: {
-        width: 2,
+
+    K: {
+        width: 6,
         height: 2,
-        texture: "house/furniture/tableSimple.png",
-        solid: true,
-        areaOfInteraction: 1,
-        priority: 0,
-        onInteract: () => {
-            globalNavigate("/social");
-        },
-    },
-    V: {
-        width: 2,
-        height: 2,
-        texture: "house/furniture/tv.png",
-        solid: true,
-        priority: 0,
-    },
-    C: {
-        width: 1,
-        height: 1,
-        texture: "house/furniture/chairFace.png",
-        solid: true,
-        priority: 0,
-    },
-    L: {
-        width: 1,
-        height: 1,
-        texture: "house/furniture/chairtoleft.png",
-        solid: true,
-        areaOfInteraction: 0,
-        priority: 0,
-        onInteract: () => {
-            console.log("S'assoir sur la chaise");
-        },
-    },
-    Q: {
-        width: 2,
-        height: 2,
-        texture: "house/furniture/chair_conf.png",
+        texture: "house/furniture/kitchen.png",
         solid: true,
     },
     F: {
-        width: 1,
+        width: 2,
         height: 2,
         texture: "house/furniture/frigo.png",
         solid: true,
         areaOfInteraction: 1,
         priority: 0,
-        onInteract: () => {
-            globalNavigate("/PreQuizz?type=alimentation");
-        },
+        onInteract: () => globalNavigate("/PreQuizz?type=alimentation"),
     },
-
-    W: {
-        width: 2,
-        height: 2,
-        texture: "house/furniture/machine_alaver.png",
-        solid: true,
-    },
-
     O: {
         width: 2,
         height: 2,
         texture: "house/furniture/four.png",
         solid: true,
     },
-
-    N: {
+    T: {
         width: 3,
         height: 3,
-        texture: "house/furniture/piano.png",
+        texture: "house/furniture/WoodTable.png",
         solid: true,
+        areaOfInteraction: 1,
+        priority: 0,
+        onInteract: () => globalNavigate("/social"),
     },
-
-    K: {
-        width: 6,
-        height: 2,
-        texture: "house/furniture/cuisine.png",
-        solid: true,
-    },
-
-    A: {
+    C: {
         width: 1,
         height: 1,
-        texture: "house/furniture/chaise_salon.png",
+        texture: "house/furniture/chair1/face.png",
         solid: true,
     },
-
-    Z: {
-        width: 3,
-        height: 3,
-        texture: "house/furniture/sofa_oriente.png",
-        solid: true,
-    },
-
-    B: {
-        width: 4,
-        height: 4,
-        texture: "house/furniture/lit.png",
-        solid: true,
-    },
-
     H: {
         width: 2,
         height: 2,
@@ -135,50 +129,75 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         solid: false,
     },
 
+    // --- LIVING ROOM ---
+    S: {
+        width: 4,
+        height: 2,
+        texture: "house/furniture/Sofa/SofaFront.png",
+        solid: true,
+    },
+    V: {
+        width: 2,
+        height: 2,
+        texture: "house/furniture/TvOnTable.png",
+        solid: true,
+    },
     Y: {
         width: 2,
         height: 1,
         texture: "house/furniture/tab_basse.png",
         solid: true,
     },
+    p: {
+        width: 2,
+        height: 2,
+        texture: "house/furniture/decorativePlant.png",
+        solid: true,
+    },
+    o: {
+        width: 4,
+        height: 3,
+        texture: "house/furniture/panneau_solaire_pour_minijeu.png",
+        solid: true,
+    },
 
+    // --- BEDROOM / OFFICE ---
+    B: {
+        width: 4,
+        height: 4,
+        texture: "house/furniture/lit.png",
+        solid: true,
+    },
     D: {
         width: 2,
         height: 2,
         texture: "house/furniture/armoire.png",
         solid: true,
         areaOfInteraction: 1,
-        onInteract: () => {
-            globalNavigate("/customisation");
-        },
+        onInteract: () => globalNavigate("/customisation"),
     },
-
-    G: {
-        width: 3,
-        height: 2,
-        texture: "house/furniture/etagere.png",
-        solid: true,
-    },
-
     J: {
         width: 3,
         height: 2,
         texture: "house/furniture/chemine.png",
         solid: true,
     },
-
-    U: {
-        width: 1,
+    b: {
+        width: 3,
         height: 2,
+        texture: "house/furniture/ordi_pour_defi_social_freind.png",
+        solid: true,
+    },
+
+    // --- BATHROOM ---
+    U: {
+        width: 2,
+        height: 3,
         texture: "house/furniture/bath.png",
         solid: true,
     },
-    s: {
-        width: 3,
-        height: 3,
-        texture: "house/furniture/sofa.png",
-        solid: false,
-    },
+
+    // --- HALLWAY / UTILITY ---
     E: {
         width: 8,
         height: 2,
@@ -186,28 +205,18 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         solid: false,
         areaOfInteraction: 1,
         priority: 1,
-        onInteract: () => {
-            globalNavigate("/home2");
-        },
+        onInteract: () => globalNavigate("/home2"),
     },
     R: {
         width: 2,
         height: 2,
-        texture: "le tapis",
+        texture: "house/furniture/tapi.png",
         solid: false,
         areaOfInteraction: 0,
         priority: 1,
-        onInteract: () => {
-            globalNavigate("/PreQuizz?type=transport");
-        },
+        onInteract: () => globalNavigate("/PreQuizz?type=transport"),
     },
-    
-    
-    // New objects //
-    //pour connecter avec les mini jeux après //
-
-
-    p: {
+    t: {
         width: 2,
         height: 2,
         texture: "house/furniture/home_phone.png",
@@ -225,37 +234,10 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         texture: "house/furniture/thermostat_eco.png",
         solid: false,
     },
-    x: {
-        width: 2,
-        height: 2,
-        texture: "house/furniture/thermostat.png",
-        solid: false,
-    }, 
     l: {
-        width: 2,
-        height: 4,
-        texture: "house/furniture/lampe_for_light&shadow.png",
+        width: 1,
+        height: 2,
+        texture: "house/furniture/lampe.png",
         solid: false,
-    },
-
-    i: {
-        width: 2,
-        height: 4,
-        texture: "house/furniture/lampe2_for_light&shadow.png",
-        solid: false,
-    },
-
-    o: {
-        width: 4,
-        height: 3,
-        texture: "house/furniture/panneau_solaire_pour_minijeu.png",
-        solid: false,
-    },
-
-    b: {
-        width: 6,
-        height: 3,
-        texture: "house/furniture/ordi_pour_defi_social_freind.png",
-        solid: true,
     },
 };

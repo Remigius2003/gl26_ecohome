@@ -12,6 +12,7 @@ import {
     FaSolidMusic,
     FaSolidCheck,
     FaSolidCompactDisc,
+    FaSolidXmark,
 } from "solid-icons/fa";
 import { AudioManager, Track } from "./AudioManager";
 import "./music.css";
@@ -31,9 +32,48 @@ const AVAILABLE_TRACKS: Track[] = [
         artist: "Eco Sounds",
         duration: "03:15",
     },
+    {
+        id: "3",
+        title: "Piano Tranquille",
+        path: "/musics/piano2.mp3",
+        artist: "Eco Sounds",
+        duration: "03:15",
+    },
+    {
+        id: "4",
+        title: "Cool Ambiance",
+        path: "/musics/ramadan.mp3",
+        artist: "Eco Sounds",
+        duration: "03:15",
+    },
+    {
+        id: "5",
+        title: "UpBeats",
+        path: "/musics/upbeat.mp3",
+        artist: "Eco Sounds",
+        duration: "03:15",
+    },
+    {
+        id: "6",
+        title: "Motivation",
+        path: "/musics/motivation.mp3",
+        artist: "Eco Sounds",
+        duration: "03:15",
+    },
+    {
+        id: "7",
+        title: "Epic",
+        path: "/musics/epic.mp3",
+        artist: "Eco Sounds",
+        duration: "03:15",
+    },
 ];
 
-const Music: Component = () => {
+interface MusicProps {
+    onClose?: () => void;
+}
+
+const Music: Component<MusicProps> = (props) => {
     const audio = AudioManager.getInstance();
 
     const [selectedTrackId, setSelectedTrackId] = createSignal<string | null>(
@@ -83,118 +123,144 @@ const Music: Component = () => {
         audio.removeEventListener("timeupdate", updateTimeUI);
     });
 
-    // FIX 2: handleTogglePlay also selects the track
     const handleTogglePlay = (track: Track, e: Event) => {
         e.stopPropagation();
         audio.toggleTrack(track);
         setSelectedTrackId(track.id);
     };
 
+    const handleClose = () => {
+        props.onClose?.();
+    };
+
     return (
-        <div class="music-card fade-in">
-            {/* Header */}
-            <div class="music-header">
-                <div class="music-header-icon">
-                    <FaSolidMusic size={22} color="var(--primary-green)" />
+        <div class="music-overlay">
+            <div class="music-modal">
+                {/* Header with close button */}
+                <div class="music-modal-header">
+                    <div class="music-header">
+                        <div class="music-header-icon">
+                            <FaSolidMusic
+                                size={22}
+                                color="var(--primary-green)"
+                            />
+                        </div>
+                        <div>
+                            <h3 class="music-title">Ambiance Musicale</h3>
+                            <p class="text-muted">
+                                Personnalisez votre expérience
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        class="music-close-btn"
+                        onClick={handleClose}
+                        aria-label="Fermer"
+                    >
+                        <FaSolidXmark size={24} color="var(--primary-green)" />
+                    </button>
                 </div>
-                <div>
-                    <h3 class="music-title">Ambiance Musicale</h3>
-                    <p class="text-muted">Personnalisez votre expérience</p>
-                </div>
-            </div>
 
-            {/* Track list */}
-            <div class="music-track-list">
-                <For each={AVAILABLE_TRACKS}>
-                    {(track) => (
-                        <div
-                            class="music-track-item"
-                            classList={{
-                                "music-track-item--selected":
-                                    selectedTrackId() === track.id,
-                            }}
-                            // FIX 2: clicking anywhere on the card plays the track
-                            onClick={(e) => handleTogglePlay(track, e)}
-                        >
-                            {/* Progress bar */}
-                            <Show when={playingTrackId() === track.id}>
-                                <div class="music-progress-rail">
-                                    <div
-                                        class="music-progress-fill"
-                                        style={{ width: `${progress()}%` }}
-                                    />
-                                </div>
-                            </Show>
+                {/* Track list */}
+                <div class="music-track-list">
+                    <For each={AVAILABLE_TRACKS}>
+                        {(track) => (
+                            <div
+                                class="music-track-item"
+                                classList={{
+                                    "music-track-item--selected":
+                                        selectedTrackId() === track.id,
+                                }}
+                                onClick={(e) => handleTogglePlay(track, e)}
+                            >
+                                {/* Progress bar */}
+                                <Show when={playingTrackId() === track.id}>
+                                    <div class="music-progress-rail">
+                                        <div
+                                            class="music-progress-fill"
+                                            style={{ width: `${progress()}%` }}
+                                        />
+                                    </div>
+                                </Show>
 
-                            <div class="music-track-inner">
-                                {/* Play / Pause button */}
-                                <button
-                                    class="music-play-btn"
-                                    classList={{
-                                        "music-play-btn--playing":
-                                            playingTrackId() === track.id,
-                                    }}
-                                    onClick={(e) => handleTogglePlay(track, e)}
-                                >
-                                    <Show
-                                        when={playingTrackId() === track.id}
-                                        fallback={
-                                            <FaSolidPlay
-                                                size={18}
-                                                color="white"
-                                                style={{ "margin-left": "3px" }}
-                                            />
+                                <div class="music-track-inner">
+                                    {/* Play / Pause button */}
+                                    <button
+                                        class="music-play-btn"
+                                        classList={{
+                                            "music-play-btn--playing":
+                                                playingTrackId() === track.id,
+                                        }}
+                                        onClick={(e) =>
+                                            handleTogglePlay(track, e)
                                         }
                                     >
-                                        {/* FIX 1: only pause icon here, no extra check */}
-                                        <FaSolidPause size={18} color="white" />
-                                    </Show>
-                                </button>
-
-                                {/* Track info */}
-                                <div class="music-track-info">
-                                    <h4 class="music-track-title">
-                                        {track.title}
-                                        {/* FIX 1: only spinning disc when playing, NO extra check here */}
                                         <Show
                                             when={playingTrackId() === track.id}
+                                            fallback={
+                                                <FaSolidPlay
+                                                    size={18}
+                                                    color="white"
+                                                    style={{
+                                                        "margin-left": "3px",
+                                                    }}
+                                                />
+                                            }
                                         >
-                                            <FaSolidCompactDisc
-                                                class="spin"
-                                                color="var(--primary-green)"
+                                            <FaSolidPause
+                                                size={18}
+                                                color="white"
                                             />
                                         </Show>
-                                    </h4>
-                                    <p class="text-muted music-track-meta">
-                                        {track.artist} •{" "}
-                                        <span class="music-track-time">
+                                    </button>
+
+                                    {/* Track info */}
+                                    <div class="music-track-info">
+                                        <h4 class="music-track-title">
+                                            {track.title}
                                             <Show
                                                 when={
                                                     playingTrackId() ===
                                                     track.id
                                                 }
-                                                fallback={track.duration}
                                             >
-                                                {currentTimeLabel()} /{" "}
-                                                {durationLabel()}
+                                                <FaSolidCompactDisc
+                                                    class="spin"
+                                                    color="var(--primary-green)"
+                                                />
                                             </Show>
-                                        </span>
-                                    </p>
-                                </div>
-
-                                {/* Selected check — only for selected, not playing */}
-                                <Show when={selectedTrackId() === track.id}>
-                                    <div class="music-check-badge">
-                                        <FaSolidCheck
-                                            size={14}
-                                            color="var(--primary-green)"
-                                        />
+                                        </h4>
+                                        <p class="text-muted music-track-meta">
+                                            {track.artist} •{" "}
+                                            <span class="music-track-time">
+                                                <Show
+                                                    when={
+                                                        playingTrackId() ===
+                                                        track.id
+                                                    }
+                                                    fallback={track.duration}
+                                                >
+                                                    {currentTimeLabel()} /{" "}
+                                                    {durationLabel()}
+                                                </Show>
+                                            </span>
+                                        </p>
                                     </div>
-                                </Show>
+
+                                    {/* Selected check — only for selected, not playing */}
+                                    <Show when={selectedTrackId() === track.id}>
+                                        <div class="music-check-badge">
+                                            <FaSolidCheck
+                                                size={14}
+                                                color="var(--primary-green)"
+                                            />
+                                        </div>
+                                    </Show>
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </For>
+                        )}
+                    </For>
+                </div>
             </div>
         </div>
     );

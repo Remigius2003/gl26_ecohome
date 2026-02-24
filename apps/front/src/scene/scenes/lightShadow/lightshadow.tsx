@@ -1,5 +1,5 @@
-import { Scene, SceneType, Character, Entity, Solid } from "../../core/types";
-import { ColorTexture, ImageTexture } from "../../core/texture";
+import { Scene, SceneType, Character, Entity, Solid, Dynamic } from "../../core/types";
+import { ColorTexture, ImageTexture, Sprite } from "../../core/texture";
 import { Camera } from "../../logic/camera";
 import { World } from "../../logic/world";
 import {
@@ -12,7 +12,10 @@ import {
 import { PhysicsSystem, PlayerController } from "../../logic/movement";
 import { drawDarknessWithLights } from "../../logic/lighting";
 import { GhostController, type DeviceLike } from "../../logic/ghost";
+import { Group } from "@scene/core/group";
 import { LightShadowLevel } from "./types";
+import { createPlayer } from "../home.entities";
+import { Skins } from "@api/manageSkin";
 
 type Device = (Entity & Solid) &
     DeviceLike & { lightRadius: number; label: string };
@@ -109,20 +112,25 @@ function makeDevice(
     y: number,
     watts: number,
     label: string,
-    colorOn: string,
-    colorOff: string,
+    image: string,
+    imageSize: number,
     lightRadius: number,
     interactionCells: number,
-    cellSize: number, // <-- Added this
+    cellSize: number,
 ): Device {
+    const deviceWidth = cellSize * imageSize;
+    const deviceHeight = cellSize * imageSize;
+    const offsetX = (cellSize - deviceWidth) / 2;
+    const offsetY = (cellSize - deviceHeight) / 2;
+
     const base = createSolid({
         id,
-        x,
-        y,
-        width: cellSize * 0.65,
-        height: cellSize * 0.65,
+        x: x + offsetX,
+        y: y + offsetY,
+        width: deviceWidth,
+        height: deviceHeight,
         priority: 3,
-        text: new ColorTexture(colorOff, "rgba(255,255,255,0.6)"),
+        text: new ImageTexture(image),
     }) as any as Device;
 
     base.isOn = false;
@@ -133,10 +141,6 @@ function makeDevice(
     base.toggle = (force?: boolean) => {
         const next = typeof force === "boolean" ? force : !base.isOn;
         base.isOn = next;
-        base.text = new ColorTexture(
-            next ? colorOn : colorOff,
-            "rgba(255,255,255,0.6)",
-        );
     };
 
     const pad = interactionCells * cellSize;
@@ -144,8 +148,8 @@ function makeDevice(
         id: `${id}-interaction`,
         x: x - pad,
         y: y - pad,
-        width: base.width + pad * 2,
-        height: base.height + pad * 2,
+        width: cellSize + pad * 2,
+        height: cellSize + pad * 2,
         priority: -1,
         text: new ColorTexture("rgba(0,0,0,0)"),
     });
@@ -386,6 +390,35 @@ export default class LightShadowScene implements Scene {
     private win = false;
     private isLoading = true; // Added a loading state
 
+    private async setupPlayer(spawn: Position) {
+        this.player = createPlayer(
+            spawn.x * CELL_SIZE,
+            spawn.y * CELL_SIZE,
+            this.playerSize,
+        );
+
+        const skinsManager = new Skins();
+        await skinsManager.init();
+
+        Object.entries(skinsManager.equipped).forEach(([typeName, skin]) => {
+            if (!skin || skin.frames.length === 0) return;
+            this.player.add(
+                createEntity({
+                    id: typeName,
+                    x: 0,
+                    y: 0,
+                    width: 2 * this.playerSize,
+                    height: 2 * this.playerSize,
+                    priority: skin.frames.length > 1 ? 4 : 3,
+                    text: new Sprite(skin.frames),
+                }),
+            );
+        });
+
+        this.world.addEntity(this.player);
+        this.player.speed = 1000;
+        this.playerController = new PlayerController(this.player);
+    }
     init(
         canvas: HTMLCanvasElement,
         onSwitchScene: (t: SceneType) => void,
@@ -430,14 +463,30 @@ export default class LightShadowScene implements Scene {
         generateWalls(map, this.world, cellSize, wallTexture);
 
         const spawn = findSpawn(map);
-        this.player = createCharacter({
-            id: "player",
-            x: spawn.x * cellSize + cellSize * 0.2,
-            y: spawn.y * cellSize + cellSize * 0.2,
-            width: cellSize * 0.45,
-            height: cellSize * 0.45,
-            speed: 600,
-            text: new ColorTexture("#4fc3f7", "white"),
+        const playerSize = cellSize * 0.6;
+        this.player = createPlayer(
+            spawn.x * cellSize,
+            spawn.y * cellSize,
+            playerSize,
+        );
+
+        // Load and apply player skins
+        const skinsManager = new Skins();
+        await skinsManager.init();
+
+        Object.entries(skinsManager.equipped).forEach(([typeName, skin]) => {
+            if (!skin || skin.frames.length === 0) return;
+            this.player.add(
+                createEntity({
+                    id: typeName,
+                    x: 0,
+                    y: 0,
+                    width: 2 * playerSize,
+                    height: 2 * playerSize,
+                    priority: skin.frames.length > 1 ? 4 : 3,
+                    text: new Sprite(skin.frames),
+                }),
+            );
         });
 
         this.playerController = new PlayerController(this.player);
@@ -454,12 +503,12 @@ export default class LightShadowScene implements Scene {
                         makeDevice(
                             this.world,
                             `device-${did++}`,
-                            x * cellSize + cellSize * 0.18,
-                            y * cellSize + cellSize * 0.18,
+                            x * cellSize,
+                            y * cellSize,
                             devConfig.watts,
                             devConfig.label,
-                            devConfig.colorOn,
-                            devConfig.colorOff,
+                            devConfig.image,
+                            devConfig.imageSize,
                             devConfig.lightRadius,
                             devConfig.interactionCells,
                             cellSize,

@@ -8,8 +8,8 @@ export interface DeviceConfig {
     char: string; // The character in the ASCII map (e.g., 'L', 'A')
     watts: number;
     label: string;
-    colorOn: string;
-    colorOff: string;
+    image: string; // Path to image texture (single texture, not on/off)
+    imageSize: number; // Size multiplier for the image (0.5 = 50% of cell size)
     lightRadius: number;
     interactionCells: number;
 }
@@ -87,8 +87,8 @@ export class LightShadowLevel {
                 char: "L",
                 watts: 220,
                 label: "Lampe",
-                colorOn: "rgba(0,255,255,0.9)",
-                colorOff: "rgba(0,120,120,0.35)",
+                image: "/lights/lamp.png",
+                imageSize: 0.7,
                 lightRadius: 280,
                 interactionCells: 1,
             },
@@ -96,8 +96,8 @@ export class LightShadowLevel {
                 char: "A",
                 watts: 320,
                 label: "Appareil",
-                colorOn: "rgba(255,0,90,0.9)",
-                colorOff: "rgba(120,0,50,0.35)",
+                image: "/lights/appliance.png",
+                imageSize: 0.7,
                 lightRadius: 220,
                 interactionCells: 1,
             },

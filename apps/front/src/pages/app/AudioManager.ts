@@ -25,7 +25,7 @@ export class AudioManager extends EventTarget {
         super();
         this.audio = new Audio();
         this.audio.preload = "auto";
-        this.audio.loop = false;
+        this.audio.loop = true; // Enable looping
 
         this.audio.addEventListener("play", () => {
             this.playing = true;
