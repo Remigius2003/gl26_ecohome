@@ -14,7 +14,7 @@ import {
     FaSolidCompactDisc,
     FaSolidXmark,
 } from "solid-icons/fa";
-import { AudioManager, Track } from "./AudioManager";
+import { AudioManager, Track } from "../../api/AudioManager";
 import "./music.css";
 
 const AVAILABLE_TRACKS: Track[] = [
