@@ -1,92 +1,115 @@
+import { setGlobalNavigate, setGlobalShowMusic } from '../../App';
+import { FaSolidGear, FaSolidCircleInfo, FaSolidPalette } from 'solid-icons/fa';
+import SceneCanvas from '@components/SceneCanvas';
+import { useNavigate } from '@solidjs/router';
+import { createSignal, Show, onMount, onCleanup } from 'solid-js';
+import type { SceneType } from '@scene';
+import CustomisationModal from './Customisation';
+import WelcomeModal from './Welcome';
+import Settings from './Settings';
+import Music from './Music';
+import Chat from './Chat';
 import {
-    setGlobalNavigate,
-    setGlobalSceneSwitch,
-    setGlobalShowMusic,
-} from "../../App";
-import { FaSolidGear } from "solid-icons/fa";
-import SceneCanvas from "@components/SceneCanvas";
-import { useNavigate } from "@solidjs/router";
-import { createSignal, Show, onMount, onCleanup } from "solid-js";
-import { switchScene } from "@scene";
-import type { SceneType } from "@scene";
-import Settings from "./Settings";
-import Chat from "./Chat";
-import Music from "./Music";
-import {
-    friendsListWrapper,
-    friendRequestsWrapper,
-    sentFriendRequestsWrapper,
-    RTClient,
-} from "@api";
-import "./app.css";
+	friendsListWrapper,
+	friendRequestsWrapper,
+	sentFriendRequestsWrapper,
+	RTClient,
+} from '@api';
+import './app.css';
+
+const WELCOME_KEY = 'welcome_seen_v1';
 
 export default function Home() {
-    const navigate = useNavigate();
-    setGlobalNavigate(navigate);
-    setGlobalSceneSwitch(switchScene);
+	const navigate = useNavigate();
+	setGlobalNavigate(navigate);
 
-    const scene: SceneType = "home";
-    const [showSettings, setShowSettings] = createSignal(false);
-    const [showMusic, setShowMusic] = createSignal(false);
+	const scene: SceneType = 'home';
+	const [showMusic, setShowMusic] = createSignal(false);
+	const [showSettings, setShowSettings] = createSignal(false);
+	const [showWelcome, setShowWelcome] = createSignal(false);
+	const [showCustomisation, setShowCustomisation] = createSignal(false);
 
-    onMount(() => {
-        // Make setShowMusic available globall y for piano interaction (inside onMount to avoid recursion)
-        setGlobalShowMusic(setShowMusic);
+	onMount(() => {
+		// Make setShowMusic available globall y for piano interaction (inside onMount to avoid recursion)
+		setGlobalShowMusic(setShowMusic);
 
-        RTClient.connect();
+		RTClient.connect();
 
-        const invalidateFriendCaches = () => {
-            friendsListWrapper.invalidate(undefined);
-            friendRequestsWrapper.invalidate(undefined);
-            sentFriendRequestsWrapper.invalidate(undefined);
-        };
+		if (!localStorage.getItem(WELCOME_KEY)) {
+			setShowWelcome(true);
+		}
 
-        const unsubs = [
-            RTClient.subscribe("friend_request", invalidateFriendCaches),
-            RTClient.subscribe(
-                "friend_request_cancelled",
-                invalidateFriendCaches,
-            ),
-            RTClient.subscribe(
-                "friend_request_accepted",
-                invalidateFriendCaches,
-            ),
-            RTClient.subscribe(
-                "friend_request_rejected",
-                invalidateFriendCaches,
-            ),
-        ];
+		const invalidateFriendCaches = () => {
+			friendsListWrapper.invalidate(undefined);
+			friendRequestsWrapper.invalidate(undefined);
+			sentFriendRequestsWrapper.invalidate(undefined);
+		};
 
-        onCleanup(() => unsubs.forEach((fn) => fn()));
-    });
+		const unsubs = [
+			RTClient.subscribe('friend_request', invalidateFriendCaches),
+			RTClient.subscribe('friend_request_cancelled', invalidateFriendCaches),
+			RTClient.subscribe('friend_request_accepted', invalidateFriendCaches),
+			RTClient.subscribe('friend_request_rejected', invalidateFriendCaches),
+		];
 
-    return (
-        <>
-            <SceneCanvas scene={scene} />
+		onCleanup(() => unsubs.forEach((fn) => fn()));
+	});
 
-            <div class="game-overlay">
-                <div
-                    class="hud-top"
-                    style={{ "justify-content": "flex-end", width: "100%" }}
-                >
-                    <div
-                        class="settings-btn"
-                        onClick={() => setShowSettings(true)}
-                    >
-                        <FaSolidGear />
-                    </div>
-                </div>
-            </div>
+	return (
+		<>
+			<SceneCanvas scene={scene} />
+			<div class="game-overlay">
+				<div
+					class="hud-top"
+					style={{
+						'justify-content': 'flex-end',
+						width: '100%',
+						gap: '10px',
+					}}
+				>
+					<div
+						class="settings-btn"
+						title="Tutoriel"
+						onClick={() => setShowWelcome(true)}
+					>
+						<FaSolidCircleInfo />
+					</div>
 
-            <Chat />
+					<div
+						class="settings-btn"
+						title="Personnalisation"
+						onClick={() => setShowCustomisation(true)}
+					>
+						<FaSolidPalette />
+					</div>
 
-            <Show when={showSettings()}>
-                <Settings onClose={() => setShowSettings(false)} />
-            </Show>
+					<div
+						class="settings-btn"
+						title="Paramètres"
+						onClick={() => setShowSettings(true)}
+					>
+						<FaSolidGear />
+					</div>
+				</div>
+			</div>
 
-            <Show when={showMusic()}>
-                <Music onClose={() => setShowMusic(false)} />
-            </Show>
-        </>
-    );
+			<Chat />
+
+			<Show when={showMusic()}>
+				<Music onClose={() => setShowMusic(false)} />
+			</Show>
+
+			<Show when={showWelcome()}>
+				<WelcomeModal onClose={() => setShowWelcome(false)} />
+			</Show>
+
+			<Show when={showCustomisation()}>
+				<CustomisationModal onClose={() => setShowCustomisation(false)} />
+			</Show>
+
+			<Show when={showSettings()}>
+				<Settings onClose={() => setShowSettings(false)} />
+			</Show>
+		</>
+	);
 }

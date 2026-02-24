@@ -30,6 +30,7 @@ import {
 	RTClient,
 	Session,
 } from '@api';
+import Avatar from '@components/Avatar';
 
 const TENOR_KEY = 'LIVDSRZULELA';
 
@@ -153,6 +154,7 @@ function MessageBubble(props: { msg: Message; isGroup: boolean }) {
 
 function ConvItem(props: {
 	name: string;
+	url?: string;
 	lastMessage: string;
 	isActive: boolean;
 	isGroup: boolean;
@@ -167,7 +169,7 @@ function ConvItem(props: {
 				{props.isGroup ? (
 					<FaSolidUserGroup />
 				) : (
-					props.name.charAt(0).toUpperCase()
+					<Avatar url={props.url} username={props.name} />
 				)}
 			</div>
 			<div class="conv-info">
@@ -207,6 +209,7 @@ export default function ChatWidget() {
 					setActiveConv(fresh);
 				} else {
 					setActiveConv(null);
+					setMessages([]);
 					setShowManageModal(false);
 				}
 			}
@@ -300,10 +303,25 @@ export default function ChatWidget() {
 			},
 		);
 
+		const unsubRemoved = RTClient.subscribe(
+			'conversation_removed',
+			(payload: { conversation_id: number }) => {
+				const removedId = payload.conversation_id;
+				setConversations((prev) => prev.filter((c) => c.id !== removedId));
+				const cur = activeConv();
+				if (cur && cur.id === removedId) {
+					setActiveConv(null);
+					setMessages([]);
+					setShowManageModal(false);
+				}
+			},
+		);
+
 		onCleanup(() => {
 			unsubMsg();
 			unsubConv();
 			unsubRenamed();
+			unsubRemoved();
 		});
 	});
 
@@ -312,6 +330,7 @@ export default function ChatWidget() {
 			friend: Profile | null;
 			conv?: Conversation;
 			name: string;
+			url?: string;
 		}> = [];
 		const usedConvIds = new Set<number>();
 
@@ -322,13 +341,22 @@ export default function ChatWidget() {
 					c.participants?.some((p) => p.id === friend.user_id),
 			);
 			if (existingConv) usedConvIds.add(existingConv.id);
-			list.push({ friend, conv: existingConv, name: friend.username });
+			list.push({
+				friend,
+				conv: existingConv,
+				name: friend.username,
+				url: friend.avatar_url,
+			});
 		}
 
 		for (const c of conversations()) {
 			if (c.type !== 'dm' || usedConvIds.has(c.id)) continue;
 			const other = c.participants?.find((p) => p.id !== Session.userId);
-			list.push({ friend: null, conv: c, name: other?.username ?? 'Unknown' });
+			list.push({
+				friend: null,
+				conv: c,
+				name: other?.username ?? 'Unknown',
+			});
 		}
 
 		return list;
@@ -361,14 +389,17 @@ export default function ChatWidget() {
 								<div style={{ display: 'flex', gap: '10px' }}>
 									<button
 										class="icon-btn"
-										title="Create Group"
-										onClick={() => setShowCreateModal(true)}
+										title="Créer un groupe"
+										onClick={(e) => {
+											e.stopPropagation();
+											setShowCreateModal(true);
+										}}
 									>
 										<FaSolidPlus />
 									</button>
 									<button
 										class="icon-btn"
-										title="Close"
+										title="Fermer"
 										onClick={() => setIsOpen(false)}
 									>
 										<FaSolidXmark />
@@ -382,6 +413,7 @@ export default function ChatWidget() {
 									{(item) => (
 										<ConvItem
 											name={item.name}
+											url={item.url}
 											lastMessage={
 												item.conv?.last_message ?? 'Click to start chatting'
 											}
@@ -395,7 +427,7 @@ export default function ChatWidget() {
 								</For>
 
 								<Show when={groupList().length > 0}>
-									<div class="sidebar-section-title">Groups</div>
+									<div class="sidebar-section-title">Groupes</div>
 									<For each={groupList()}>
 										{(conv) => (
 											<ConvItem
@@ -416,7 +448,7 @@ export default function ChatWidget() {
 								when={activeConv()}
 								fallback={
 									<div class="empty-chat">
-										Select a friend or group to start chatting
+										Sélectionnez un ami ou un groupe pour commencer
 									</div>
 								}
 							>
@@ -425,8 +457,11 @@ export default function ChatWidget() {
 									<Show when={activeConv()?.type === 'group'}>
 										<button
 											class="icon-btn"
-											title="Manage Group"
-											onClick={() => setShowManageModal(true)}
+											title="Gérer le groupe"
+											onClick={(e) => {
+												e.stopPropagation();
+												setShowManageModal(true);
+											}}
 										>
 											<FaSolidUserGroup />
 										</button>
@@ -481,28 +516,29 @@ export default function ChatWidget() {
 							</Show>
 						</div>
 					</div>
-
-					<Show when={showCreateModal()}>
-						<CreateGroupModal
-							friends={friends() ?? []}
-							onClose={() => {
-								setShowCreateModal(false);
-								loadConversations();
-							}}
-						/>
-					</Show>
-					<Show when={showManageModal() && activeConv()}>
-						<ManageGroupModal
-							conv={activeConv()!}
-							friends={friends() ?? []}
-							onClose={() => {
-								setShowManageModal(false);
-								loadConversations();
-							}}
-							onParticipantChanged={() => loadConversations()}
-						/>
-					</Show>
 				</div>
+			</Show>
+
+			<Show when={isOpen() && showCreateModal()}>
+				<CreateGroupModal
+					friends={friends() ?? []}
+					onClose={() => {
+						setShowCreateModal(false);
+						loadConversations();
+					}}
+				/>
+			</Show>
+
+			<Show when={isOpen() && showManageModal() && activeConv()}>
+				<ManageGroupModal
+					conv={activeConv()!}
+					friends={friends() ?? []}
+					onClose={() => {
+						setShowManageModal(false);
+						loadConversations();
+					}}
+					onParticipantChanged={() => loadConversations()}
+				/>
 			</Show>
 		</>
 	);
@@ -531,7 +567,7 @@ function CreateGroupModal(props: { friends: Profile[]; onClose: () => void }) {
 	};
 
 	return (
-		<div class="modal-overlay">
+		<div class="modal-overlay" style={{ 'z-index': 250 }}>
 			<div class="modal-content">
 				<h3>Créer un groupe</h3>
 				<p class="text-muted mb-10" style={{ 'font-size': '0.85rem' }}>
@@ -618,32 +654,32 @@ function ManageGroupModal(props: {
 			props.onClose();
 		} catch (e) {
 			console.error('Rename failed', e);
-			alert(
-				'Erreur lors du renommage. Vérifiez que le backend supporte PUT /chat/:id/name',
-			);
+			alert('Erreur lors du renommage.');
 		} finally {
 			setRenaming(false);
 		}
 	};
 
-	async function handleLeave() {
+	const handleLeave = async () => {
 		const confirmed = confirm(
-			'Are you sure you want to leave this group? You will lose access to the message history.',
+			"Quitter le groupe ? Vous perdrez l'accès à l'historique.",
 		);
 		if (!confirmed) return;
-
 		try {
 			await removeParticipant(props.conv.id, Session.userId!);
 			props.onClose();
 		} catch (err) {
 			console.error('Failed to leave group:', err);
-			alert('Could not leave the group. Please try again.');
+			alert('Impossible de quitter le groupe. Réessayez.');
 		}
-	}
+	};
 
 	return (
-		<div class="modal-overlay">
-			<div class="modal-content">
+		<div class="modal-overlay" style={{ 'z-index': 250 }}>
+			<div
+				class="modal-content"
+				style={{ 'max-height': '80vh', 'overflow-y': 'auto' }}
+			>
 				<h3>Gérer : {props.conv.name}</h3>
 
 				<h4 style={{ 'margin-bottom': '8px' }}>Renommer le groupe</h4>
@@ -667,19 +703,30 @@ function ManageGroupModal(props: {
 					</button>
 				</div>
 
-				<h4>Membres</h4>
+				<h4>Membres ({props.conv.participants.length})</h4>
 				<div class="friends-list-selection mb-10">
 					<For each={props.conv.participants}>
 						{(p) => (
 							<div class="friend-row">
 								<span>
-									{p.username} {p.id === Session.userId ? '(Vous)' : ''}
+									{p.username}{' '}
+									{p.id === Session.userId ? (
+										<span
+											style={{
+												color: 'var(--text-light)',
+												'font-size': '0.8rem',
+											}}
+										>
+											(Vous)
+										</span>
+									) : null}
 								</span>
 								<Show when={p.id !== Session.userId}>
 									<button
 										class="icon-btn-danger"
-										style={{ width: '24px', height: '24px' }}
+										style={{ width: '28px', height: '28px' }}
 										onClick={() => handleRemove(p.id)}
+										title="Retirer du groupe"
 									>
 										<FaSolidUserMinus />
 									</button>
@@ -691,15 +738,16 @@ function ManageGroupModal(props: {
 
 				<Show when={availableFriends().length > 0}>
 					<h4>Ajouter des amis</h4>
-					<div class="friends-list-selection">
+					<div class="friends-list-selection mb-10">
 						<For each={availableFriends()}>
 							{(friend) => (
 								<div class="friend-row">
 									<span>{friend.username}</span>
 									<button
 										class="icon-btn-success"
-										style={{ width: '24px', height: '24px' }}
+										style={{ width: '28px', height: '28px' }}
 										onClick={() => handleAdd(friend.user_id)}
+										title="Ajouter au groupe"
 									>
 										<FaSolidPlus />
 									</button>
@@ -713,11 +761,10 @@ function ManageGroupModal(props: {
 					<button
 						class="btn-danger-outline"
 						onClick={handleLeave}
-						style={{ 'font-size': '0.8rem', padding: '5px 10px' }}
+						style={{ 'font-size': '0.85rem' }}
 					>
 						Quitter le groupe
 					</button>
-
 					<button class="btn-secondary" onClick={props.onClose}>
 						Fermer
 					</button>

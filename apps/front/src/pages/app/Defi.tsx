@@ -23,10 +23,9 @@ const icon = (category: string) => DEFI_ICONS[category.toLowerCase()] ?? '🌱';
 const DefiCard: Component<{
 	defi: DailyDefi;
 	onClick: () => void;
-	isFailed?: boolean;
 }> = (props) => {
 	const isCompleted = () => props.defi.status === 'COMPLETED';
-	const isFailed = () => !!props.isFailed;
+	const isFailed = () => props.defi.status === 'FAILED';
 
 	return (
 		<div
@@ -80,15 +79,18 @@ const SuccessView: Component<{ reward: number; onContinue: () => void }> = (
 	</div>
 );
 
-const WrongAnswerView: Component<{ onRetry: () => void }> = (props) => (
+const FailedView: Component<{ onBack: () => void }> = (props) => (
 	<div class="wrong-answer-message fade-in">
 		<div class="wrong-icon">
 			<FaSolidXmark size={40} />
 		</div>
-		<h3>Mauvaise réponse</h3>
-		<p>Ce n'est pas la bonne action pour ce défi. Essayez à nouveau !</p>
-		<button class="auth-button" onClick={props.onRetry}>
-			Réessayer
+		<h3>Défi raté</h3>
+		<p>
+			Tu n'as pas réalisé le bon geste cette fois. Pas de panique, de nouveaux
+			défis t'attendent demain !
+		</p>
+		<button class="btn-secondary" onClick={props.onBack}>
+			← Retour aux défis
 		</button>
 	</div>
 );
@@ -100,18 +102,16 @@ export default function Defi() {
 		null,
 	);
 
-	type ValidationState = 'idle' | 'completed' | 'wrong';
+	type ValidationState = 'idle' | 'completed' | 'failed';
 	const [validationState, setValidationState] =
 		createSignal<ValidationState>('idle');
-	const [failedDefiIds, setFailedDefiIds] = createSignal<Set<string>>(
-		new Set(),
-	);
 	const [earnedReward, setEarnedReward] = createSignal(0);
 
 	const [isLoading, setIsLoading] = createSignal(true);
 	const [error, setError] = createSignal<string | null>(null);
 
 	const currentDefi = () => defis().find((d) => d.id === selectedDefiId());
+
 	const fetchDefis = async () => {
 		setIsLoading(true);
 		setError(null);
@@ -130,8 +130,15 @@ export default function Defi() {
 	const openDefi = (defi: DailyDefi) => {
 		setSelectedDefiId(defi.id);
 		setSelectedAnswer(null);
-		setValidationState(defi.status === 'COMPLETED' ? 'completed' : 'idle');
-		setEarnedReward(defi.earned);
+
+		if (defi.status === 'COMPLETED') {
+			setValidationState('completed');
+			setEarnedReward(defi.earned);
+		} else if (defi.status === 'FAILED') {
+			setValidationState('failed');
+		} else {
+			setValidationState('idle');
+		}
 	};
 
 	const resetView = () => {
@@ -145,28 +152,29 @@ export default function Defi() {
 		if (!defi) return;
 
 		const answer = selectedAnswer();
-		if (answer && answer.leafReward === 0) {
-			setValidationState('wrong');
-			setFailedDefiIds((prev) => new Set([...prev, defi.id]));
-			return;
-		}
-
 		const answerId = answer?.id ?? 'default';
 
 		try {
 			const result = await completeDefi(defi.id, answerId);
 
 			if (result.status === 'WRONG') {
-				setValidationState('wrong');
-				setFailedDefiIds((prev) => new Set([...prev, defi.id]));
+				setDefis((prev) =>
+					prev.map((d) =>
+						d.id === defi.id ? { ...d, status: 'FAILED' as const } : d,
+					),
+				);
+				setValidationState('failed');
+				dailyDefiWrapper.invalidate();
 			} else {
 				setEarnedReward(result.reward);
 				setValidationState('completed');
-				setFailedDefiIds((prev) => {
-					const next = new Set(prev);
-					next.delete(defi.id);
-					return next;
-				});
+				setDefis((prev) =>
+					prev.map((d) =>
+						d.id === defi.id
+							? { ...d, status: 'COMPLETED' as const, earned: result.reward }
+							: d,
+					),
+				);
 				dailyDefiWrapper.invalidate();
 				await fetchDefis();
 			}
@@ -209,11 +217,7 @@ export default function Defi() {
 								fallback={<p>Aucun défi disponible.</p>}
 							>
 								{(defi) => (
-									<DefiCard
-										defi={defi}
-										onClick={() => openDefi(defi)}
-										isFailed={failedDefiIds().has(defi.id)}
-									/>
+									<DefiCard defi={defi} onClick={() => openDefi(defi)} />
 								)}
 							</For>
 						</div>
@@ -240,13 +244,8 @@ export default function Defi() {
 									<SuccessView reward={earnedReward()} onContinue={resetView} />
 								</Match>
 
-								<Match when={validationState() === 'wrong'}>
-									<WrongAnswerView
-										onRetry={() => {
-											setValidationState('idle');
-											setSelectedAnswer(null);
-										}}
-									/>
+								<Match when={validationState() === 'failed'}>
+									<FailedView onBack={resetView} />
 								</Match>
 
 								<Match when={validationState() === 'idle'}>

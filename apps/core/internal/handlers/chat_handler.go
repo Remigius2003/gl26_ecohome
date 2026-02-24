@@ -391,6 +391,11 @@ func RemoveParticipantHandler(c *gin.Context) {
 		)
 	}
 
+	ws.GetManager().Hub.SendToUser(targetId, gin.H{
+		"type":    "conversation_removed",
+		"payload": gin.H{"conversation_id": convId},
+	})
+
 	c.JSON(http.StatusOK, gin.H{"message": "Participant removed"})
 }
 

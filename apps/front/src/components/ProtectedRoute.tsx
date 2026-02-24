@@ -10,8 +10,16 @@ export function ProtectedRoute(props: ProtectedRouteProps) {
 	const navigate = useNavigate();
 
 	createEffect(() => {
-		if (!Session.isAuthenticated) navigate('/', { replace: true });
+		if (!Session.isAuthenticated()) navigate('/login', { replace: true });
 	});
 
-	return <Show when={Session.isAuthenticated}>{props.children}</Show>;
+	return (
+		<Show when={Session.isAuthenticated()} fallback={null}>
+			{props.children}
+		</Show>
+	);
 }
+
+export const ProtectedLayout = (props: any) => {
+	return <ProtectedRoute>{props.children}</ProtectedRoute>;
+};

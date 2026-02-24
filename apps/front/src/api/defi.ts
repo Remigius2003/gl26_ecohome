@@ -23,13 +23,13 @@ export interface DailyDefi {
 	defi: string;
 	category: string;
 	leafReward: number;
-	status: 'PENDING' | 'COMPLETED';
+	status: 'PENDING' | 'COMPLETED' | 'FAILED';
 	earned: number;
 	overQuestions?: DefiQuestion;
 }
 
 export interface CompleteDefiResponse {
-	status: string;
+	status: 'COMPLETED' | 'WRONG';
 	reward: number;
 }
 
