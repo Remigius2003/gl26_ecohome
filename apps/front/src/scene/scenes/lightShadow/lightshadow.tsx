@@ -11,15 +11,41 @@ import {
 } from "../../logic/factory";
 import { PhysicsSystem, PlayerController } from "../../logic/movement";
 import { drawDarknessWithLights } from "../../logic/lighting";
-import {
-    GhostControllerNamed as GhostController,
-    type DeviceLike,
-} from "../../logic/ghost";
+import { GhostController, type DeviceLike } from "../../logic/ghost";
 import { LightShadowLevel } from "./types";
 
 type Device = (Entity & Solid) &
     DeviceLike & { lightRadius: number; label: string };
 
+function drawTimerBar(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    currentTime: number,
+    maxTime: number,
+) {
+    // 1. Calculate progress (0 to 1)
+    const progress = Math.max(0, currentTime / maxTime);
+
+    // 2. Determine color based on time left
+    // Green at start, Yellow at half, Red at the end
+    let color = "#4ade80"; // Green
+    if (progress < 0.25)
+        color = "#ef4444"; // Red (Critical)
+    else if (progress < 0.6) color = "#facc15"; // Yellow (Warning)
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+    ctx.fillRect(x, y, width, height);
+
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, width * progress, height);
+
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, y, width, height);
+}
 function findSpawn(map: string[]) {
     for (let y = 0; y < map.length; y++)
         for (let x = 0; x < map[y].length; x++)
@@ -468,8 +494,8 @@ export default class LightShadowScene implements Scene {
                     id: `ghost-${i}`,
                     x: (cols - 2 - i) * cellSize + cellSize * 0.25,
                     y: (rows - 2) * cellSize + cellSize * 0.25,
-                    width: cellSize * 0.38,
-                    height: cellSize * 0.38,
+                    width: cellSize * 0.7,
+                    height: cellSize * 0.7,
                     priority: 3,
                     //text: new ColorTexture("black"),
                     text: new ImageTexture("/game/lightShadow/ghost1.png"),
@@ -619,9 +645,6 @@ export default class LightShadowScene implements Scene {
         const pad = 18;
         const top = 14;
 
-        // Back arrow (visuel)
-        drawBackArrow(ctx, pad, top + 2, 44);
-
         // Right pill "LEVEL / SCORE"
         const pillW = 210;
         const pillH = 34;
@@ -702,27 +725,36 @@ export default class LightShadowScene implements Scene {
             "rgba(0,220,220,0.95)",
             "rgba(0,220,220,0.25)",
         );
-
-        // --- Secondary bar (grey) with red ring (bulb)
-        const bar2X = bar1X + bar1W + 50;
+        // --- Timer / Survival Bar (Yellow/Gold) ---
+        const bar2X = bar1X + bar1W + 70; // Adjusted spacing for the text
         const bar2Y = bar1Y;
-        const bar2W = 240;
+        const bar2W = 200;
         const bar2H = bar1H;
 
-        const redRingCx = bar2X - 26;
-        const redRingCy = ringCy;
+        const timeRingCx = bar2X - 26;
+        const timeRingCy = ringCy;
 
+        // Draw a "Clock" icon instead of a bulb
         drawRingIcon(
             ctx,
-            redRingCx,
-            redRingCy,
+            timeRingCx,
+            timeRingCy,
             ringR,
-            "rgba(255,70,70,0.95)",
+            "rgba(255, 200, 50, 0.95)", // Gold/Yellow ring
             () => {
-                drawBulb(ctx, redRingCx, redRingCy, ringR * 1.2);
+                // Draw simple clock hands
+                ctx.strokeStyle = "rgba(0,0,0,0.8)";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(timeRingCx, timeRingCy);
+                ctx.lineTo(timeRingCx, timeRingCy - 7); // Hour
+                ctx.moveTo(timeRingCx, timeRingCy);
+                ctx.lineTo(timeRingCx + 5, timeRingCy); // Minute
+                ctx.stroke();
             },
         );
 
+        // Background of the timer bar
         fillRoundRect(
             ctx,
             bar2X,
@@ -730,34 +762,43 @@ export default class LightShadowScene implements Scene {
             bar2W,
             bar2H,
             8,
-            "rgba(220,220,220,0.65)",
+            "rgba(255, 255, 255, 0.15)",
         );
 
-        // Small numeric W info
+        // Progress toward winTimeMs
+        const winRatio = Math.max(
+            0,
+            Math.min(1, this.elapsed / this.currentLevelData.winTimeMs),
+        );
+
+        drawSegmentBar(
+            ctx,
+            bar2X + 4,
+            bar2Y + 3,
+            bar2W - 8,
+            bar2H - 6,
+            10, // Fewer segments for a different look
+            winRatio,
+            "rgba(255, 210, 50, 0.95)", // Gold fill
+            "rgba(255, 210, 50, 0.2)", // Faded gold background
+        );
+
+        // Update the text to show time remaining
         ctx.save();
         ctx.fillStyle = "rgba(255,255,255,0.85)";
-        ctx.font = "14px Arial";
+        ctx.font = "600 13px Arial";
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
+
+        const secondsLeft = Math.ceil(
+            (this.currentLevelData.winTimeMs - this.elapsed) / 1000,
+        );
         ctx.fillText(
-            `W ${Math.floor(this.surgeWatts)}/${this.currentLevelData.surgeMaxWatts}`,
-            bar1X + bar1W + 10,
-            bar1Y + bar1H / 2,
+            `${secondsLeft}s SURVIVAL`,
+            bar2X + bar2W + 10,
+            bar2Y + bar2H / 2,
         );
         ctx.restore();
-
-        // Bottom hint
-        const interaction = this.world.getInteraction(this.player);
-        if (interaction && !this.gameOver && !this.win) {
-            ctx.save();
-            ctx.fillStyle = "rgba(255,255,255,0.9)";
-            ctx.font = "16px Arial";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText("SPACE: éteindre", W / 2, H - 20);
-            ctx.restore();
-        }
-
         // Game Over / Win overlay
         if (this.gameOver || this.win) {
             ctx.fillStyle = "rgba(0,0,0,0.6)";

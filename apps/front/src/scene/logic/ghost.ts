@@ -3,95 +3,126 @@ import { PhysicsSystem } from "./movement";
 import type { World } from "./world";
 
 export type DeviceLike = Entity & {
-  isOn: boolean;
-  watts: number;
-  toggle: (force?: boolean) => void;
+    isOn: boolean;
+    watts: number;
+    toggle: (force?: boolean) => void;
 };
-
 export class GhostController implements Controller<Entity & Dynamic> {
-  private target: DeviceLike | null = null;
-  private retargetT = 0;
-  private interactT = 0;
+    private target: DeviceLike | null = null;
+    private retargetT = 0;
+    private interactT = 0;
+    private sulkT = 0; // New: prevents camping the same spot
+    private lastTargetId: string | null = null;
 
-  constructor(
-    public readonly entity: Entity & Dynamic,
-    private readonly world: World,
-    private readonly getDevices: () => DeviceLike[],
-    private readonly opts: {
-      retargetEveryMs?: number;
-      arriveDist?: number;
-      interactMs?: number;
-      speed?: number;
-    } = {}
-  ) {
-    if (this.opts.speed) this.entity.speed = this.opts.speed;
-  }
-
-  update(dt: number) {
-    const retargetEveryMs = this.opts.retargetEveryMs ?? 900;
-    const arriveDist = this.opts.arriveDist ?? 22;
-    const interactMs = this.opts.interactMs ?? 700;
-
-    this.retargetT -= dt;
-
-    if (
-      this.target == null ||
-      this.target.isOn ||
-      this.retargetT <= 0
+    constructor(
+        public readonly entity: Entity & Dynamic,
+        private readonly world: World,
+        private readonly getDevices: () => DeviceLike[],
+        private readonly opts: {
+            retargetEveryMs?: number;
+            arriveDist?: number;
+            interactMs?: number;
+            speed?: number;
+        } = {},
     ) {
-      this.target = this.pickNearestOff();
-      this.retargetT = retargetEveryMs;
-      this.interactT = 0;
+        if (this.opts.speed) this.entity.speed = this.opts.speed;
     }
 
-    if (!this.target) return;
+    update(dt: number) {
+        const retargetEveryMs = this.opts.retargetEveryMs ?? 900;
+        const arriveDist = this.opts.arriveDist ?? 22;
+        const interactMs = this.opts.interactMs ?? 700;
 
-    const ex = this.entity.x + this.entity.width / 2;
-    const ey = this.entity.y + this.entity.height / 2;
-    const tx = this.target.x + this.target.width / 2;
-    const ty = this.target.y + this.target.height / 2;
+        this.retargetT -= dt;
+        this.sulkT -= dt;
 
-    const dx = tx - ex;
-    const dy = ty - ey;
-    const dist = Math.hypot(dx, dy);
+        // 1. Logic for switching targets
+        // We retarget if: no target, target is already ON, or we are "sulking"
+        if (
+            this.target == null ||
+            this.target.isOn ||
+            this.retargetT <= 0 ||
+            this.sulkT > 0
+        ) {
+            const prevTarget = this.target;
+            this.target = this.pickSmartTarget();
 
-    if (dist > arriveDist) {
-      this.entity.vx = dx / (dist || 1);
-      this.entity.vy = dy / (dist || 1);
-      this.interactT = 0;
-      PhysicsSystem.move(this.entity, dt, this.world);
-      return;
+            // If our target was just turned OFF while we were on it, start sulking
+            if (prevTarget && !prevTarget.isOn && this.target !== prevTarget) {
+                this.sulkT = 1500; // Don't come back to this area for 1.5s
+            }
+
+            this.retargetT = retargetEveryMs + Math.random() * 500; // Desync ghosts
+            this.interactT = 0;
+        }
+
+        if (!this.target || this.sulkT > 0) {
+            // Wander aimlessly or slow down if no target
+            this.entity.vx *= 0.9;
+            this.entity.vy *= 0.9;
+            PhysicsSystem.move(this.entity, dt, this.world);
+            return;
+        }
+
+        const ex = this.entity.x + this.entity.width / 2;
+        const ey = this.entity.y + this.entity.height / 2;
+        const tx = this.target.x + this.target.width / 2;
+        const ty = this.target.y + this.target.height / 2;
+
+        let dx = tx - ex;
+        let dy = ty - ey;
+        const dist = Math.hypot(dx, dy);
+
+        // 2. Separation Force (Prevents Superposition)
+        // Look at other ghosts and push away if too close
+        for (const other of this.world.dynamics) {
+            if (other === this.entity || !String(other.id).startsWith("ghost-"))
+                continue;
+            const sdx = other.x + other.width / 2 - ex;
+            const sdy = other.y + other.height / 2 - ey;
+            const sdist = Math.hypot(sdx, sdy);
+            if (sdist < 40) {
+                // Comfort zone
+                dx -= (sdx / sdist) * 50;
+                dy -= (sdy / sdist) * 50;
+            }
+        }
+
+        if (dist > arriveDist) {
+            const moveDist = Math.hypot(dx, dy);
+            this.entity.vx = dx / (moveDist || 1);
+            this.entity.vy = dy / (moveDist || 1);
+            this.interactT = 0;
+            PhysicsSystem.move(this.entity, dt, this.world);
+            return;
+        }
+
+        // 3. Hacking logic
+        this.interactT += dt;
+        if (this.interactT >= interactMs) {
+            this.target.toggle(true);
+            this.interactT = 0;
+            this.retargetT = 0;
+        }
     }
 
-    // "hack" the device (turn ON after a small time)
-    this.interactT += dt;
-    if (this.interactT >= interactMs) {
-      this.target.toggle(true); // force ON
-      this.interactT = 0;
-      this.retargetT = 0; // retarget quickly
+    private pickSmartTarget(): DeviceLike | null {
+        const devs = this.getDevices().filter((d) => !d.isOn);
+        if (!devs.length) return null;
+
+        const ex = this.entity.x + this.entity.width / 2;
+        const ey = this.entity.y + this.entity.height / 2;
+
+        const weightedDevs = devs.map((d) => {
+            const dx = d.x + d.width / 2 - ex;
+            const dy = d.y + d.height / 2 - ey;
+            const dist = Math.hypot(dx, dy);
+            const chaos = Math.random() * 200;
+            return { device: d, score: dist + chaos };
+        });
+
+        weightedDevs.sort((a, b) => a.score - b.score);
+
+        return weightedDevs[0].device;
     }
-  }
-
-  private pickNearestOff(): DeviceLike | null {
-    const devs = this.getDevices().filter(d => !d.isOn);
-    if (!devs.length) return null;
-
-    let best: DeviceLike | null = null;
-    let bestD = Infinity;
-
-    const ex = this.entity.x + this.entity.width / 2;
-    const ey = this.entity.y + this.entity.height / 2;
-
-    for (const d of devs) {
-      const dx = (d.x + d.width / 2) - ex;
-      const dy = (d.y + d.height / 2) - ey;
-      const dist = Math.hypot(dx, dy);
-      if (dist < bestD) {
-        bestD = dist;
-        best = d;
-      }
-    }
-    return best;
-  }
 }
-export { GhostController as GhostControllerNamed };

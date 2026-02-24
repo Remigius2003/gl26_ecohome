@@ -1,0 +1,24 @@
+{
+    "objects": [
+        {
+            "name": "Table en bois",
+            "price": 64,
+            "node": {
+                "visual": {
+                    "path": "woodTable.png",
+                    "w": 1.4,
+                    "h": 2,
+                    "ratio": 2
+                },
+                "solid": {
+                    "w": 100,
+                    "h": 100
+                },
+                "InteractArea": {
+                    "ratio": 3
+                }
+            },
+            "path": "WoodTable.png"
+        }
+    ]
+}
