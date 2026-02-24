@@ -39,7 +39,11 @@ export async function loadQuestionsByCategory(
 
 /** Fetch the raw JSON from a URL and return as object */
 async function fetchRawQuestions(url: string): Promise<Record<string, any>> {
-    const res = await fetch(url);
+    const cacheBuster =
+        typeof import.meta !== "undefined" && import.meta.env?.DEV
+            ? `?v=${Date.now()}`
+            : "";
+    const res = await fetch(`${url}${cacheBuster}`, { cache: "no-store" });
     if (!res.ok) throw new Error(`Failed to fetch questions from ${url}`);
     return res.json();
 }
