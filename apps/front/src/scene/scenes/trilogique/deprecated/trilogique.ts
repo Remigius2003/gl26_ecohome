@@ -220,8 +220,9 @@ export default class TrilogiqueScene implements Scene {
     }
 
     private setupBoundaries() {
-        if (!this.gameWorldData) return;
+            if (!this.gameWorldData) return;
 
+<<<<<<< HEAD:apps/front/src/scene/scenes/trilogique/deprecated/trilogique.ts
         const w = this.gameWorldData.worldSizeX;
         const h = this.gameWorldData.worldSizeY;
 
@@ -243,12 +244,54 @@ export default class TrilogiqueScene implements Scene {
             });
             this.world.addEntity(block);
         };
+=======
+            const w = this.gameWorldData.worldSizeX;
+            const h = this.gameWorldData.worldSizeY;
+>>>>>>> 661c661 (Trilogique fini):apps/front/src/scene/scenes/trilogique/trilogique.ts
 
-        createBorderBlock(0, 0, w + 2, 1, "top");
-        createBorderBlock(0, h - 1, w + 2, 1, "bottom");
-        createBorderBlock(0, 0, 1, h, "left");
-        createBorderBlock(w, 0, 1, h, "right");
-    }
+            // Définir les différentes images pour chaque côté
+            const borderImgTop = "/game/trilogique/images/env/mountain_top.png";
+            const borderImgBottom = "/game/trilogique/images/env/moutain.png";
+            const borderImgLeft = "/game/trilogique/images/env/mountain_left.png";
+            const borderImgRight = "/game/trilogique/images/env/mountain_right.png";
+
+            // Définir les différentes images pour les 4 COINS
+            const borderImgTopLeft = "/game/trilogique/images/env/corner_top.png";
+            const borderImgTopRight = "/game/trilogique/images/env/corner_top.png";
+            const borderImgBottomLeft = "/game/trilogique/images/env/corner.png";
+            const borderImgBottomRight = "/game/trilogique/images/env/corner.png";
+            
+            const createBorderTile = (x: number, y: number, imgPath: string, id: string) => {
+                const block = createSolid({
+                    id: `border-${id}`,
+                    x: x * CELL_SIZE,
+                    y: y * CELL_SIZE,
+                    width: CELL_SIZE,
+                    height: CELL_SIZE,
+                    text: new ImageTexture(imgPath),
+                    priority: 100,
+                });
+                this.world.addEntity(block);
+            };
+
+            // 1. Dessiner les 4 coins individuellement
+            createBorderTile(0, 0, borderImgTopLeft, "top-left");
+            createBorderTile(w - 1, 0, borderImgTopRight, "top-right");
+            createBorderTile(0, h - 1, borderImgBottomLeft, "bottom-left");
+            createBorderTile(w - 1, h - 1, borderImgBottomRight, "bottom-right");
+
+            // 2. Dessiner le HAUT et le BAS (sans recouvrir les coins : on commence à 1 et on s'arrête à w - 2)
+            for (let x = 1; x < w - 1; x++) {
+                createBorderTile(x, 0, borderImgTop, `top-${x}`);
+                createBorderTile(x, h - 1, borderImgBottom, `bottom-${x}`);
+            }
+
+            // 3. Dessiner la GAUCHE et la DROITE (sans recouvrir les coins : on commence à 1 et on s'arrête à h - 2)
+            for (let y = 1; y < h - 1; y++) {
+                createBorderTile(0, y, borderImgLeft, `left-${y}`);
+                createBorderTile(w - 1, y, borderImgRight, `right-${y}`);
+            }
+        }
 
     private setupStaticMap() {
         if (!this.gameWorldData) return;
