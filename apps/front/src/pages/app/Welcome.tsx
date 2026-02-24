@@ -46,10 +46,13 @@ const WelcomeModal: Component<{ onClose: () => void }> = (props) => {
 			<div
 				class="modal-content fade-in"
 				style={{
-					'max-width': '480px',
+					'max-width': '460px',
 					width: '100%',
 					position: 'relative',
 					padding: '32px 28px 24px',
+					height: 'auto',
+					'align-self': 'center',
+					'box-sizing': 'border-box',
 				}}
 			>
 				<button
@@ -80,7 +83,10 @@ const WelcomeModal: Component<{ onClose: () => void }> = (props) => {
 					>
 						{section().title}
 					</h2>
-					<p class="text-muted" style={{ margin: 0, 'line-height': '1.6' }}>
+					<p
+						class="text-muted"
+						style={{ margin: 0, 'line-height': '1.6', 'font-size': '0.95rem' }}
+					>
 						{section().body}
 					</p>
 				</div>
