@@ -1,0 +1,10 @@
+{
+  "symbol": "T",
+  "width": 3,
+  "height": 3,
+  "texture": "/house/furniture/table.png",
+  "solid": true,
+  "areaOfInteraction": 1,
+  "priority": 0,
+  "interaction": "nav:/social"
+}

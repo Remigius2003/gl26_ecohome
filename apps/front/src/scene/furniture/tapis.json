@@ -1,0 +1,10 @@
+{
+  "symbol": "R",
+  "width": 2,
+  "height": 2,
+  "texture": "/house/furniture/tapi.png",
+  "solid": false,
+  "areaOfInteraction": 0,
+  "priority": 1,
+  "interaction": "nav:/PreQuizz?type=transport"
+}

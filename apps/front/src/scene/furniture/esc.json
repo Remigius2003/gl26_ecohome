@@ -1,0 +1,10 @@
+{
+  "symbol": "E",
+  "width": 8,
+  "height": 2,
+  "texture": "/house/furniture/esc.png",
+  "solid": false,
+  "areaOfInteraction": 1,
+  "priority": 1,
+  "interaction": "stairs"
+}
