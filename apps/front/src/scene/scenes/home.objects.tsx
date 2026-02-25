@@ -149,7 +149,7 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         solid: true,
     },
     p: {
-        width: 2,
+        width: 1,
         height: 2,
         texture: "house/furniture/decorativePlant.png",
         solid: true,
@@ -223,10 +223,14 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         solid: false,
     },
     d: {
-        width: 2,
-        height: 2,
+        width: 1,
+        height: 1,
         texture: "house/furniture/disjoncteur.png",
-        solid: false,
+        solid: true,
+        areaOfInteraction: 1,
+        onInteract: () => {
+            globalNavigate("/lobby/lightshadow");
+        },
     },
     g: {
         width: 2,
@@ -236,8 +240,8 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
     },
     l: {
         width: 1,
-        height: 2,
+        height: 1,
         texture: "house/furniture/lampe.png",
-        solid: false,
+        solid: true,
     },
 };

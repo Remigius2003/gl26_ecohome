@@ -37,18 +37,18 @@ export default function Lobby() {
         const levelId = String(current() + 1);
         return getScore(gameId(), levelId);
     };
+
     const formatTime = (ms: number) => {
         if (ms <= 0) return "Aucun";
-
         const totalSeconds = Math.floor(ms / 1000);
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
-
         if (minutes > 0) {
             return `${minutes} min ${seconds}s`;
         }
         return `${seconds} sec`;
     };
+
     onMount(() => {
         const update = () => {
             if (containerRef)
@@ -61,6 +61,7 @@ export default function Lobby() {
         (async () => {
             try {
                 setLoading(true);
+                setError(null); // Always clear stale errors before a new attempt
                 const g = await loadGamesById(gameId());
                 setGames(g.games);
                 setItems(g.games.map((gp, idx) => ({ id: idx, label: gp.id })));

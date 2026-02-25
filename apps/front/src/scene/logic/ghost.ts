@@ -7,19 +7,28 @@ export type DeviceLike = Entity & {
     watts: number;
     toggle: (force?: boolean) => void;
 };
+
 export class GhostController implements Controller<Entity & Dynamic> {
     private _target: DeviceLike | null = null;
     private retargetT = 0;
     private interactT = 0;
-    private sulkT = 0; // Prevents camping the same spot
-    private lastTargetId: string | null = null;
-    private wanderAngle = Math.random() * Math.PI * 2; // For smooth wandering
+    private wanderAngle = Math.random() * Math.PI * 2;
+
+    // Cooldown per device id after lighting it — prevents the ghost from
+    // immediately re-toggling the same device on the next frame before the
+    // state has a chance to propagate, while still allowing re-lighting after
+    // the player turns it back off and the cooldown expires.
+    private recentlyLit = new Map<string | number, number>(); // id → remaining ms
+    private readonly recentlyLitMs = 3000;
+
+    // Store as a plain field to avoid "not a function" when called later
+    private readonly _getOtherGhosts: () => GhostController[];
 
     constructor(
         public readonly entity: Entity & Dynamic,
         private readonly world: World,
         private readonly getDevices: () => DeviceLike[],
-        private readonly getOtherGhosts: () => GhostController[] = () => [],
+        getOtherGhosts?: () => GhostController[],
         private readonly opts: {
             retargetEveryMs?: number;
             arriveDist?: number;
@@ -28,6 +37,14 @@ export class GhostController implements Controller<Entity & Dynamic> {
             wanderSpeed?: number;
         } = {},
     ) {
+        // Defensive: always store a safe callable, never undefined/null
+        this._getOtherGhosts =
+            typeof getOtherGhosts === "function" ? getOtherGhosts : () => [];
+
+        // Stagger initial retarget so ghosts spawned in the same frame
+        // don't all evaluate targets simultaneously and pick the same one.
+        this.retargetT = Math.random() * 500;
+
         if (this.opts.speed) this.entity.speed = this.opts.speed;
     }
 
@@ -37,32 +54,37 @@ export class GhostController implements Controller<Entity & Dynamic> {
         const interactMs = this.opts.interactMs ?? 700;
 
         this.retargetT -= dt;
-        this.sulkT -= dt;
 
-        // 1. Logic for switching targets
-        // We retarget if: no target, target is already ON, or we are "sulking"
-        if (
-            this._target == null ||
-            this._target.isOn ||
-            this.retargetT <= 0 ||
-            this.sulkT > 0
-        ) {
-            const prevTarget = this._target;
-            this._target = this.pickSmartTarget();
-
-            // If our target was just turned OFF while we were on it, start sulking
-            if (prevTarget && !prevTarget.isOn && this._target !== prevTarget) {
-                this.sulkT = 1500; // Don't come back to this area for 1.5s
+        // Tick down per-device cooldowns so they become re-lightable over time
+        for (const [id, remaining] of this.recentlyLit) {
+            const next = remaining - dt;
+            if (next <= 0) {
+                this.recentlyLit.delete(id);
+            } else {
+                this.recentlyLit.set(id, next);
             }
+        }
 
-            this.retargetT = retargetEveryMs + Math.random() * 500; // Desync ghosts
+        // Retarget when:
+        // - No target yet AND the stagger timer has elapsed (prevents same-frame pile-on)
+        // - Current target just got lit (move on immediately)
+        // - Periodic timer expired (re-evaluate periodically)
+        const shouldRetarget =
+            (this._target == null && this.retargetT <= 0) ||
+            (this._target != null && this._target.isOn) ||
+            this.retargetT <= 0;
+
+        if (shouldRetarget) {
+            this._target = this.pickSmartTarget();
+            this.retargetT = retargetEveryMs + Math.random() * 500;
             this.interactT = 0;
         }
 
-        if (!this._target || this.sulkT > 0) {
-            // Wander aimlessly with smooth steering
-            const wanderSpeed = this.opts.wanderSpeed ?? 0.8;
-            this.wanderAngle += (Math.random() - 0.5) * 0.3; // Smooth random steering
+        if (!this._target) {
+            // No available unlit devices — wander smoothly until one appears
+            const baseSpeed = this.entity.speed ?? 220;
+            const wanderSpeed = this.opts.wanderSpeed ?? baseSpeed * 0.4;
+            this.wanderAngle += (Math.random() - 0.5) * 0.3;
             this.entity.vx = Math.cos(this.wanderAngle) * wanderSpeed;
             this.entity.vy = Math.sin(this.wanderAngle) * wanderSpeed;
             PhysicsSystem.move(this.entity, dt, this.world);
@@ -78,16 +100,14 @@ export class GhostController implements Controller<Entity & Dynamic> {
         let dy = ty - ey;
         const dist = Math.hypot(dx, dy);
 
-        // 2. Separation Force (Prevents Superposition)
-        // Look at other ghosts and push away if too close
+        // Separation Force — push away from overlapping ghosts
         for (const other of this.world.dynamics) {
             if (other === this.entity || !String(other.id).startsWith("ghost-"))
                 continue;
             const sdx = other.x + other.width / 2 - ex;
             const sdy = other.y + other.height / 2 - ey;
             const sdist = Math.hypot(sdx, sdy);
-            if (sdist < 40) {
-                // Comfort zone
+            if (sdist < 40 && sdist > 0) {
                 dx -= (sdx / sdist) * 50;
                 dy -= (sdy / sdist) * 50;
             }
@@ -97,17 +117,29 @@ export class GhostController implements Controller<Entity & Dynamic> {
             const moveDist = Math.hypot(dx, dy);
             this.entity.vx = dx / (moveDist || 1);
             this.entity.vy = dy / (moveDist || 1);
-            this.interactT = 0;
+            // Do NOT reset interactT here — separation force can nudge the ghost
+            // just past arriveDist on every frame, which would reset the timer
+            // forever and prevent toggle() from ever being reached.
             PhysicsSystem.move(this.entity, dt, this.world);
             return;
         }
 
-        // 3. Hacking logic
+        // Ghost is close enough — accumulate interact timer and light the device
         this.interactT += dt;
         if (this.interactT >= interactMs) {
-            this._target.toggle(true);
+            this._target.toggle(true); // force ON
+
+            // Start a cooldown on this device so the ghost doesn't immediately
+            // re-pick it on the very next frame. Once the cooldown expires the
+            // device is fully eligible again (so the player turning it back off
+            // will eventually attract the ghost back to it).
+            this.recentlyLit.set(this._target.id, this.recentlyLitMs);
+
             this.interactT = 0;
-            this.retargetT = 0;
+            // Short delay before hunting the next target — gives state time to
+            // propagate and prevents both ghosts landing on the same new target
+            // in the same frame.
+            this.retargetT = 200 + Math.random() * 300;
         }
     }
 
@@ -116,34 +148,49 @@ export class GhostController implements Controller<Entity & Dynamic> {
     }
 
     private pickSmartTarget(): DeviceLike | null {
-        const devs = this.getDevices().filter((d) => !d.isOn);
-        if (!devs.length) return null;
+        // Eligible = currently OFF and not in this ghost's own recentlyLit cooldown
+        const devs = this.getDevices().filter(
+            (d) => !d.isOn && !this.recentlyLit.has(d.id),
+        );
+
+        // If all devices are either ON or on cooldown, fall back to any OFF device
+        // so the ghost never gets permanently stuck ignoring available targets.
+        const candidates =
+            devs.length > 0
+                ? devs
+                : this.getDevices().filter((d) => !d.isOn);
+
+        if (!candidates.length) return null;
 
         const ex = this.entity.x + this.entity.width / 2;
         const ey = this.entity.y + this.entity.height / 2;
 
-        // Get what other ghosts are targeting
-        const otherTargets = new Set<DeviceLike>();
-        for (const ghost of this.getOtherGhosts()) {
+        // Collect the IDs of devices other ghosts are already pursuing.
+        // Using ID comparison instead of object reference avoids stale-reference
+        // mismatches when targets were assigned in a previous frame.
+        const claimedIds = new Set<string | number>();
+        for (const ghost of this._getOtherGhosts()) {
             if (ghost !== this && ghost.target) {
-                otherTargets.add(ghost.target);
+                claimedIds.add(ghost.target.id);
             }
         }
 
-        const weightedDevs = devs.map((d) => {
+        const scored = candidates.map((d) => {
             const dx = d.x + d.width / 2 - ex;
             const dy = d.y + d.height / 2 - ey;
             const dist = Math.hypot(dx, dy);
             const chaos = Math.random() * 200;
 
-            // Heavily penalize targets other ghosts are already pursuing
-            const targetConflict = otherTargets.has(d) ? 5000 : 0;
+            // Apply conflict penalty only when there is a real alternative.
+            // If the device is the sole option, ignore the penalty so the ghost
+            // doesn't get stuck refusing to target anything.
+            const hasAlternative = candidates.length > 1;
+            const conflict = hasAlternative && claimedIds.has(d.id) ? 3000 : 0;
 
-            return { device: d, score: dist + chaos + targetConflict };
+            return { device: d, score: dist + chaos + conflict };
         });
 
-        weightedDevs.sort((a, b) => a.score - b.score);
-
-        return weightedDevs[0].device;
+        scored.sort((a, b) => a.score - b.score);
+        return scored[0].device;
     }
 }

@@ -5,7 +5,7 @@
     "floorTexture": "/house/floor/wood.png",
     "surgeMaxWatts": 900,
     "winTimeMs": 60000,
-    "ghostCount": 2,
+    "ghostCount": 1,
     "ghostSpeed": 220,
 
     "devices": [

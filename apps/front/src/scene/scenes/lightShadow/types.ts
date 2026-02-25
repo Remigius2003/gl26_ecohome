@@ -68,7 +68,7 @@ export class LightShadowLevel {
         // Game Rule Defaults
         this.surgeMaxWatts = payload?.surgeMaxWatts ?? 900;
         this.winTimeMs = payload?.winTimeMs ?? 60000;
-        this.ghostCount = payload?.ghostCount ?? 2;
+        this.ghostCount = payload?.ghostCount ?? 1;
         this.ghostSpeed = payload?.ghostSpeed ?? 220;
 
         // Fallback ASCII map if none is provided
