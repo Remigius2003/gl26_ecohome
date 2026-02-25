@@ -71,14 +71,14 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
     },
 
     S: {
-        width: 4,
-        height: 2,
-        texture: "house/furniture/Sofa/SofaFront.png",
+        width: 2,
+        height: 1,
+        texture: "house/furniture/Sofa/SofaBack.png",
         solid: true,
     },
     V: {
-        width: 2,
-        height: 2,
+        width: 1,
+        height: 1,
         texture: "house/furniture/TvOnTable.png",
         solid: true,
     },
@@ -89,7 +89,7 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         solid: true,
     },
     p: {
-        width: 2,
+        width: 1,
         height: 2,
         texture: "house/furniture/decorativePlant.png",
         solid: true,
@@ -159,10 +159,15 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         solid: false,
     },
     d: {
-        width: 2,
-        height: 2,
+        width: 1,
+        height: 1,
         texture: "house/furniture/disjoncteur.png",
-        solid: false,
+        areaOfInteraction: 1,
+        priority: 2,
+        onInteract: () => {
+            window.location.href = "/lobby/lightshadow";
+        },
+        solid: true,
     },
     g: {
         width: 2,
@@ -172,16 +177,16 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
     },
     l: {
         width: 1,
-        height: 2,
+        height: 1,
         texture: "house/furniture/lampe.png",
-        solid: false,
+        solid: true,
     },
 
     I: {
-        width: 2,
-        height: 2,
+        width: 1,
+        height: 1,
         texture: "house/furniture/painting.png",
-        solid: false,
+        solid: true,
         areaOfInteraction: 1,
         priority: 0,
         onInteract: () => setShowHomeCustomisation(true),

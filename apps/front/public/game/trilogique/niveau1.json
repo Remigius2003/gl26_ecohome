@@ -2,33 +2,158 @@
     "levelName": "The Green Valley - Level 1: The Basics",
     "worldSizeX": 20,
     "worldSizeY": 15,
-    "initialTime": 3000000,
+    "initialTime": 300000,
     "finalPoints": 300,
     "playerSpawn": { "x": 9, "y": 10 },
-    
+
     "groundTexture": "/game/trilogique/images/env/background_grass.png",
     "treeTexture": "/game/trilogique/images/env/tree_new.png",
     "borderTexture": "/game/trilogique/images/env/border_decor.png",
-    
+
     "priorities": {
-        "house_main": { "id": "house_main", "x": 7, "y": 3, "width": 5, "height": 4, "text": "/game/trilogique/images/env/house.png", "priority": 10 },
+        "house_main": {
+            "id": "house_main",
+            "x": 7,
+            "y": 3,
+            "width": 5,
+            "height": 4,
+            "text": "/game/trilogique/images/env/house.png",
+            "priority": 10
+        },
 
-        "path_01": { "id": "p01", "x": 9, "y": 7, "width": 1, "height": 1, "text": "/game/trilogique/images/env/background_rock.png", "priority": 0, "walkable": true },
-        "path_02": { "id": "p02", "x": 9, "y": 8, "width": 1, "height": 1, "text": "/game/trilogique/images/env/background_rock.png", "priority": 0, "walkable": true },
-        "path_03": { "id": "p03", "x": 9, "y": 9, "width": 1, "height": 1, "text": "/game/trilogique/images/env/background_rock.png", "priority": 0, "walkable": true },
-        "path_04": { "id": "p04", "x": 9, "y": 10, "width": 1, "height": 1, "text": "/game/trilogique/images/env/background_rock.png", "priority": 0, "walkable": true },
-        "path_05": { "id": "p05", "x": 9, "y": 11, "width": 1, "height": 1, "text": "/game/trilogique/images/env/background_rock.png", "priority": 0, "walkable": true },
-        "path_06": { "id": "p06", "x": 9, "y": 12, "width": 1, "height": 1, "text": "/game/trilogique/images/env/background_rock.png", "priority": 0, "walkable": true },
+        "path_01": {
+            "id": "p01",
+            "x": 9,
+            "y": 7,
+            "width": 1,
+            "height": 1,
+            "text": "/game/trilogique/images/env/background_rock.png",
+            "priority": 0,
+            "walkable": true
+        },
+        "path_02": {
+            "id": "p02",
+            "x": 9,
+            "y": 8,
+            "width": 1,
+            "height": 1,
+            "text": "/game/trilogique/images/env/background_rock.png",
+            "priority": 0,
+            "walkable": true
+        },
+        "path_03": {
+            "id": "p03",
+            "x": 9,
+            "y": 9,
+            "width": 1,
+            "height": 1,
+            "text": "/game/trilogique/images/env/background_rock.png",
+            "priority": 0,
+            "walkable": true
+        },
+        "path_04": {
+            "id": "p04",
+            "x": 9,
+            "y": 10,
+            "width": 1,
+            "height": 1,
+            "text": "/game/trilogique/images/env/background_rock.png",
+            "priority": 0,
+            "walkable": true
+        },
+        "path_05": {
+            "id": "p05",
+            "x": 9,
+            "y": 11,
+            "width": 1,
+            "height": 1,
+            "text": "/game/trilogique/images/env/background_rock.png",
+            "priority": 0,
+            "walkable": true
+        },
+        "path_06": {
+            "id": "p06",
+            "x": 9,
+            "y": 12,
+            "width": 1,
+            "height": 1,
+            "text": "/game/trilogique/images/env/background_rock.png",
+            "priority": 0,
+            "walkable": true
+        },
 
-        "t01": { "id": "tree_01", "x": 2, "y": 2, "width": 2, "height": 2, "text": "/game/trilogique/images/env/tree_new.png", "priority": 10 },
-        "t02": { "id": "tree_02", "x": 15, "y": 2, "width": 2, "height": 2, "text": "/game/trilogique/images/env/tree_new.png", "priority": 10 },
-        "t03": { "id": "tree_03", "x": 1, "y": 6, "width": 2, "height": 2, "text": "/game/trilogique/images/env/tree_new.png", "priority": 10 },
-        "t04": { "id": "tree_04", "x": 16, "y": 6, "width": 2, "height": 2, "text": "/game/trilogique/images/env/tree_new.png", "priority": 10 },
-        "t05": { "id": "tree_05", "x": 2, "y": 9, "width": 2, "height": 2, "text": "/game/trilogique/images/env/tree_new.png", "priority": 10 },
-        "t06": { "id": "tree_06", "x": 17, "y": 9, "width": 2, "height": 2, "text": "/game/trilogique/images/env/tree_new.png", "priority": 10 },
-        "t07": { "id": "tree_07", "x": 1, "y": 12, "width": 2, "height": 2, "text": "/game/trilogique/images/env/tree_new.png", "priority": 10 },
-        "t08": { "id": "tree_08", "x": 16, "y": 12, "width": 2, "height": 2, "text": "/game/trilogique/images/env/tree_new.png", "priority": 10 }
-
+        "t01": {
+            "id": "tree_01",
+            "x": 2,
+            "y": 2,
+            "width": 2,
+            "height": 2,
+            "text": "/game/trilogique/images/env/tree_new.png",
+            "priority": 10
+        },
+        "t02": {
+            "id": "tree_02",
+            "x": 15,
+            "y": 2,
+            "width": 2,
+            "height": 2,
+            "text": "/game/trilogique/images/env/tree_new.png",
+            "priority": 10
+        },
+        "t03": {
+            "id": "tree_03",
+            "x": 1,
+            "y": 6,
+            "width": 2,
+            "height": 2,
+            "text": "/game/trilogique/images/env/tree_new.png",
+            "priority": 10
+        },
+        "t04": {
+            "id": "tree_04",
+            "x": 16,
+            "y": 6,
+            "width": 2,
+            "height": 2,
+            "text": "/game/trilogique/images/env/tree_new.png",
+            "priority": 10
+        },
+        "t05": {
+            "id": "tree_05",
+            "x": 2,
+            "y": 9,
+            "width": 2,
+            "height": 2,
+            "text": "/game/trilogique/images/env/tree_new.png",
+            "priority": 10
+        },
+        "t06": {
+            "id": "tree_06",
+            "x": 17,
+            "y": 9,
+            "width": 2,
+            "height": 2,
+            "text": "/game/trilogique/images/env/tree_new.png",
+            "priority": 10
+        },
+        "t07": {
+            "id": "tree_07",
+            "x": 1,
+            "y": 12,
+            "width": 2,
+            "height": 2,
+            "text": "/game/trilogique/images/env/tree_new.png",
+            "priority": 10
+        },
+        "t08": {
+            "id": "tree_08",
+            "x": 16,
+            "y": 12,
+            "width": 2,
+            "height": 2,
+            "text": "/game/trilogique/images/env/tree_new.png",
+            "priority": 10
+        }
     },
 
     "categories": [
@@ -82,7 +207,10 @@
                 "id": "bin_compost",
                 "image": "/game/trilogique/images/env/compost_bin.png",
                 "process": [
-                    { "source": { "id": "apple", "type": "item" }, "effect": { "points": 20, "time": 10 } }
+                    {
+                        "source": { "id": "apple", "type": "item" },
+                        "effect": { "points": 20, "time": 10 }
+                    }
                 ]
             },
             "position": { "x": 6, "y": 8 }
@@ -92,8 +220,14 @@
                 "id": "bin_yellow",
                 "image": "/game/trilogique/images/env/yellow_bin.png",
                 "process": [
-                    { "source": { "id": "plastic_bottle", "type": "item" }, "effect": { "points": 20, "time": 10 } },
-                    { "source": { "id": "cardboard_box", "type": "item" }, "effect": { "points": 20, "time": 10 } }
+                    {
+                        "source": { "id": "plastic_bottle", "type": "item" },
+                        "effect": { "points": 20, "time": 10 }
+                    },
+                    {
+                        "source": { "id": "cardboard_box", "type": "item" },
+                        "effect": { "points": 20, "time": 10 }
+                    }
                 ]
             },
             "position": { "x": 7, "y": 8 }
@@ -103,7 +237,10 @@
                 "id": "bin_glass",
                 "image": "/game/trilogique/images/env/glass_bin.png",
                 "process": [
-                    { "source": { "id": "glass_bottle", "type": "item" }, "effect": { "points": 20, "time": 10 } }
+                    {
+                        "source": { "id": "glass_bottle", "type": "item" },
+                        "effect": { "points": 20, "time": 10 }
+                    }
                 ]
             },
             "position": { "x": 11, "y": 8 }
@@ -113,7 +250,10 @@
                 "id": "bin_black",
                 "image": "/game/trilogique/images/env/black_bin.png",
                 "process": [
-                    { "source": { "id": "candy_wrapper", "type": "item" }, "effect": { "points": 20, "time": 10 } }
+                    {
+                        "source": { "id": "candy_wrapper", "type": "item" },
+                        "effect": { "points": 20, "time": 10 }
+                    }
                 ]
             },
             "position": { "x": 12, "y": 8 }
@@ -124,12 +264,25 @@
 
     "itemsPerSpawnArea": [
         {
-            "itemIds": ["apple", "candy_wrapper", "plastic_bottle", "cardboard_box", "glass_bottle"],
-            "positions": [ 
-                { "x": 4, "y": 5 }, { "x": 14, "y": 6 }, { "x": 5, "y": 10 },
-                { "x": 13, "y": 11 }, { "x": 3, "y": 12 }, { "x": 14, "y": 12 },
-                { "x": 8, "y": 13 }, { "x": 11, "y": 13 }, { "x": 15, "y": 10 },
-                { "x": 4, "y": 7 }, { "x": 17, "y": 8 }
+            "itemIds": [
+                "apple",
+                "candy_wrapper",
+                "plastic_bottle",
+                "cardboard_box",
+                "glass_bottle"
+            ],
+            "positions": [
+                { "x": 4, "y": 5 },
+                { "x": 14, "y": 6 },
+                { "x": 5, "y": 10 },
+                { "x": 13, "y": 11 },
+                { "x": 3, "y": 12 },
+                { "x": 14, "y": 12 },
+                { "x": 8, "y": 13 },
+                { "x": 11, "y": 13 },
+                { "x": 15, "y": 10 },
+                { "x": 4, "y": 7 },
+                { "x": 17, "y": 8 }
             ]
         }
     ]
