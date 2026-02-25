@@ -1,75 +1,75 @@
 {
-	"id": "level-02",
-	"cellSize": 96,
-	"wallTexture": "/house/wall/wood.png",
-	"floorTexture": "/house/floor/wood.png",
-	"surgeMaxWatts": 900,
-	"winTimeMs": 60000,
-	"ghostCount": 2,
-	"ghostSpeed": 220,
+    "id": "level-02",
+    "cellSize": 96,
+    "wallTexture": "/house/wall/wood.png",
+    "floorTexture": "/house/floor/wood.png",
+    "surgeMaxWatts": 900,
+    "winTimeMs": 60000,
+    "ghostCount": 1,
+    "ghostSpeed": 220,
 
-	"devices": [
-		{
-			"char": "L",
-			"watts": 220,
-			"label": "Lampe de Bureau",
-			"image": "/house/furniture/lampe.png",
-			"imageSize": 0.6,
-			"lightRadius": 280,
-			"interactionCells": 1
-		},
-		{
-			"char": "V",
-			"watts": 320,
-			"label": "Ventilateur",
-			"image": "/house/furniture/ventilateur.png",
-			"imageSize": 0.8,
-			"lightRadius": 220,
-			"interactionCells": 1
-		},
-		{
-			"char": "T",
-			"watts": 150,
-			"label": "Télévision",
-			"image": "/house/furniture/tv.png",
-			"imageSize": 0.75,
-			"lightRadius": 200,
-			"interactionCells": 1
-		},
-		{
-			"char": "R",
-			"watts": 500,
-			"label": "Réfrégérateur",
-			"image": "/house/furniture/frigo.png",
-			"imageSize": 1.0,
-			"lightRadius": 280,
-			"interactionCells": 1
-		},
-		{
-			"char": "F",
-			"watts": 400,
-			"label": "Four",
-			"image": "/house/furniture/four.png",
-			"imageSize": 0.8,
-			"lightRadius": 280,
-			"interactionCells": 1
-		}
-	],
+    "devices": [
+        {
+            "char": "L",
+            "watts": 220,
+            "label": "Lampe de Bureau",
+            "image": "/house/furniture/lampe.png",
+            "imageSize": 0.6,
+            "lightRadius": 280,
+            "interactionCells": 1
+        },
+        {
+            "char": "V",
+            "watts": 320,
+            "label": "Ventilateur",
+            "image": "/house/furniture/ventilateur.png",
+            "imageSize": 0.8,
+            "lightRadius": 220,
+            "interactionCells": 1
+        },
+        {
+            "char": "T",
+            "watts": 150,
+            "label": "Télévision",
+            "image": "/house/furniture/tv.png",
+            "imageSize": 0.75,
+            "lightRadius": 200,
+            "interactionCells": 1
+        },
+        {
+            "char": "R",
+            "watts": 500,
+            "label": "Réfrégérateur",
+            "image": "/house/furniture/frigo.png",
+            "imageSize": 1.0,
+            "lightRadius": 280,
+            "interactionCells": 1
+        },
+        {
+            "char": "F",
+            "watts": 400,
+            "label": "Four",
+            "image": "/house/furniture/four.png",
+            "imageSize": 0.8,
+            "lightRadius": 280,
+            "interactionCells": 1
+        }
+    ],
 
-	"map": [
-		"################################",
-		"#..............#................#",
-		"#..######......#.......######...#",
-		"#..#....#..................#....#",
-		"#..#.L..###########........#.L..#",
-		"#..#..............#........#....#",
-		"#..######.........#........######",
-		"#..............#..#.............#",
-		"#..............#######..........#",
-		"#......#..#....#................#",
-		"#R.....#..#....#....######......#",
-		"#......#.......#....#..T........#",
-		"#F.....#V......#....#...........#",
-		"################################"
-	]
+    "map": [
+        "################################",
+        "#..............#................#",
+        "#..######......#.......######...#",
+        "#..#....#..................#....#",
+        "#..#.L..###########........#.L..#",
+        "#..#..............#........#....#",
+        "#..######.........#........######",
+        "#..............#..#.............#",
+        "#..............#######..........#",
+        "#......#..#....#................#",
+        "#R.....#..#....#....######......#",
+        "#......#.......#....#..T........#",
+        "#F.....#V......#....#...........#",
+        "################################"
+    ]
 }
