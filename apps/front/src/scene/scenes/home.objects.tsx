@@ -169,6 +169,17 @@ export const THING_DEFS: Record<string, AsciiThingDef> = {
         },
         solid: true,
     },
+    r: {
+        width: 1,
+        height: 2,
+        texture: "house/furniture/poubelle.png",
+        areaOfInteraction: 1,
+        priority: 2,
+        onInteract: () => {
+            window.location.href = "/lobby/trilogique";
+        },
+        solid: true,
+    },
     g: {
         width: 2,
         height: 2,
