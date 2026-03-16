@@ -1,8 +1,0 @@
-{
-  "symbol": "V",
-  "width": 2,
-  "height": 2,
-  "texture": "/house/furniture/tv.png",
-  "solid": true,
-  "priority": 0
-}

@@ -1,8 +1,68 @@
-_deprecated
-node_modules
+# ── Deprecated / scratch ─────────────────────────────────────────────────────
+_deprecated/
+scrapper/
+
+# ── Environment & secrets ─────────────────────────────────────────────────────
 .env
 .env.*
 !.env.example
-scrapper/*
+
+# ── TLS certificates (generated locally, never commit private keys) ───────────
+certificats/*.pem
+certificats/*.key
+certificats/*.crt
+certificats/*.p12
+
+# ── Docker overrides ──────────────────────────────────────────────────────────
 docker-compose.override.yml
 docker-compose.*.override.yml
+
+# ── Database data directory ───────────────────────────────────────────────────
+database/data/
+apps/database/data/
+
+# ── Node / Frontend ───────────────────────────────────────────────────────────
+node_modules/
+dist/
+.vite/
+.parcel-cache/
+*.local
+
+# ── Python / Backend ──────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── Go ────────────────────────────────────────────────────────────────────────
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+logs/
