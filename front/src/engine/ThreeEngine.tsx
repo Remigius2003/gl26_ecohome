@@ -1,31 +1,21 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { SceneObject, ThreeEngineHandle, ThreeEngineProps } from "./types";
+import {
+    createScene,
+    createCamera,
+    createRenderer,
+    addLighting,
+    createGround,
+    createInnerGround,
+    createFaceLights,
+    createBoundary,
+} from "./sceneSetup";
 
-export interface SceneObject {
-    id: string;
-    mesh: THREE.Object3D; // supports Mesh and Group
-}
-
-export interface ThreeEngineHandle {
-    addObject:        (obj: SceneObject) => void;
-    removeObject:     (id: string) => void;
-    getScene:         () => THREE.Scene;
-    resetCamera:      () => void;
-    toggleGrid:       () => void;
-    setFrameCallback: (fn: (() => void) | null) => void;
-}
-
-interface Props {
-    onReady?:       (handle: ThreeEngineHandle) => void;
-    onGroundClick?: (point: THREE.Vector3) => void;
-    onMeshClick?:   (sceneId: string, point: THREE.Vector3) => void;
-    cameraBounds?:  number;
-    style?:         React.CSSProperties;
-}
+export type { SceneObject, ThreeEngineHandle };
 
 const GROUND_PLANE = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 
-/** Walk up the Object3D hierarchy to find a sceneId in userData */
 function findSceneId(obj: THREE.Object3D): string | undefined {
     let cur: THREE.Object3D | null = obj;
     while (cur) {
@@ -35,116 +25,129 @@ function findSceneId(obj: THREE.Object3D): string | undefined {
     return undefined;
 }
 
-export default function ThreeEngine({ onReady, onGroundClick, onMeshClick, cameraBounds = 25, style }: Props) {
+export default function ThreeEngine({
+    onReady,
+    onGroundClick,
+    onMeshClick,
+    onRightClick,
+    cameraBounds = 25,
+    style,
+}: ThreeEngineProps) {
     const mountRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const mount = mountRef.current;
         if (!mount) return;
 
-        // --- Scene ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x1a1a2e);
+        // --- Setup ---
+        const scene = createScene();
+        const camera = createCamera(mount.clientWidth / mount.clientHeight);
+        const renderer = createRenderer(mount);
+        addLighting(scene);
 
-        // --- Camera (top-down) ---
-        const camera = new THREE.PerspectiveCamera(45, mount.clientWidth / mount.clientHeight, 0.1, 1000);
-        camera.position.set(0, 20, 0);
-        camera.lookAt(0, 0, 0);
+        const ground = createGround();
+        const innerGround = createInnerGround(cameraBounds);
+        const boundary = createBoundary(cameraBounds);
+        const faceLights = createFaceLights();
+        scene.add(ground, innerGround, boundary);
+        faceLights.forEach((light) => scene.add(light));
 
-        // --- Renderer ---
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(mount.clientWidth, mount.clientHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.shadowMap.enabled = true;
-        mount.appendChild(renderer.domElement);
-
-        // --- Lighting ---
-        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-        dirLight.position.set(10, 20, 10);
-        dirLight.castShadow = true;
-        scene.add(dirLight);
-
-        // --- Grid ---
-        const grid = new THREE.GridHelper(50, 50, 0x444466, 0x333355);
-        scene.add(grid);
-
-        // --- Objects map ---
+        // --- Object registry ---
         const objects = new Map<string, SceneObject>();
 
-        // --- Animation ---
+        // --- Animation loop ---
         let frameId = 0;
         const frameCallbackRef = { current: null as (() => void) | null };
         const animate = () => {
             frameId = requestAnimationFrame(animate);
-            // Always look straight down regardless of pan position
             camera.lookAt(camera.position.x, 0, camera.position.z);
             frameCallbackRef.current?.();
             renderer.render(scene, camera);
         };
         animate();
 
-        // --- Drag / click state ---
-        const drag = { active: false, lastX: 0, lastY: 0, startX: 0, startY: 0, moved: false };
-        const clamp = (v: number) => Math.max(-cameraBounds, Math.min(cameraBounds, v));
+        // --- Input ---
+        const drag = {
+            active: false,
+            lastX: 0,
+            lastY: 0,
+            startX: 0,
+            startY: 0,
+            moved: false,
+            button: 0,
+        };
+        const clamp = (v: number) =>
+            Math.max(-cameraBounds, Math.min(cameraBounds, v));
 
         const onMouseDown = (e: MouseEvent) => {
             drag.active = true;
-            drag.lastX  = e.clientX;
-            drag.lastY  = e.clientY;
-            drag.startX = e.clientX;
-            drag.startY = e.clientY;
-            drag.moved  = false;
+            drag.lastX = drag.startX = e.clientX;
+            drag.lastY = drag.startY = e.clientY;
+            drag.moved = false;
+            drag.button = e.button;
         };
 
         const onMouseMove = (e: MouseEvent) => {
             if (!drag.active) return;
-            const dx = (e.clientX - drag.lastX) * 0.05;
-            const dy = (e.clientY - drag.lastY) * 0.05;
-            camera.position.x = clamp(camera.position.x - dx);
-            camera.position.z = clamp(camera.position.z - dy);
+            camera.position.x = clamp(
+                camera.position.x - (e.clientX - drag.lastX) * 0.05,
+            );
+            camera.position.z = clamp(
+                camera.position.z - (e.clientY - drag.lastY) * 0.05,
+            );
             drag.lastX = e.clientX;
             drag.lastY = e.clientY;
-            const tdx = e.clientX - drag.startX;
-            const tdy = e.clientY - drag.startY;
-            if (Math.sqrt(tdx * tdx + tdy * tdy) > 4) drag.moved = true;
+            const dx = e.clientX - drag.startX,
+                dy = e.clientY - drag.startY;
+            if (dx * dx + dy * dy > 16) drag.moved = true;
         };
 
         const onMouseUp = (e: MouseEvent) => {
-            if (!drag.active) return; // ignore mouseup from gizmo or external drags
+            if (!drag.active) return;
             if (!drag.moved) {
                 const rect = mount.getBoundingClientRect();
                 const ndc = new THREE.Vector2(
-                    ((e.clientX - rect.left)  / mount.clientWidth)  * 2 - 1,
-                    -((e.clientY - rect.top) / mount.clientHeight) * 2 + 1
+                    ((e.clientX - rect.left) / mount.clientWidth) * 2 - 1,
+                    ((e.clientY - rect.top) / mount.clientHeight) * -2 + 1,
                 );
-                const raycaster = new THREE.Raycaster();
-                raycaster.setFromCamera(ndc, camera);
+                const ray = new THREE.Raycaster();
+                ray.setFromCamera(ndc, camera);
 
-                // 1. Try mesh hit first
-                const allMeshes = Array.from(objects.values()).map(o => o.mesh);
-                const hits = raycaster.intersectObjects(allMeshes, true /* recursive */);
+                // Right-click: raycast ground and call onRightClick
+                if (drag.button === 2) {
+                    const gp = new THREE.Vector3();
+                    if (ray.ray.intersectPlane(GROUND_PLANE, gp) && onRightClick)
+                        onRightClick(gp);
+                    drag.active = false;
+                    return;
+                }
+
+                const hits = ray.intersectObjects(
+                    Array.from(objects.values()).map((o) => o.mesh),
+                    true,
+                );
                 if (hits.length > 0) {
-                    const sceneId = findSceneId(hits[0].object);
-                    if (sceneId && onMeshClick) {
-                        onMeshClick(sceneId, hits[0].point);
+                    const id = findSceneId(hits[0].object);
+                    if (id && onMeshClick) {
+                        onMeshClick(id, hits[0].point);
                         drag.active = false;
                         return;
                     }
                 }
 
-                // 2. Fall back to ground plane
-                const groundHit = new THREE.Vector3();
-                if (raycaster.ray.intersectPlane(GROUND_PLANE, groundHit) && onGroundClick) {
-                    onGroundClick(groundHit);
-                }
+                const gp = new THREE.Vector3();
+                if (ray.ray.intersectPlane(GROUND_PLANE, gp) && onGroundClick)
+                    onGroundClick(gp);
             }
             drag.active = false;
         };
 
         const onWheel = (e: WheelEvent) => {
             e.preventDefault();
-            camera.position.y = Math.max(2, Math.min(100, camera.position.y + e.deltaY * 0.05));
+            camera.position.y = Math.max(
+                2,
+                Math.min(100, camera.position.y + e.deltaY * 0.05),
+            );
         };
 
         const onResize = () => {
@@ -153,42 +156,60 @@ export default function ThreeEngine({ onReady, onGroundClick, onMeshClick, camer
             renderer.setSize(mount.clientWidth, mount.clientHeight);
         };
 
+        const onContextMenu = (e: Event) => e.preventDefault();
+
         mount.addEventListener("mousedown", onMouseDown);
         window.addEventListener("mousemove", onMouseMove);
-        window.addEventListener("mouseup",   onMouseUp);
+        window.addEventListener("mouseup", onMouseUp);
         mount.addEventListener("wheel", onWheel, { passive: false });
         window.addEventListener("resize", onResize);
+        mount.addEventListener("contextmenu", onContextMenu);
 
         // --- Handle ---
-        if (onReady) {
-            onReady({
-                addObject: (obj) => {
-                    obj.mesh.userData.sceneId = obj.id; // tag for raycasting
-                    objects.set(obj.id, obj);
-                    scene.add(obj.mesh);
-                },
-                removeObject: (id) => {
-                    const o = objects.get(id);
-                    if (o) { scene.remove(o.mesh); objects.delete(id); }
-                },
-                getScene:         ()   => scene,
-                resetCamera:      ()   => { camera.position.set(0, 20, 0); camera.lookAt(0, 0, 0); },
-                toggleGrid:       ()   => { grid.visible = !grid.visible; },
-                setFrameCallback: (fn) => { frameCallbackRef.current = fn; },
-            });
-        }
+        onReady?.({
+            addObject: (obj) => {
+                obj.mesh.userData.sceneId = obj.id;
+                objects.set(obj.id, obj);
+                scene.add(obj.mesh);
+            },
+            removeObject: (id) => {
+                const o = objects.get(id);
+                if (o) {
+                    scene.remove(o.mesh);
+                    objects.delete(id);
+                }
+            },
+            getScene: () => scene,
+            resetCamera: () => {
+                camera.position.set(0, 20, 0);
+            },
+            setFaceLit: (face, lit) => {
+                const light = faceLights.get(face);
+                if (light) light.intensity = lit ? 55 : 0;
+            },
+            setFrameCallback: (fn) => {
+                frameCallbackRef.current = fn;
+            },
+        });
 
         return () => {
             cancelAnimationFrame(frameId);
             mount.removeEventListener("mousedown", onMouseDown);
             window.removeEventListener("mousemove", onMouseMove);
-            window.removeEventListener("mouseup",   onMouseUp);
+            window.removeEventListener("mouseup", onMouseUp);
             mount.removeEventListener("wheel", onWheel);
             window.removeEventListener("resize", onResize);
+            mount.removeEventListener("contextmenu", onContextMenu);
             renderer.dispose();
-            if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
+            if (mount.contains(renderer.domElement))
+                mount.removeChild(renderer.domElement);
         };
-    }, [onReady, onGroundClick, onMeshClick, cameraBounds]);
+    }, [onReady, onGroundClick, onMeshClick, onRightClick, cameraBounds]);
 
-    return <div ref={mountRef} style={{ width: "100%", height: "100%", cursor: "grab", ...style }} />;
+    return (
+        <div
+            ref={mountRef}
+            style={{ width: "100%", height: "100%", cursor: "grab", ...style }}
+        />
+    );
 }

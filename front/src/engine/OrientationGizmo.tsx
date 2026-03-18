@@ -1,87 +1,132 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import type { GizmoFace } from "./types";
 
-export type GizmoFace = "top" | "bottom" | "right" | "left" | "front" | "back";
+export type { GizmoFace };
 
 interface Props {
-    onFaceClick?: (face: GizmoFace) => void;
-    size?: number;
+    onFaceClick?:       (face: GizmoFace) => void;
+    onLitFacesChange?:  (lit: Set<GizmoFace>) => void;
+    labels?:            Partial<Record<GizmoFace, string>>;
+    size?:              number;
 }
 
-// face index in BoxGeometry: +x=0, -x=1, +y=2, -y=3, +z=4, -z=5
-const FACE_META: { face: GizmoFace; label: string; bg: string; fg: string }[] = [
-    { face: "right",  label: "R", bg: "#6495ed", fg: "#fff" },
-    { face: "left",   label: "L", bg: "#3cb371", fg: "#fff" },
-    { face: "top",    label: "T", bg: "#ffd700", fg: "#222" },
-    { face: "bottom", label: "B", bg: "#2f4f4f", fg: "#ccc" },
-    { face: "front",  label: "F", bg: "#ff6347", fg: "#fff" },
-    { face: "back",   label: "K", bg: "#ba55d3", fg: "#fff" },
+// BoxGeometry face order: +x=0, -x=1, +y=2, -y=3, +z=4, -z=5
+const FACE_META: { face: GizmoFace; normal: THREE.Vector3; bg: string; fg: string }[] = [
+    { face: "right",  normal: new THREE.Vector3( 1,  0,  0), bg: "#6495ed", fg: "#fff" },
+    { face: "left",   normal: new THREE.Vector3(-1,  0,  0), bg: "#3cb371", fg: "#fff" },
+    { face: "top",    normal: new THREE.Vector3( 0,  1,  0), bg: "#ffd700", fg: "#222" },
+    { face: "bottom", normal: new THREE.Vector3( 0, -1,  0), bg: "#2f4f4f", fg: "#ccc" },
+    { face: "front",  normal: new THREE.Vector3( 0,  0,  1), bg: "#ff6347", fg: "#fff" },
+    { face: "back",   normal: new THREE.Vector3( 0,  0, -1), bg: "#ba55d3", fg: "#fff" },
 ];
 
-function makeFaceTexture(label: string, bg: string, fg: string): THREE.CanvasTexture {
+// Direction the gizmo light comes from (matches gizmo's DirectionalLight position)
+const LIGHT_DIR = new THREE.Vector3(3, 5, 3).normalize();
+
+const TEX_SIZE = 256;
+
+function makeFaceTexture(text: string, bg: string, fg: string): THREE.CanvasTexture {
+    const S = TEX_SIZE;
     const c = document.createElement("canvas");
-    c.width = c.height = 128;
+    c.width = c.height = S;
     const ctx = c.getContext("2d")!;
+
     ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, 128, 128);
-    ctx.strokeStyle = "rgba(255,255,255,0.25)";
-    ctx.lineWidth = 6;
-    ctx.strokeRect(3, 3, 122, 122);
+    ctx.fillRect(0, 0, S, S);
+    ctx.strokeStyle = "rgba(255,255,255,0.3)";
+    ctx.lineWidth = 8;
+    ctx.strokeRect(5, 5, S - 10, S - 10);
+
     ctx.fillStyle = fg;
-    ctx.font = "bold 56px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(label, 64, 64);
+
+    const words = text.split(" ");
+    const lines: string[] =
+        words.length <= 1 ? [text] :
+        words.length === 2 ? words :
+        [words.slice(0, Math.ceil(words.length / 2)).join(" "),
+         words.slice(Math.ceil(words.length / 2)).join(" ")];
+
+    const lineH = lines.length > 1 ? S * 0.28 : 0;
+    lines.forEach((line, i) => {
+        let fs = Math.floor(S * 0.22);
+        ctx.font = `bold ${fs}px sans-serif`;
+        while (ctx.measureText(line).width > S * 0.84 && fs > 10) {
+            fs -= 1;
+            ctx.font = `bold ${fs}px sans-serif`;
+        }
+        const y = S / 2 + (i - (lines.length - 1) / 2) * lineH;
+        ctx.fillText(line, S / 2, y);
+    });
+
     return new THREE.CanvasTexture(c);
 }
 
-export default function OrientationGizmo({ onFaceClick, size = 120 }: Props) {
-    const mountRef = useRef<HTMLDivElement>(null);
+export default function OrientationGizmo({ onFaceClick, onLitFacesChange, labels, size = 120 }: Props) {
+    const mountRef          = useRef<HTMLDivElement>(null);
+    const materialsRef      = useRef<THREE.MeshStandardMaterial[]>([]);
+    const litCallbackRef    = useRef(onLitFacesChange);
+    litCallbackRef.current  = onLitFacesChange; // always current without triggering re-render
 
+    // Main effect: build scene once (only recreates on size / onFaceClick change)
     useEffect(() => {
         const mount = mountRef.current;
         if (!mount) return;
 
-        // --- Scene ---
-        const scene = new THREE.Scene();
-
-        // --- Camera ---
+        const scene  = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
         camera.position.set(0, 0, 4);
         camera.lookAt(0, 0, 0);
 
-        // --- Renderer ---
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(size, size);
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setClearColor(0x000000, 0);
         mount.appendChild(renderer.domElement);
 
-        // --- Lighting ---
-        scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-        const dir = new THREE.DirectionalLight(0xffffff, 0.6);
+        // Reduced ambient for dramatic lit/unlit contrast
+        scene.add(new THREE.AmbientLight(0xffffff, 0.2));
+        const dir = new THREE.DirectionalLight(0xffffff, 1.2);
         dir.position.set(3, 5, 3);
         scene.add(dir);
 
-        // --- Cube with per-face materials ---
-        const materials = FACE_META.map(({ label, bg, fg }) =>
-            new THREE.MeshStandardMaterial({ map: makeFaceTexture(label, bg, fg) })
+        const materials = FACE_META.map(({ face, bg, fg }) =>
+            new THREE.MeshStandardMaterial({
+                map: makeFaceTexture(labels?.[face] ?? face, bg, fg),
+            })
         );
-        const cube = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.6, 1.6), materials);
+        materialsRef.current = materials;
+
+        const cube = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.8, 1.8), materials);
         scene.add(cube);
 
-        // --- Animation ---
         let frameId = 0;
+        let prevLitKey = "";
+
         const animate = () => {
             frameId = requestAnimationFrame(animate);
             renderer.render(scene, camera);
+
+            // Compute which faces are lit by checking normals against light direction
+            const litFaces = new Set<GizmoFace>();
+            FACE_META.forEach(({ face, normal }) => {
+                const worldNormal = normal.clone().applyQuaternion(cube.quaternion);
+                if (worldNormal.dot(LIGHT_DIR) > 0) litFaces.add(face);
+            });
+
+            // Only emit when the set changes
+            const litKey = Array.from(litFaces).sort().join(",");
+            if (litKey !== prevLitKey) {
+                prevLitKey = litKey;
+                litCallbackRef.current?.(litFaces);
+            }
         };
         animate();
 
-        // --- Drag-to-rotate state ---
         const drag = { active: false, lastX: 0, lastY: 0, startX: 0, startY: 0, moved: false };
 
-        // --- Highlight on hover ---
         let hoveredIndex = -1;
         const highlightFace = (idx: number) => {
             if (hoveredIndex === idx) return;
@@ -98,49 +143,40 @@ export default function OrientationGizmo({ onFaceClick, size = 120 }: Props) {
 
         const faceAt = (e: MouseEvent): number => {
             const rect = mount.getBoundingClientRect();
-            const ndc = new THREE.Vector2(
-                ((e.clientX - rect.left)  / size) * 2 - 1,
-                -((e.clientY - rect.top) / size) * 2 + 1
+            const ndc  = new THREE.Vector2(
+                ((e.clientX - rect.left) / size) *  2 - 1,
+                ((e.clientY - rect.top)  / size) * -2 + 1,
             );
             const ray = new THREE.Raycaster();
             ray.setFromCamera(ndc, camera);
             const hits = ray.intersectObject(cube);
-            if (hits.length === 0) return -1;
-            return hits[0].face?.materialIndex ?? -1;
+            return hits.length ? (hits[0].face?.materialIndex ?? -1) : -1;
         };
 
         const onMouseDown = (e: MouseEvent) => {
             e.stopPropagation();
             drag.active = true;
-            drag.lastX  = e.clientX;
-            drag.lastY  = e.clientY;
-            drag.startX = e.clientX;
-            drag.startY = e.clientY;
+            drag.lastX  = drag.startX = e.clientX;
+            drag.lastY  = drag.startY = e.clientY;
             drag.moved  = false;
         };
 
-        // On window so dragging outside the gizmo div keeps rotating
         const onWindowMouseMove = (e: MouseEvent) => {
-            if (drag.active) {
-                const dx = (e.clientX - drag.lastX) * 0.01;
-                const dy = (e.clientY - drag.lastY) * 0.01;
-                // Rotate around world-space axes so direction is always consistent
-                // regardless of the cube's current orientation
-                const qY = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), dx);
-                const qX = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), dy);
-                cube.quaternion.premultiply(qY).premultiply(qX);
-                drag.lastX = e.clientX;
-                drag.lastY = e.clientY;
-                const tdx = e.clientX - drag.startX;
-                const tdy = e.clientY - drag.startY;
-                if (Math.sqrt(tdx * tdx + tdy * tdy) > 4) drag.moved = true;
-            }
+            if (!drag.active) return;
+            const dx = (e.clientX - drag.lastX) * 0.01;
+            const dy = (e.clientY - drag.lastY) * 0.01;
+            const qY = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), dx);
+            const qX = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), dy);
+            cube.quaternion.premultiply(qY).premultiply(qX);
+            drag.lastX = e.clientX;
+            drag.lastY = e.clientY;
+            const tdx = e.clientX - drag.startX;
+            const tdy = e.clientY - drag.startY;
+            if (tdx * tdx + tdy * tdy > 16) drag.moved = true;
         };
 
-        // Hover highlight only when inside the div (no drag active)
-        const onMouseMove = (e: MouseEvent) => {
-            if (!drag.active) highlightFace(faceAt(e));
-        };
+        const onMouseMove  = (e: MouseEvent) => { if (!drag.active) highlightFace(faceAt(e)); };
+        const onMouseLeave = () => { if (!drag.active) highlightFace(-1); };
 
         const onWindowMouseUp = (e: MouseEvent) => {
             if (!drag.active) return;
@@ -152,12 +188,10 @@ export default function OrientationGizmo({ onFaceClick, size = 120 }: Props) {
             highlightFace(-1);
         };
 
-        const onMouseLeave = () => { if (!drag.active) highlightFace(-1); };
-
         mount.addEventListener("mousedown",  onMouseDown);
         mount.addEventListener("mousemove",  onMouseMove);
         mount.addEventListener("mouseleave", onMouseLeave);
-        mount.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
+        mount.addEventListener("wheel", e => e.stopPropagation(), { passive: true });
         window.addEventListener("mousemove", onWindowMouseMove);
         window.addEventListener("mouseup",   onWindowMouseUp);
 
@@ -171,24 +205,30 @@ export default function OrientationGizmo({ onFaceClick, size = 120 }: Props) {
             renderer.dispose();
             if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
         };
-    }, [onFaceClick, size]);
+    }, [onFaceClick, size]); // labels and onLitFacesChange intentionally excluded: handled via refs
+
+    // Texture-only update when labels change (no scene rebuild needed)
+    useEffect(() => {
+        if (!materialsRef.current.length) return;
+        FACE_META.forEach(({ face, bg, fg }, i) => {
+            const mat = materialsRef.current[i];
+            if (!mat) return;
+            mat.map?.dispose();
+            mat.map = makeFaceTexture(labels?.[face] ?? face, bg, fg);
+            mat.needsUpdate = true;
+        });
+    }, [labels]);
 
     return (
         <div
             ref={mountRef}
             style={{
-                position: "absolute",
-                top: 16,
-                left: 16,
-                width: size,
-                height: size,
-                cursor: "grab",
-                borderRadius: 8,
-                overflow: "hidden",
+                position: "absolute", top: 16, left: 16,
+                width: size, height: size,
+                cursor: "grab", borderRadius: 8, overflow: "hidden",
                 boxShadow: "0 2px 12px rgba(0,0,0,0.5)",
                 background: "rgba(20,20,40,0.45)",
-                backdropFilter: "blur(4px)",
-                zIndex: 10,
+                backdropFilter: "blur(4px)", zIndex: 10,
             }}
         />
     );
